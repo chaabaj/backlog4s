@@ -9,11 +9,12 @@ object UserApi {
 
   import com.nulabinc.backlog4s.dsl.ApiDsl.HttpOp._
   import com.nulabinc.backlog4s.dsl.ApiDsl.ProtocolOp._
-  
+
+  private val resource = "users"
+
   def byId(id: Id[User]): ApiPrg[Seq[User]] = {
-    // Temporary just in this form for testing now
     for {
-      bytes <- get(HttpQuery(s"https://nulab.backlog.jp/api/v2/users"))
+      bytes <- get(HttpQuery(resource))
       user <- decode[Seq[User]](bytes)
     } yield user
   }

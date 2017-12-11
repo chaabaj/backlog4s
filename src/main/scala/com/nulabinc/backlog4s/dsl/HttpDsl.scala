@@ -62,7 +62,7 @@ sealed trait Credentials
 case class AccessKey(key: String) extends Credentials
 case class Token(token: String) extends Credentials
 
-class AkkaHttpInterpret(credentials: AccessKey)
+class AkkaHttpInterpret(baseUrl: String, credentials: AccessKey)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
                         exc: ExecutionContext) extends HttpInterpret[Future] {
 
@@ -82,7 +82,8 @@ class AkkaHttpInterpret(credentials: AccessKey)
   override def create(query: HttpQuery, payload: Bytes): Future[Bytes] = {
     val request = HttpRequest(
       method = HttpMethods.POST,
-      uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
+      uri = Uri(baseUrl + query.url)
+        .withQuery(Query(query.params + ("apiKey" -> credentials.key)))
     ).withEntity(payload)
 
     doRequest(request)
@@ -90,7 +91,7 @@ class AkkaHttpInterpret(credentials: AccessKey)
 
   override def get(query: HttpQuery): Future[Bytes] = {
     val request = HttpRequest(
-      uri = Uri(query.url)
+      uri = Uri(baseUrl + query.url)
         .withQuery(Query(query.params + ("apiKey" -> credentials.key)))
     )
 
@@ -100,7 +101,8 @@ class AkkaHttpInterpret(credentials: AccessKey)
   override def update(query: HttpQuery, payload: Bytes): Future[Bytes] = {
     val request = HttpRequest(
       method = HttpMethods.PUT,
-      uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
+      uri = Uri(baseUrl + query.url)
+        .withQuery(Query(query.params + ("apiKey" -> credentials.key)))
     ).withEntity(payload)
 
     doRequest(request)
@@ -109,7 +111,8 @@ class AkkaHttpInterpret(credentials: AccessKey)
   override def delete(query: HttpQuery): Future[Bytes] = {
     val request = HttpRequest(
       method = HttpMethods.DELETE,
-      uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
+      uri = Uri(baseUrl + query.url)
+        .withQuery(Query(query.params + ("apiKey" -> credentials.key)))
     )
 
     doRequest(request)
