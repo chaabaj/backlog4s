@@ -11,6 +11,7 @@ object UserApi {
     import I._
     import D._
 
+    // Temporary just in this form for testing now
     for {
       bytes <- get(HttpQuery(s"https://nulab.backlog.jp/api/v2/users"))
       user <- decode[Seq[User]](bytes)

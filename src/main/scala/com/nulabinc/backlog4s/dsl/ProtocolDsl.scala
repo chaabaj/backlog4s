@@ -1,7 +1,5 @@
 package com.nulabinc.backlog4s.dsl
 
-import java.nio.charset.Charset
-
 import cats.free.Free
 import cats.{InjectK, ~>}
 import com.nulabinc.backlog4s.dsl.HttpADT.Bytes

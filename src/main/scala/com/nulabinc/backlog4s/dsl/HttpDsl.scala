@@ -69,12 +69,7 @@ class AkkaHttpInterpret(credentials: AccessKey)
   private val http = Http()
   private val timeout = 10.seconds
 
-  override def create(query: HttpQuery, payload: Bytes): Future[Bytes] = {
-    val request = HttpRequest(
-      method = HttpMethods.POST,
-      uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
-    ).withEntity(payload)
-
+  private def doRequest(request: HttpRequest): Future[Bytes] =
     for {
       response <- http.singleRequest(request)
       _ = if (response.status.isFailure()) {
@@ -83,6 +78,14 @@ class AkkaHttpInterpret(credentials: AccessKey)
       }
       data <- response.entity.toStrict(timeout).map(_.data.utf8String)
     } yield data
+
+  override def create(query: HttpQuery, payload: Bytes): Future[Bytes] = {
+    val request = HttpRequest(
+      method = HttpMethods.POST,
+      uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
+    ).withEntity(payload)
+
+    doRequest(request)
   }
 
   override def get(query: HttpQuery): Future[Bytes] = {
@@ -91,14 +94,7 @@ class AkkaHttpInterpret(credentials: AccessKey)
         .withQuery(Query(query.params + ("apiKey" -> credentials.key)))
     )
 
-    for {
-      response <- http.singleRequest(request)
-      _ = if (response.status.isFailure()) {
-        response.entity.discardBytes()
-        throw new RuntimeException(s"Failed request for query ${request.uri} with status ${response.status}")
-      }
-      body <- response.entity.toStrict(timeout).map(_.data.utf8String)
-    } yield body
+    doRequest(request)
   }
 
   override def update(query: HttpQuery, payload: Bytes): Future[Bytes] = {
@@ -107,14 +103,7 @@ class AkkaHttpInterpret(credentials: AccessKey)
       uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
     ).withEntity(payload)
 
-    for {
-      response <- http.singleRequest(request)
-      _ = if (response.status.isFailure()) {
-        response.entity.discardBytes()
-        throw new RuntimeException(s"Failed request for query ${request.uri} with status ${response.status}")
-      }
-      data <- response.entity.toStrict(timeout).map(_.data.utf8String)
-    } yield data
+    doRequest(request)
   }
 
   override def delete(query: HttpQuery): Future[Bytes] = {
@@ -123,13 +112,6 @@ class AkkaHttpInterpret(credentials: AccessKey)
       uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
     )
 
-    for {
-      response <- http.singleRequest(request)
-      _ = if (response.status.isFailure()) {
-        response.entity.discardBytes()
-        throw new RuntimeException(s"Failed request for query ${request.uri} with status ${response.status}")
-      }
-      data <- response.entity.toStrict(timeout).map(_.data.utf8String)
-    } yield data
+    doRequest(request)
   }
 }

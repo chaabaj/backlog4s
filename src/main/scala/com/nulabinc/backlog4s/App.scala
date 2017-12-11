@@ -1,14 +1,10 @@
 package com.nulabinc.backlog4s
 
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import cats.free.Free
 import cats.implicits._
 import com.nulabinc.backlog4s.apis.UserApi
 import com.nulabinc.backlog4s.datas.UserT
-import dsl.ApiDsl.ApiADT
-import dsl.HttpADT.Bytes
 import dsl.HttpOp._
 import dsl.JsonProtocol.ProtocolOp._
 import dsl._
