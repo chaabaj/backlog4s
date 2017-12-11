@@ -4,7 +4,7 @@
 ## Goals
 
 1. [ ] Support All Backlog Api
-2. [ ] Modular can use any http library or json library if user want to switch
+2. [ ] Modular can use any http library or json library if user want to switch.
        For now by default we use akka-http and spray json.
        Later we will provide support for others libraries
 3. [ ] Data aggregation
