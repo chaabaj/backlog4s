@@ -39,7 +39,7 @@ trait Protocol[Format[_]] {
 
 object JsonProtocol extends Protocol[JsonFormat]
 
-object SprayJsonProtocolDsl extends JsonProtocol.Interpret[Future] {
+object SprayJsonProtocolInterpret extends JsonProtocol.Interpret[Future] {
   import spray.json._
 
   override def encode[A](a: A, format: JsonFormat[A]): Future[Bytes] =

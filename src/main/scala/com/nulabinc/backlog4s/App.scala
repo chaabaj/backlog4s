@@ -22,7 +22,7 @@ object App {
   def main(args: Array[String]): Unit = {
     val httpInterpret = new AkkaHttpInterpret(AccessKey(accessKey))
 
-    val interpreter = httpInterpret or SprayJsonProtocolDsl
+    val interpreter = httpInterpret or SprayJsonProtocolInterpret
 
     UserApi.byId(UserT.id(2)).foldMap(interpreter).onComplete { result =>
       result match {
