@@ -17,7 +17,7 @@ object App {
   implicit val mat = ActorMaterializer()
   implicit val exc = system.dispatcher
 
-  val accessKey = "EkXsesTPjoBjXRVOHQVzIWFWgZaibPrIxlVMyXVdyeH6QNe5x4nUzbp2i3aLKw15"
+  val accessKey = "Hello"
 
   def main(args: Array[String]): Unit = {
     val httpInterpret = new AkkaHttpInterpret(AccessKey(accessKey))
