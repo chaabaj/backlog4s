@@ -9,6 +9,7 @@ import akka.stream.Materializer
 import cats.free.Free
 import cats.{InjectK, ~>}
 import com.nulabinc.backlog4s.dsl.HttpADT.Bytes
+import com.nulabinc.backlog4s.exceptions.BacklogApiException
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -60,58 +61,58 @@ trait HttpInterpret[F[_]] extends ~>[HttpADT, F] {
 
 sealed trait Credentials
 case class AccessKey(key: String) extends Credentials
-case class Token(token: String) extends Credentials
+case class OAuth2Token(token: String) extends Credentials
 
-class AkkaHttpInterpret(credentials: AccessKey)
+class AkkaHttpInterpret(credentials: Credentials)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
                         exc: ExecutionContext) extends HttpInterpret[Future] {
 
   private val http = Http()
   private val timeout = 10.seconds
 
+  private def setupCredentials(httpRequest: HttpRequest, credentials: Credentials): HttpRequest =
+    credentials match {
+      case AccessKey(key) => httpRequest.copy(uri = httpRequest.uri)
+      case OAuth2Token(token) => httpRequest.withHeaders(
+        headers.Authorization(OAuth2BearerToken(token))
+      )
+    }
+
+  private def createRequest(method: HttpMethod, query: HttpQuery): HttpRequest =
+    credentials match {
+      case AccessKey(key) =>
+        HttpRequest(
+          uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> key)))
+        )
+      case OAuth2Token(token) =>
+        HttpRequest(
+          uri = Uri(query.url).withQuery(Query(query.params))
+        ).withHeaders(headers.Authorization(OAuth2BearerToken(token)))
+    }
+
+  private def createRequest(method: HttpMethod, query: HttpQuery, payload: Bytes): HttpRequest =
+    createRequest(method, query).withEntity(payload)
+
   private def doRequest(request: HttpRequest): Future[Bytes] =
     for {
-      response <- http.singleRequest(request)
+      response <- http.singleRequest(setupCredentials(request, credentials))
+      data <- response.entity.toStrict(timeout).map(_.data.utf8String)
       _ = if (response.status.isFailure()) {
         response.entity.discardBytes()
-        throw new RuntimeException(s"Failed request for query ${request.uri} with status ${response.status}")
+        throw BacklogApiException(request.uri.toString(), response.status.intValue(), data)
       }
-      data <- response.entity.toStrict(timeout).map(_.data.utf8String)
     } yield data
 
-  override def create(query: HttpQuery, payload: Bytes): Future[Bytes] = {
-    val request = HttpRequest(
-      method = HttpMethods.POST,
-      uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
-    ).withEntity(payload)
+  override def create(query: HttpQuery, payload: Bytes): Future[Bytes] =
+    doRequest(createRequest(HttpMethods.POST, query, payload))
 
-    doRequest(request)
-  }
+  override def get(query: HttpQuery): Future[Bytes] =
+    doRequest(createRequest(HttpMethods.GET, query))
 
-  override def get(query: HttpQuery): Future[Bytes] = {
-    val request = HttpRequest(
-      uri = Uri(query.url)
-        .withQuery(Query(query.params + ("apiKey" -> credentials.key)))
-    )
-
-    doRequest(request)
-  }
-
-  override def update(query: HttpQuery, payload: Bytes): Future[Bytes] = {
-    val request = HttpRequest(
-      method = HttpMethods.PUT,
-      uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
-    ).withEntity(payload)
-
-    doRequest(request)
-  }
+  override def update(query: HttpQuery, payload: Bytes): Future[Bytes] =
+    doRequest(createRequest(HttpMethods.PUT, query, payload))
 
   override def delete(query: HttpQuery): Future[Bytes] = {
-    val request = HttpRequest(
-      method = HttpMethods.DELETE,
-      uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> credentials.key)))
-    )
-
-    doRequest(request)
+    doRequest(createRequest(HttpMethods.DELETE, query))
   }
 }
