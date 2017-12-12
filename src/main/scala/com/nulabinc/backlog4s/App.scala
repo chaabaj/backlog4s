@@ -16,11 +16,17 @@ object App {
   implicit val exc = system.dispatcher
 
   def main(args: Array[String]): Unit = {
-    val httpInterpret = new AkkaHttpInterpret("https://nulab.backlog.jp/api/v2/", AccessKey(Key.accessKey))
+    val httpInterpret = new AkkaHttpInterpret(
+      "https://nulab.backlog.jp/api/v2/", AccessKey(Key.accessKey)
+    )
 
     val interpreter = httpInterpret
 
-    val prg = UserApi.getAll()
+
+    val prg = for {
+      user <- UserApi.getById(UserT.myself)
+      users <- UserApi.getAll(0, 1000)
+    } yield (user, users)
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {

@@ -27,9 +27,12 @@ object HttpADT {
 }
 
 sealed trait HttpADT[A]
-case class Get[A](query: HttpQuery, format: JsonFormat[A]) extends HttpADT[Response[A]]
-case class Post[A](query: HttpQuery, payload: A, format: JsonFormat[A]) extends HttpADT[Response[A]]
-case class Put[A](query: HttpQuery, payload: A, format: JsonFormat[A]) extends HttpADT[Response[A]]
+case class Get[A](query: HttpQuery, format: JsonFormat[A])
+  extends HttpADT[Response[A]]
+case class Post[A](query: HttpQuery, payload: A, format: JsonFormat[A])
+  extends HttpADT[Response[A]]
+case class Put[A](query: HttpQuery, payload: A, format: JsonFormat[A])
+  extends HttpADT[Response[A]]
 case class Delete(query: HttpQuery) extends HttpADT[Response[Unit]]
 
 class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
@@ -50,13 +53,16 @@ class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
 }
 
 object BacklogHttpOp {
-  implicit def httpOp[F[_]](implicit I: InjectK[HttpADT, F]): BacklogHttpOp[F] = new BacklogHttpOp[F]()
+  implicit def httpOp[F[_]](implicit I: InjectK[HttpADT, F]): BacklogHttpOp[F] =
+    new BacklogHttpOp[F]()
 }
 
 trait BacklogHttpInterpret[F[_]] extends ~>[HttpADT, F] {
   def get[A](query: HttpQuery, format: JsonFormat[A]): F[Response[A]]
-  def create[A](query: HttpQuery, payload: A, format: JsonFormat[A]): F[Response[A]]
-  def update[A](query: HttpQuery, payload: A, format: JsonFormat[A]): F[Response[A]]
+  def create[A](query: HttpQuery, payload: A,
+                format: JsonFormat[A]): F[Response[A]]
+  def update[A](query: HttpQuery, payload: A,
+                format: JsonFormat[A]): F[Response[A]]
   def delete(query: HttpQuery): F[Response[Unit]]
 
   override def apply[A](fa: HttpADT[A]): F[A] = fa match {
@@ -123,7 +129,8 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
       }
     } yield result
 
-  override def create[A](query: HttpQuery, payload: A, format: JsonFormat[A]): Future[Response[A]] =
+  override def create[A](query: HttpQuery, payload: A,
+                         format: JsonFormat[A]): Future[Response[A]] =
     for {
       serverResponse <- doRequest(createRequest(HttpMethods.POST, query, payload, format))
       response = serverResponse.map(_.parseJson.convertTo[A](format))
@@ -136,7 +143,8 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 
-  override def update[A](query: HttpQuery, payload: A, format: JsonFormat[A]): Future[Response[A]] =
+  override def update[A](query: HttpQuery, payload: A,
+                         format: JsonFormat[A]): Future[Response[A]] =
     for {
       serverResponse <- doRequest(createRequest(HttpMethods.PUT, query, payload, format))
       response = serverResponse.map(_.parseJson.convertTo[A](format))

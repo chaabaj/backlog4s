@@ -1,6 +1,6 @@
 package com.nulabinc.backlog4s.apis
 
-import com.nulabinc.backlog4s.datas.{Id, User}
+import com.nulabinc.backlog4s.datas.{Id, User, UserT}
 import com.nulabinc.backlog4s.dsl.ApiDsl.ApiPrg
 import com.nulabinc.backlog4s.dsl.HttpADT.Response
 import com.nulabinc.backlog4s.dsl.HttpQuery
@@ -12,9 +12,13 @@ object UserApi {
 
   private val resource = "users"
 
-  def getAll(offset: Int = 0, limit: Int = 100): ApiPrg[Response[Seq[User]]] = {
+  def getAll(offset: Int = 0, limit: Int = 100): ApiPrg[Response[Seq[User]]] =
     get[Seq[User]](HttpQuery(resource))
-  }
 
+  def getById(id: Id[User]): ApiPrg[Response[User]] =
+    if (id == UserT.myself)
+      get[User](HttpQuery(s"$resource/myself"))
+    else
+      get[User](HttpQuery(s"$resource/${id.value}"))
 }
 
