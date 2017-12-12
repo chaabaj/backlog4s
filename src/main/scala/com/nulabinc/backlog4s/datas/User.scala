@@ -31,6 +31,14 @@ case class User (
   lang: Option[Lang] = Some(Lang.English)
 )
 
+case class AddUserForm(
+  id: Id[User],
+  password: String,
+  name: String,
+  mailAddress: String,
+  roleType: Role
+)
+
 object UserT {
   def id(value: Long): Id[User] = Id(value)
   val myself: Id[User] = Id(0)

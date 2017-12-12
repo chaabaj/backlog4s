@@ -1,6 +1,6 @@
 package com.nulabinc.backlog4s.apis
 
-import com.nulabinc.backlog4s.datas.{Id, User, UserT}
+import com.nulabinc.backlog4s.datas.{AddUserForm, Id, User, UserT}
 import com.nulabinc.backlog4s.dsl.ApiDsl.ApiPrg
 import com.nulabinc.backlog4s.dsl.HttpADT.Response
 import com.nulabinc.backlog4s.dsl.HttpQuery
@@ -20,5 +20,6 @@ object UserApi {
       get[User](HttpQuery(s"$resource/myself"))
     else
       get[User](HttpQuery(s"$resource/${id.value}"))
+
 }
 

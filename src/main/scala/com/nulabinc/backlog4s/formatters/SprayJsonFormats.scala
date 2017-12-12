@@ -35,4 +35,5 @@ object SprayJsonFormats extends DefaultJsonProtocol with Formats[JsonFormat] {
   implicit val errorFormat = jsonFormat3(ApiError)
   implicit val errorsFormat = jsonFormat1(ApiErrors)
   implicit val userFormat: JsonFormat[User] = jsonFormat6(User)
+  implicit val addUserFormFormat = jsonFormat5(AddUserForm)
 }

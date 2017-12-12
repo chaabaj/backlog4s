@@ -22,7 +22,6 @@ object App {
 
     val interpreter = httpInterpret
 
-
     val prg = for {
       user <- UserApi.getById(UserT.myself)
       users <- UserApi.getAll(0, 1000)
