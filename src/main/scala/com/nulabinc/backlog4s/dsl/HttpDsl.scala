@@ -29,9 +29,19 @@ object HttpADT {
 sealed trait HttpADT[A]
 case class Get[A](query: HttpQuery, format: JsonFormat[A])
   extends HttpADT[Response[A]]
-case class Post[A](query: HttpQuery, payload: A, format: JsonFormat[A])
+case class Post[Payload, A](
+  query: HttpQuery,
+  payload: Payload,
+  format: JsonFormat[A],
+  payloadFormat: JsonFormat[Payload]
+)
   extends HttpADT[Response[A]]
-case class Put[A](query: HttpQuery, payload: A, format: JsonFormat[A])
+case class Put[Payload, A](
+  query: HttpQuery,
+  payload: Payload,
+  format: JsonFormat[A],
+  payloadFormat: JsonFormat[Payload]
+)
   extends HttpADT[Response[A]]
 case class Delete(query: HttpQuery) extends HttpADT[Response[Unit]]
 
@@ -42,11 +52,13 @@ class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
   def get[A](query: HttpQuery)(implicit format: JsonFormat[A]): HttpF[Response[A]] =
     Free.inject[HttpADT, F](Get(query, format))
 
-  def post[A](query: HttpQuery, payload: A)(implicit format: JsonFormat[A]): HttpF[Response[A]] =
-    Free.inject[HttpADT, F](Post(query, payload, format))
+  def post[Payload, A](query: HttpQuery, payload: Payload)
+             (implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): HttpF[Response[A]] =
+    Free.inject[HttpADT, F](Post(query, payload, format, payloadFormat))
 
-  def put[A](query: HttpQuery, payload: A)(implicit format: JsonFormat[A]): HttpF[Response[A]] =
-    Free.inject[HttpADT, F](Put(query, payload, format))
+  def put[Payload, A](query: HttpQuery, payload: Payload)
+            (implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): HttpF[Response[A]] =
+    Free.inject[HttpADT, F](Put(query, payload, format, payloadFormat))
 
   def delete(query: HttpQuery): HttpF[Response[Unit]] =
     Free.inject[HttpADT, F](Delete(query))
@@ -59,16 +71,22 @@ object BacklogHttpOp {
 
 trait BacklogHttpInterpret[F[_]] extends ~>[HttpADT, F] {
   def get[A](query: HttpQuery, format: JsonFormat[A]): F[Response[A]]
-  def create[A](query: HttpQuery, payload: A,
-                format: JsonFormat[A]): F[Response[A]]
-  def update[A](query: HttpQuery, payload: A,
-                format: JsonFormat[A]): F[Response[A]]
+  def create[Payload, A](query: HttpQuery,
+                         payload: Payload,
+                         format: JsonFormat[A],
+                         payloadFormat: JsonFormat[Payload]): F[Response[A]]
+  def update[Payload, A](query: HttpQuery,
+                         payload: Payload,
+                         format: JsonFormat[A],
+                         payloadFormat: JsonFormat[Payload]): F[Response[A]]
   def delete(query: HttpQuery): F[Response[Unit]]
 
   override def apply[A](fa: HttpADT[A]): F[A] = fa match {
     case Get(query, format) => get(query, format)
-    case Put(query, payload, format) => update(query, payload, format)
-    case Post(query, payload, format) => create(query, payload, format)
+    case Put(query, payload, format, payloadFormat) =>
+      update(query, payload, format, payloadFormat)
+    case Post(query, payload, format, payloadFormat) =>
+      create(query, payload, format, payloadFormat)
     case Delete(query) => delete(query)
   }
 }
@@ -107,8 +125,8 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
         ).withHeaders(headers.Authorization(OAuth2BearerToken(token)))
     }
 
-  private def createRequest[A](method: HttpMethod, query: HttpQuery,
-                               payload: A, format: JsonFormat[A]): HttpRequest =
+  private def createRequest[Payload](method: HttpMethod, query: HttpQuery,
+                               payload: Payload, format: JsonFormat[Payload]): HttpRequest =
     createRequest(method, query).withEntity(payload.toJson(format).compactPrint)
 
   private def doRequest(request: HttpRequest): Future[Response[Bytes]] =
@@ -129,10 +147,12 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
       }
     } yield result
 
-  override def create[A](query: HttpQuery, payload: A,
-                         format: JsonFormat[A]): Future[Response[A]] =
+  override def create[Payload, A](query: HttpQuery,
+                                  payload: Payload,
+                                  format: JsonFormat[A],
+                                  payloadFormat: JsonFormat[Payload]): Future[Response[A]] =
     for {
-      serverResponse <- doRequest(createRequest(HttpMethods.POST, query, payload, format))
+      serverResponse <- doRequest(createRequest(HttpMethods.POST, query, payload, payloadFormat))
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 
@@ -143,10 +163,12 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 
-  override def update[A](query: HttpQuery, payload: A,
-                         format: JsonFormat[A]): Future[Response[A]] =
+  override def update[Payload, A](query: HttpQuery,
+                                  payload: Payload,
+                                  format: JsonFormat[A],
+                                  payloadFormat: JsonFormat[Payload]): Future[Response[A]] =
     for {
-      serverResponse <- doRequest(createRequest(HttpMethods.PUT, query, payload, format))
+      serverResponse <- doRequest(createRequest(HttpMethods.PUT, query, payload, payloadFormat))
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 

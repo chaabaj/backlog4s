@@ -1,6 +1,6 @@
 package com.nulabinc.backlog4s.apis
 
-import com.nulabinc.backlog4s.datas.{AddUserForm, Id, User, UserT}
+import com.nulabinc.backlog4s.datas._
 import com.nulabinc.backlog4s.dsl.ApiDsl.ApiPrg
 import com.nulabinc.backlog4s.dsl.HttpADT.Response
 import com.nulabinc.backlog4s.dsl.HttpQuery
@@ -20,6 +20,18 @@ object UserApi {
       get[User](HttpQuery(s"$resource/myself"))
     else
       get[User](HttpQuery(s"$resource/${id.value}"))
+
+  def create(form: AddUserForm): ApiPrg[Response[User]] =
+    post[AddUserForm, User](HttpQuery(resource), form)
+
+  def update(id: Id[User], form: UpdateUserForm): ApiPrg[Response[User]] =
+    put[UpdateUserForm, User](
+      HttpQuery(s"$resource/${id.value}"),
+      form
+    )
+
+  def remove(id: Id[User]): ApiPrg[Response[Unit]] =
+    delete(HttpQuery(s"$resource/${id.value}"))
 
 }
 

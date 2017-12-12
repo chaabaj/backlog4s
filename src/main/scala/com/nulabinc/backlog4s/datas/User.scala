@@ -39,6 +39,13 @@ case class AddUserForm(
   roleType: Role
 )
 
+case class UpdateUserForm(
+  password: Option[String] = None,
+  name: Option[String] = None,
+  mailAddress: Option[String] = None,
+  roleType: Option[Role] = None
+)
+
 object UserT {
   def id(value: Long): Id[User] = Id(value)
   val myself: Id[User] = Id(0)
