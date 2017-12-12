@@ -17,13 +17,16 @@ object App {
   implicit val mat = ActorMaterializer()
   implicit val exc = system.dispatcher
 
-  val accessKey = "EkXsesTPjoBjXRVOHQVzIWFWgZaibPrIxlVMyXVdyeH6QNe5x4nUzbp2i3aLKw15"
+  val accessKey = "Hello"
 
   def main(args: Array[String]): Unit = {
-    val httpInterpret = new AkkaHttpInterpret(AccessKey(accessKey))
+    val httpInterpret = new AkkaHttpInterpret("https://nulab.backlog.jp/api/v2", AccessKey(accessKey))
 
-    val interpreter = httpInterpret or SprayJsonProtocolDsl
+    val interpreter = httpInterpret or SprayJsonProtocolInterpret
 
+    val prg = UserApi.byId(UserT.id(2))
+
+    prg.compile(interpreter)
     UserApi.byId(UserT.id(2)).foldMap(interpreter).onComplete { result =>
       result match {
         case Success(data) => println(data.toString)

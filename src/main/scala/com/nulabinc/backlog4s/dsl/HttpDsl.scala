@@ -63,7 +63,7 @@ sealed trait Credentials
 case class AccessKey(key: String) extends Credentials
 case class OAuth2Token(token: String) extends Credentials
 
-class AkkaHttpInterpret(credentials: Credentials)
+class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
                         exc: ExecutionContext) extends HttpInterpret[Future] {
 
@@ -82,11 +82,11 @@ class AkkaHttpInterpret(credentials: Credentials)
     credentials match {
       case AccessKey(key) =>
         HttpRequest(
-          uri = Uri(query.url).withQuery(Query(query.params + ("apiKey" -> key)))
+          uri = Uri(baseUrl + query.url).withQuery(Query(query.params + ("apiKey" -> key)))
         )
       case OAuth2Token(token) =>
         HttpRequest(
-          uri = Uri(query.url).withQuery(Query(query.params))
+          uri = Uri(baseUrl + query.url).withQuery(Query(query.params))
         ).withHeaders(headers.Authorization(OAuth2BearerToken(token)))
     }
 
@@ -112,7 +112,7 @@ class AkkaHttpInterpret(credentials: Credentials)
   override def update(query: HttpQuery, payload: Bytes): Future[Bytes] =
     doRequest(createRequest(HttpMethods.PUT, query, payload))
 
-  override def delete(query: HttpQuery): Future[Bytes] = {
+  override def delete(query: HttpQuery): Future[Bytes] =
     doRequest(createRequest(HttpMethods.DELETE, query))
-  }
+
 }
