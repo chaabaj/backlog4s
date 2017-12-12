@@ -1,13 +1,9 @@
 package com.nulabinc.backlog4s.formatters
 
-import com.nulabinc.backlog4s.datas.{Id, Lang, Role, User}
+import com.nulabinc.backlog4s.datas._
 import spray.json._
 
-object SprayJsonFormats extends DefaultJsonProtocol {
-
-  private sealed trait EnumType
-  private case object IntEnum extends EnumType
-  private case object StringEnum extends EnumType
+object SprayJsonFormats extends DefaultJsonProtocol with Formats[JsonFormat] {
 
   class EnumFormat[E <: Enumeration](enu: E, enumType: EnumType) extends RootJsonFormat[E#Value] {
     override def read(json: JsValue): E#Value = json match {
@@ -35,5 +31,8 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val userIdFormat = new IdFormat[User]
   implicit val roleFormat = new EnumFormat(Role, IntEnum)
   implicit val langFormat = new EnumFormat(Lang, StringEnum)
-  implicit val userFormat = jsonFormat5(User)
+  implicit val errorCodeFormat = new EnumFormat(ApiErrorCode, IntEnum)
+  implicit val errorFormat = jsonFormat3(ApiError)
+  implicit val errorsFormat = jsonFormat1(ApiErrors)
+  implicit val userFormat: JsonFormat[User] = jsonFormat6(User)
 }

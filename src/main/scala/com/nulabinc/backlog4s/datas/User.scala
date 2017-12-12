@@ -19,7 +19,7 @@ object Lang extends Enumeration {
   type Lang = Value
 
   val English = Value("en")
-  val Japanese = Value("jp")
+  val Japanese = Value("ja")
 }
 
 case class User (
@@ -27,7 +27,8 @@ case class User (
   userId: Option[String],
   name: String,
   roleType: Role,
-  mailAddress: String
+  mailAddress: String,
+  lang: Option[Lang] = Some(Lang.English)
 )
 
 object UserT {

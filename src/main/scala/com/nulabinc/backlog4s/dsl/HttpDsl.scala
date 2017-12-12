@@ -8,53 +8,61 @@ import akka.http.scaladsl.model.headers._
 import akka.stream.Materializer
 import cats.free.Free
 import cats.{InjectK, ~>}
-import com.nulabinc.backlog4s.dsl.HttpADT.Bytes
-import com.nulabinc.backlog4s.exceptions.BacklogApiException
+import com.nulabinc.backlog4s.datas.ApiErrors
+import com.nulabinc.backlog4s.dsl.HttpADT.{Bytes, Response}
+import spray.json.JsonFormat
+import cats.implicits._
+import spray.json._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
+sealed trait HttpError
+case class RequestError(errors: ApiErrors) extends HttpError
+case object ServerDown extends HttpError
+
 object HttpADT {
   type Bytes = String
+  type Response[A] = Either[HttpError, A]
 }
 
 sealed trait HttpADT[A]
-case class Get(query: HttpQuery) extends HttpADT[Bytes]
-case class Post(query: HttpQuery, payload: Bytes) extends HttpADT[Bytes]
-case class Put(query: HttpQuery, payload: Bytes) extends HttpADT[Bytes]
-case class Delete(query: HttpQuery) extends HttpADT[Bytes]
+case class Get[A](query: HttpQuery, format: JsonFormat[A]) extends HttpADT[Response[A]]
+case class Post[A](query: HttpQuery, payload: A, format: JsonFormat[A]) extends HttpADT[Response[A]]
+case class Put[A](query: HttpQuery, payload: A, format: JsonFormat[A]) extends HttpADT[Response[A]]
+case class Delete(query: HttpQuery) extends HttpADT[Response[Unit]]
 
-class HttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
+class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
 
   type HttpF[A] = Free[F, A]
 
-  def get(query: HttpQuery): HttpF[Bytes] =
-    Free.inject[HttpADT, F](Get(query))
+  def get[A](query: HttpQuery)(implicit format: JsonFormat[A]): HttpF[Response[A]] =
+    Free.inject[HttpADT, F](Get(query, format))
 
-  def post(query: HttpQuery, payload: Bytes): HttpF[Bytes] =
-    Free.inject[HttpADT, F](Post(query, payload))
+  def post[A](query: HttpQuery, payload: A)(implicit format: JsonFormat[A]): HttpF[Response[A]] =
+    Free.inject[HttpADT, F](Post(query, payload, format))
 
-  def put(query: HttpQuery, payload: Bytes): HttpF[Bytes] =
-    Free.inject[HttpADT, F](Put(query, payload))
+  def put[A](query: HttpQuery, payload: A)(implicit format: JsonFormat[A]): HttpF[Response[A]] =
+    Free.inject[HttpADT, F](Put(query, payload, format))
 
-  def delete(query: HttpQuery): HttpF[Bytes] =
+  def delete(query: HttpQuery): HttpF[Response[Unit]] =
     Free.inject[HttpADT, F](Delete(query))
 }
 
-object HttpOp {
-  implicit def httpOp[F[_]](implicit I: InjectK[HttpADT, F]): HttpOp[F] = new HttpOp[F]()
+object BacklogHttpOp {
+  implicit def httpOp[F[_]](implicit I: InjectK[HttpADT, F]): BacklogHttpOp[F] = new BacklogHttpOp[F]()
 }
 
-trait HttpInterpret[F[_]] extends ~>[HttpADT, F] {
-  def get(query: HttpQuery): F[Bytes]
-  def create(query: HttpQuery, payload: Bytes): F[Bytes]
-  def update(query: HttpQuery, payload: Bytes): F[Bytes]
-  def delete(query: HttpQuery): F[Bytes]
+trait BacklogHttpInterpret[F[_]] extends ~>[HttpADT, F] {
+  def get[A](query: HttpQuery, format: JsonFormat[A]): F[Response[A]]
+  def create[A](query: HttpQuery, payload: A, format: JsonFormat[A]): F[Response[A]]
+  def update[A](query: HttpQuery, payload: A, format: JsonFormat[A]): F[Response[A]]
+  def delete(query: HttpQuery): F[Response[Unit]]
 
   override def apply[A](fa: HttpADT[A]): F[A] = fa match {
-    case Get(query) => get(query)
-    case Put(query, payload) => update(query, payload)
-    case Post(query, payload) => create(query, payload)
+    case Get(query, format) => get(query, format)
+    case Put(query, payload, format) => update(query, payload, format)
+    case Post(query, payload, format) => create(query, payload, format)
     case Delete(query) => delete(query)
   }
 }
@@ -65,7 +73,10 @@ case class OAuth2Token(token: String) extends Credentials
 
 class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
-                        exc: ExecutionContext) extends HttpInterpret[Future] {
+                        exc: ExecutionContext) extends BacklogHttpInterpret[Future] {
+
+
+  import com.nulabinc.backlog4s.formatters.SprayJsonFormats._
 
   private val http = Http()
   private val timeout = 10.seconds
@@ -90,29 +101,51 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
         ).withHeaders(headers.Authorization(OAuth2BearerToken(token)))
     }
 
-  private def createRequest(method: HttpMethod, query: HttpQuery, payload: Bytes): HttpRequest =
-    createRequest(method, query).withEntity(payload)
+  private def createRequest[A](method: HttpMethod, query: HttpQuery,
+                               payload: A, format: JsonFormat[A]): HttpRequest =
+    createRequest(method, query).withEntity(payload.toJson(format).compactPrint)
 
-  private def doRequest(request: HttpRequest): Future[Bytes] =
+  private def doRequest(request: HttpRequest): Future[Response[Bytes]] =
     for {
       response <- http.singleRequest(setupCredentials(request, credentials))
       data <- response.entity.toStrict(timeout).map(_.data.utf8String)
-      _ = if (response.status.isFailure()) {
-        response.entity.discardBytes()
-        throw BacklogApiException(request.uri.toString(), response.status.intValue(), data)
+      result = {
+        val status = response.status.intValue()
+        if (response.status.isFailure()) {
+          if (status >= 400 && status < 500)
+            Either.left(RequestError(data.parseJson.convertTo[ApiErrors]))
+          else {
+            Either.left(ServerDown)
+          }
+        } else {
+          Either.right(data)
+        }
       }
-    } yield data
+    } yield result
 
-  override def create(query: HttpQuery, payload: Bytes): Future[Bytes] =
-    doRequest(createRequest(HttpMethods.POST, query, payload))
+  override def create[A](query: HttpQuery, payload: A, format: JsonFormat[A]): Future[Response[A]] =
+    for {
+      serverResponse <- doRequest(createRequest(HttpMethods.POST, query, payload, format))
+      response = serverResponse.map(_.parseJson.convertTo[A](format))
+    } yield response
 
-  override def get(query: HttpQuery): Future[Bytes] =
-    doRequest(createRequest(HttpMethods.GET, query))
 
-  override def update(query: HttpQuery, payload: Bytes): Future[Bytes] =
-    doRequest(createRequest(HttpMethods.PUT, query, payload))
+  override def get[A](query: HttpQuery, format: JsonFormat[A]): Future[Response[A]] =
+    for {
+      serverResponse <- doRequest(createRequest(HttpMethods.GET, query))
+      response = serverResponse.map(_.parseJson.convertTo[A](format))
+    } yield response
 
-  override def delete(query: HttpQuery): Future[Bytes] =
-    doRequest(createRequest(HttpMethods.DELETE, query))
+  override def update[A](query: HttpQuery, payload: A, format: JsonFormat[A]): Future[Response[A]] =
+    for {
+      serverResponse <- doRequest(createRequest(HttpMethods.PUT, query, payload, format))
+      response = serverResponse.map(_.parseJson.convertTo[A](format))
+    } yield response
+
+  override def delete(query: HttpQuery): Future[Response[Unit]] =
+    for {
+      serverResponse <- doRequest(createRequest(HttpMethods.DELETE, query))
+      response = serverResponse.map(_ => ())
+    } yield response
 
 }
