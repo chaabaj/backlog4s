@@ -19,6 +19,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-kernel" % "1.0.0-RC1",
   "org.typelevel" %% "cats-macros" % "1.0.0-RC1",
   "org.typelevel" %% "cats-free" % "1.0.0-RC1",
+  "org.typelevel" %% "cats-effect" % "0.5",
   "co.fs2" %% "fs2-core" % "0.10.0-M8",
   "co.fs2" %% "fs2-io" % "0.10.0-M8"
   //

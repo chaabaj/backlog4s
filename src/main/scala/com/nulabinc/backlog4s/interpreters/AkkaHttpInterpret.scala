@@ -65,6 +65,8 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
       }
     } yield result
 
+  override def pure[A](a: A): Future[A] = Future.successful(a)
+
   override def create[Payload, A](query: HttpQuery,
                                   payload: Payload,
                                   format: JsonFormat[A],

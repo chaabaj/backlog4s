@@ -8,4 +8,3 @@ object ApiDsl {
 
   val HttpOp = implicitly[BacklogHttpOp[ApiADT]]
 }
-
