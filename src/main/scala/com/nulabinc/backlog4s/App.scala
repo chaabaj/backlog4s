@@ -5,7 +5,7 @@ import akka.stream.ActorMaterializer
 import cats.implicits._
 import com.nulabinc.backlog4s.apis.UserApi
 import com.nulabinc.backlog4s.datas.UserT
-import dsl._
+import com.nulabinc.backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
 
 import scala.util.{Failure, Success}
 
