@@ -23,13 +23,14 @@ object App {
     val interpreter = httpInterpret
 
     val prg = for {
+      file <- UserApi.downloadIcon(UserT.id(0))
       user <- UserApi.getById(UserT.myself)
       users <- UserApi.getAll(0, 1000)
-    } yield (user, users)
+    } yield Seq(file, user, users)
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
-        case Success(data) => println(data.toString)
+        case Success(data) => data.foreach(println)
         case Failure(ex) => ex.printStackTrace()
       }
       system.terminate()

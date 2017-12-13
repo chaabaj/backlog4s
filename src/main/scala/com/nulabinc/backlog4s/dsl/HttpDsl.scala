@@ -203,6 +203,7 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
               .map(_.data.utf8String)
               .map(data => Either.left(RequestError(data.parseJson.convertTo[ApiErrors])))
           else {
+            serverResponse.entity.discardBytes()
             Future.successful(Either.left(ServerDown))
           }
         } else {
