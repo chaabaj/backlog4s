@@ -1,17 +1,21 @@
 package com.nulabinc.backlog4s.dsl
 
+import java.nio.ByteBuffer
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.stream.Materializer
+import cats.effect.IO
 import cats.free.Free
 import cats.{InjectK, ~>}
 import com.nulabinc.backlog4s.datas.ApiErrors
-import com.nulabinc.backlog4s.dsl.HttpADT.{Bytes, Response}
+import com.nulabinc.backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
 import spray.json.JsonFormat
 import cats.implicits._
+import fs2.Stream
 import spray.json._
 
 import scala.concurrent.duration._
@@ -24,6 +28,7 @@ case object ServerDown extends HttpError
 object HttpADT {
   type Bytes = String
   type Response[A] = Either[HttpError, A]
+  type ByteStream = Stream[IO, ByteBuffer]
 }
 
 sealed trait HttpADT[A]
@@ -41,9 +46,10 @@ case class Put[Payload, A](
   payload: Payload,
   format: JsonFormat[A],
   payloadFormat: JsonFormat[Payload]
-)
-  extends HttpADT[Response[A]]
+) extends HttpADT[Response[A]]
 case class Delete(query: HttpQuery) extends HttpADT[Response[Unit]]
+case class Download(query: HttpQuery)
+  extends HttpADT[Response[ByteStream]]
 
 class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
 
@@ -62,6 +68,9 @@ class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
 
   def delete(query: HttpQuery): HttpF[Response[Unit]] =
     Free.inject[HttpADT, F](Delete(query))
+
+  def download(query: HttpQuery): HttpF[Response[ByteStream]] =
+    Free.inject[HttpADT, F](Download(query))
 }
 
 object BacklogHttpOp {
@@ -80,6 +89,7 @@ trait BacklogHttpInterpret[F[_]] extends ~>[HttpADT, F] {
                          format: JsonFormat[A],
                          payloadFormat: JsonFormat[Payload]): F[Response[A]]
   def delete(query: HttpQuery): F[Response[Unit]]
+  def download(query: HttpQuery): F[Response[ByteStream]]
 
   override def apply[A](fa: HttpADT[A]): F[A] = fa match {
     case Get(query, format) => get(query, format)
@@ -88,6 +98,7 @@ trait BacklogHttpInterpret[F[_]] extends ~>[HttpADT, F] {
     case Post(query, payload, format, payloadFormat) =>
       create(query, payload, format, payloadFormat)
     case Delete(query) => delete(query)
+    case Download(query) => download(query)
   }
 }
 
@@ -101,6 +112,7 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
 
 
   import com.nulabinc.backlog4s.formatters.SprayJsonFormats._
+  import streamz.converter._
 
   private val http = Http()
   private val timeout = 10.seconds
@@ -117,11 +129,11 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
     credentials match {
       case AccessKey(key) =>
         HttpRequest(
-          uri = Uri(baseUrl + query.url).withQuery(Query(query.params + ("apiKey" -> key)))
+          uri = Uri(baseUrl + query.path).withQuery(Query(query.params + ("apiKey" -> key)))
         )
       case OAuth2Token(token) =>
         HttpRequest(
-          uri = Uri(baseUrl + query.url).withQuery(Query(query.params))
+          uri = Uri(baseUrl + query.path).withQuery(Query(query.params))
         ).withHeaders(headers.Authorization(OAuth2BearerToken(token)))
     }
 
@@ -177,5 +189,28 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
       serverResponse <- doRequest(createRequest(HttpMethods.DELETE, query))
       response = serverResponse.map(_ => ())
     } yield response
+
+  override def download(query: HttpQuery): Future[Response[ByteStream]] = {
+    val request = createRequest(HttpMethods.GET, query)
+    for {
+      serverResponse <- http.singleRequest(request)
+      response <- {
+        val status = serverResponse.status.intValue()
+        if (serverResponse.status.isFailure()) {
+          if (status >= 400 && status < 500)
+            serverResponse
+              .entity.toStrict(timeout)
+              .map(_.data.utf8String)
+              .map(data => Either.left(RequestError(data.parseJson.convertTo[ApiErrors])))
+          else {
+            Future.successful(Either.left(ServerDown))
+          }
+        } else {
+          val stream = serverResponse.entity.dataBytes.toStream().map(_.asByteBuffer)
+          Future.successful(Either.right(stream))
+        }
+      }
+    } yield response
+  }
 
 }

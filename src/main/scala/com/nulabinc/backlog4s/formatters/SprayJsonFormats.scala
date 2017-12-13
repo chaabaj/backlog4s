@@ -3,6 +3,15 @@ package com.nulabinc.backlog4s.formatters
 import com.nulabinc.backlog4s.datas._
 import spray.json._
 
+/**
+  * Define Enum type for encoding and decoding json
+  * It tell how to format enumeration in json
+  * If it should be a string or a number
+  */
+sealed trait EnumType
+case object IntEnum extends EnumType
+case object StringEnum extends EnumType
+
 object SprayJsonFormats extends DefaultJsonProtocol {
 
   class EnumFormat[E <: Enumeration](enu: E, enumType: EnumType) extends RootJsonFormat[E#Value] {

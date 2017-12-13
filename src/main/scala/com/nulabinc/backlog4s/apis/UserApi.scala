@@ -2,7 +2,7 @@ package com.nulabinc.backlog4s.apis
 
 import com.nulabinc.backlog4s.datas._
 import com.nulabinc.backlog4s.dsl.ApiDsl.ApiPrg
-import com.nulabinc.backlog4s.dsl.HttpADT.Response
+import com.nulabinc.backlog4s.dsl.HttpADT.{ByteStream, Response}
 import com.nulabinc.backlog4s.dsl.HttpQuery
 import com.nulabinc.backlog4s.formatters.SprayJsonFormats._
 
@@ -33,5 +33,7 @@ object UserApi {
   def remove(id: Id[User]): ApiPrg[Response[Unit]] =
     delete(HttpQuery(s"$resource/${id.value}"))
 
+  def downloadIcon(id: Id[User]): ApiPrg[Response[ByteStream]] =
+    download(HttpQuery(s"$resource/${id.value}/icon"))
 }
 
