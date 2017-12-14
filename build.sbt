@@ -10,7 +10,7 @@ libraryDependencies ++= Seq(
   // Will be separated in different projects soon
   "com.typesafe.akka" %% "akka-http" % "10.0.11",
   "com.typesafe.akka" %% "akka-stream" % "2.5.8",
-  "com.github.krasserm" %% "streamz-converter" % "0.9-M1", // uses FS2 0.10.0
+  "com.github.zainab-ali" %% "fs2-reactive-streams" % "0.2.6", // uses FS2 0.10.0
   //
 
   // Core dependencies
@@ -19,8 +19,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-kernel" % "1.0.0-RC1",
   "org.typelevel" %% "cats-macros" % "1.0.0-RC1",
   "org.typelevel" %% "cats-free" % "1.0.0-RC1",
-  "org.typelevel" %% "cats-effect" % "0.5",
-  "co.fs2" %% "fs2-core" % "0.10.0-M8",
-  "co.fs2" %% "fs2-io" % "0.10.0-M8"
+  "co.fs2" %% "fs2-core" % "0.10.0-M9",
+  "co.fs2" %% "fs2-io" % "0.10.0-M9"
   //
 )

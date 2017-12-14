@@ -4,21 +4,24 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.OAuth2BearerToken
+import akka.http.scaladsl.model.headers.{HttpEncodings, OAuth2BearerToken}
 import akka.stream.Materializer
+import akka.stream.scaladsl.Sink
+import cats.effect.IO
 import com.nulabinc.backlog4s.datas.ApiErrors
 import com.nulabinc.backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
 import com.nulabinc.backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
 import spray.json._
 import cats.implicits._
-
+import fs2.interop.reactivestreams._
+import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
-
 import scala.concurrent.duration._
 
 sealed trait Credentials
 case class AccessKey(key: String) extends Credentials
 case class OAuth2Token(token: String) extends Credentials
+
 
 class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
@@ -26,21 +29,29 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
 
 
   import com.nulabinc.backlog4s.formatters.SprayJsonFormats._
-  import streamz.converter._
 
   private val http = Http()
   private val timeout = 10.seconds
+  private val maxRedirCount = 20
+  private val reqHeaders: Seq[HttpHeader] = Seq(
+    headers.`User-Agent`("backlog4jv2"),
+    headers.`Content-Type`(ContentTypes.`application/json`),
+    headers.`Accept-Charset`(HttpCharsets.`UTF-8`)
+  )
 
   private def createRequest(method: HttpMethod, query: HttpQuery): HttpRequest =
     credentials match {
       case AccessKey(key) =>
         HttpRequest(
-          uri = Uri(baseUrl + query.path).withQuery(Query(query.params + ("apiKey" -> key)))
-        )
+          uri = Uri(baseUrl + query.path).withQuery(Query(query.params + ("apiKey" -> key))),
+        ).withHeaders(reqHeaders)
       case OAuth2Token(token) =>
         HttpRequest(
           uri = Uri(baseUrl + query.path).withQuery(Query(query.params))
-        ).withHeaders(headers.Authorization(OAuth2BearerToken(token)))
+        ).withHeaders(
+          reqHeaders :+
+            headers.Authorization(OAuth2BearerToken(token))
+        )
     }
 
   private def createRequest[Payload](method: HttpMethod, query: HttpQuery,
@@ -98,10 +109,28 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
       response = serverResponse.map(_ => ())
     } yield response
 
+  private def followRedirect(req: HttpRequest, count: Int = 0): Future[HttpResponse] = {
+    http.singleRequest(req).flatMap { resp =>
+      resp.status match {
+        case StatusCodes.Found | StatusCodes.SeeOther => resp.header[headers.Location].map { loc =>
+
+          val locUri = loc.uri
+          val newUri = req.uri.copy(scheme = locUri.scheme, authority = locUri.authority)
+          val newReq = req.copy(
+            uri = newUri.withQuery(req.uri.query()),
+            headers = reqHeaders
+          )
+          if (count < maxRedirCount) followRedirect(newReq, count + 1) else Http().singleRequest(newReq)
+        }.getOrElse(throw new RuntimeException(s"location not found on 302 for ${req.uri}"))
+        case _ => Future(resp)
+      }
+    }
+  }
+
   override def download(query: HttpQuery): Future[Response[ByteStream]] = {
     val request = createRequest(HttpMethods.GET, query)
     for {
-      serverResponse <- http.singleRequest(request)
+      serverResponse <- followRedirect(request)
       response <- {
         val status = serverResponse.status.intValue()
         if (serverResponse.status.isFailure()) {
@@ -115,7 +144,14 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
             Future.successful(Either.left(ServerDown))
           }
         } else {
-          val stream = serverResponse.entity.dataBytes.toStream().map(_.asByteBuffer)
+          val stream = serverResponse.entity.dataBytes
+              .map { bytes =>
+                println(bytes)
+                bytes
+              }
+            .map(_.asByteBuffer)
+            .runWith(Sink.asPublisher(true))
+            .toStream[IO]
           Future.successful(Either.right(stream))
         }
       }

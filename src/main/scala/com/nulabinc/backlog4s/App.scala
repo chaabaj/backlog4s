@@ -1,5 +1,7 @@
 package com.nulabinc.backlog4s
 
+import java.nio.ByteBuffer
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.implicits._
@@ -10,6 +12,7 @@ import com.nulabinc.backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
 
 import scala.util.{Failure, Success}
 import dsl.syntax._
+import fs2.Chunk
 
 object App {
 
@@ -32,7 +35,9 @@ object App {
     prg.foldMap(interpreter).onComplete { result =>
       result match {
         case Success(data) => {
-          println(data.run.unsafeRunSync())
+          println(data.chunks.runFold(Seq.empty[Chunk[ByteBuffer]]) {
+            case (acc, bytes) => acc :+ bytes
+          }.unsafeRunSync())
         }
         case Failure(ex) => ex.printStackTrace()
       }
