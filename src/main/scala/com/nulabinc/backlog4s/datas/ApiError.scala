@@ -2,6 +2,10 @@ package com.nulabinc.backlog4s.datas
 
 import com.nulabinc.backlog4s.datas.ApiErrorCode.ApiErrorCode
 
+/**
+  * See backlog error api documentation
+  * https://developer.nulab-inc.com/docs/backlog/error-response/
+  */
 object ApiErrorCode extends Enumeration {
   type ApiErrorCode = Value
 

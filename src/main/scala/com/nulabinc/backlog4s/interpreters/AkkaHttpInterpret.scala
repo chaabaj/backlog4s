@@ -23,6 +23,7 @@ case class AccessKey(key: String) extends Credentials
 case class OAuth2Token(token: String) extends Credentials
 
 
+
 class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
                         exc: ExecutionContext) extends BacklogHttpInterpret[Future] {
@@ -118,6 +119,7 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
     http.singleRequest(req).flatMap { resp =>
       resp.status match {
         case StatusCodes.Found | StatusCodes.SeeOther => resp.header[headers.Location].map { loc =>
+          resp.entity.discardBytes()
           val locUri = loc.uri
           val newUri = locUri
           val newReq = req.copy(
@@ -149,10 +151,6 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
           }
         } else {
           val stream = serverResponse.entity.dataBytes
-              .map { bytes =>
-                println(bytes)
-                bytes
-              }
             .map(_.asByteBuffer)
             .runWith(Sink.asPublisher(true))
             .toStream[IO]

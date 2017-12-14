@@ -34,11 +34,10 @@ object App {
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
-        case Success(data) => {
+        case Success(data) =>
           println(data.chunks.runFold(Seq.empty[Chunk[ByteBuffer]]) {
             case (acc, bytes) => acc :+ bytes
           }.unsafeRunSync())
-        }
         case Failure(ex) => ex.printStackTrace()
       }
       system.terminate()

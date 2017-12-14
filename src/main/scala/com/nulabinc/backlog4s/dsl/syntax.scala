@@ -8,6 +8,10 @@ object syntax {
 
   import ApiDsl.HttpOp._
 
+  // Extension methods to easily stop execution of
+  // program when the program cannot continue
+  // This will likely to change when i understand more
+  // how to use FreeT monad transformer
   implicit class ResponseOps[A](response: Response[A]) {
     def orFail[A]: ApiPrg[A] =
       response match {
