@@ -1,20 +1,20 @@
-package com.nulabinc.backlog4s
 
 import java.nio.ByteBuffer
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import cats.implicits._
-import com.nulabinc.backlog4s.apis.UserApi
-import com.nulabinc.backlog4s.datas.{User, UserT}
-import com.nulabinc.backlog4s.dsl.HttpADT.ByteStream
-import com.nulabinc.backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
-
-import scala.util.{Failure, Success}
-import dsl.syntax._
+import backlog4s.apis.UserApi
+import backlog4s.datas.{User, UserT}
+import backlog4s.dsl.HttpADT.ByteStream
+import backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
 import fs2.Chunk
 
+import scala.util.{Failure, Success}
+import cats.implicits._
+
 object App {
+
+  import backlog4s.dsl.syntax._
 
   implicit val system = ActorSystem("test")
   implicit val mat = ActorMaterializer()

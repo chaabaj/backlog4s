@@ -1,7 +1,7 @@
-package com.nulabinc.backlog4s.datas
+package backlog4s.datas
 
-import com.nulabinc.backlog4s.datas.Lang.Lang
-import com.nulabinc.backlog4s.datas.Role.Role
+import backlog4s.datas.Lang.Lang
+import backlog4s.datas.Role.Role
 
 
 object Role extends Enumeration {

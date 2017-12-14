@@ -1,4 +1,4 @@
-package com.nulabinc.backlog4s.dsl
+package backlog4s.dsl
 
 
 import java.nio.ByteBuffer
@@ -6,8 +6,8 @@ import java.nio.ByteBuffer
 import cats.effect.IO
 import cats.free.Free
 import cats.{InjectK, ~>}
-import com.nulabinc.backlog4s.datas.ApiErrors
-import com.nulabinc.backlog4s.dsl.HttpADT.{ByteStream, Response}
+import backlog4s.datas.ApiErrors
+import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import spray.json.JsonFormat
 import fs2.Stream
 

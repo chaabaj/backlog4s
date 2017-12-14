@@ -1,4 +1,4 @@
-package com.nulabinc.backlog4s.dsl
+package backlog4s.dsl
 
 /**
   * Basic http query representation

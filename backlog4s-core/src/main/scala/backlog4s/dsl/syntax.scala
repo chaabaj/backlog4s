@@ -1,8 +1,8 @@
-package com.nulabinc.backlog4s.dsl
+package backlog4s.dsl
 
-import com.nulabinc.backlog4s.dsl.ApiDsl.ApiPrg
-import com.nulabinc.backlog4s.dsl.HttpADT.Response
-import com.nulabinc.backlog4s.exceptions.BacklogApiException
+import backlog4s.dsl.ApiDsl.ApiPrg
+import backlog4s.dsl.HttpADT.Response
+import backlog4s.exceptions.BacklogApiException
 
 object syntax {
 

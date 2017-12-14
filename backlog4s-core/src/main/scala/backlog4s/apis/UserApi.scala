@@ -1,14 +1,14 @@
-package com.nulabinc.backlog4s.apis
+package backlog4s.apis
 
-import com.nulabinc.backlog4s.datas._
-import com.nulabinc.backlog4s.dsl.ApiDsl.ApiPrg
-import com.nulabinc.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.nulabinc.backlog4s.dsl.HttpQuery
-import com.nulabinc.backlog4s.formatters.SprayJsonFormats._
+import backlog4s.datas._
+import backlog4s.dsl.ApiDsl.ApiPrg
+import backlog4s.dsl.HttpADT.{ByteStream, Response}
+import backlog4s.dsl.HttpQuery
+import backlog4s.formatters.SprayJsonFormats._
 
 object UserApi {
 
-  import com.nulabinc.backlog4s.dsl.ApiDsl.HttpOp._
+  import backlog4s.dsl.ApiDsl.HttpOp._
 
   private val resource = "users"
 

@@ -1,16 +1,16 @@
-package com.nulabinc.backlog4s.interpreters
+package backlog4s.interpreters
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{HttpEncodings, OAuth2BearerToken}
+import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import cats.effect.IO
-import com.nulabinc.backlog4s.datas.ApiErrors
-import com.nulabinc.backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
-import com.nulabinc.backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
+import backlog4s.datas.ApiErrors
+import backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
+import backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
 import spray.json._
 import cats.implicits._
 import fs2.interop.reactivestreams._
@@ -29,7 +29,7 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                         exc: ExecutionContext) extends BacklogHttpInterpret[Future] {
 
 
-  import com.nulabinc.backlog4s.formatters.SprayJsonFormats._
+  import backlog4s.formatters.SprayJsonFormats._
 
   private val http = Http()
   private val timeout = 10.seconds

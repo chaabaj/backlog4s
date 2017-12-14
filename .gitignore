@@ -13,4 +13,4 @@ project/plugins/project/
 .lib/
 .idea
 
-src/main/scala/com/nulabinc/backlog4s/Key.scala
+backlog4s-test/src/main/scala/Key.scala

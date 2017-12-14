@@ -1,6 +1,6 @@
-package com.nulabinc.backlog4s.formatters
+package backlog4s.formatters
 
-import com.nulabinc.backlog4s.datas._
+import backlog4s.datas._
 import spray.json._
 
 /**

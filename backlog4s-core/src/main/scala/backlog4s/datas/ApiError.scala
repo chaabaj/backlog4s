@@ -1,6 +1,6 @@
-package com.nulabinc.backlog4s.datas
+package backlog4s.datas
 
-import com.nulabinc.backlog4s.datas.ApiErrorCode.ApiErrorCode
+import backlog4s.datas.ApiErrorCode.ApiErrorCode
 
 /**
   * See backlog error api documentation
