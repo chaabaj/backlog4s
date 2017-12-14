@@ -109,15 +109,19 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
       response = serverResponse.map(_ => ())
     } yield response
 
+  // Follow redirection in case of download files
+  // Files can be stored in cloud service
+  // So we need to manually follow redirection
+  // Akka http is too low level to do this automatically
+  // We protect from infinite redirection using count
   private def followRedirect(req: HttpRequest, count: Int = 0): Future[HttpResponse] = {
     http.singleRequest(req).flatMap { resp =>
       resp.status match {
         case StatusCodes.Found | StatusCodes.SeeOther => resp.header[headers.Location].map { loc =>
-
           val locUri = loc.uri
-          val newUri = req.uri.copy(scheme = locUri.scheme, authority = locUri.authority)
+          val newUri = locUri
           val newReq = req.copy(
-            uri = newUri.withQuery(req.uri.query()),
+            uri = newUri,
             headers = reqHeaders
           )
           if (count < maxRedirCount) followRedirect(newReq, count + 1) else Http().singleRequest(newReq)
