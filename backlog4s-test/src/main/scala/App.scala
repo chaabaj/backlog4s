@@ -22,7 +22,7 @@ object App {
 
   def main(args: Array[String]): Unit = {
     val httpInterpret = new AkkaHttpInterpret(
-      "https://nulab.backlog.jp/api/v2/", AccessKey(Key.accessKey)
+      "https://nulab.backlog.jp/api/v2/", AccessKey(ApiKey.accessKey)
     )
 
     val interpreter = httpInterpret

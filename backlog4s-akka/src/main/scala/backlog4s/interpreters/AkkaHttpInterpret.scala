@@ -35,7 +35,7 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
   private val timeout = 10.seconds
   private val maxRedirCount = 20
   private val reqHeaders: Seq[HttpHeader] = Seq(
-    headers.`User-Agent`("backlog4jv2"),
+    headers.`User-Agent`("backlog4s"),
     headers.`Content-Type`(ContentTypes.`application/json`),
     headers.`Accept-Charset`(HttpCharsets.`UTF-8`)
   )

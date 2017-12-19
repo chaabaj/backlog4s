@@ -1,0 +1,28 @@
+package backlog4s.datas
+
+import backlog4s.datas.Order.Order
+import org.joda.time.DateTime
+
+object GroupT {
+  def id(value: Long): Id[Group] = Id(value)
+}
+
+case class Group(
+  id: Id[Group],
+  name: String,
+  members: Seq[User],
+  displayOrder: Option[Order],
+  createdUser: User,
+  created: DateTime,
+  updatedUser: Option[User],
+  updated: Option[DateTime]
+)
+
+case class AddGroupForm(
+  members: Seq[User]
+)
+
+case class UpdateGroupForm(
+  name: Option[String],
+  members: Option[Seq[User]]
+)

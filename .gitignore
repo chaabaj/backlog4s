@@ -13,4 +13,4 @@ project/plugins/project/
 .lib/
 .idea
 
-backlog4s-test/src/main/scala/Key.scala
+backlog4s-test/src/main/scala/ApiKey.scala
