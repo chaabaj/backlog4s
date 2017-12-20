@@ -1,13 +1,9 @@
 
-import java.nio.ByteBuffer
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import backlog4s.apis.UserApi
-import backlog4s.datas.{User, UserT}
-import backlog4s.dsl.HttpADT.ByteStream
+import backlog4s.apis.{GroupApi, ProjectApi, UserApi}
+import backlog4s.datas.UserT
 import backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
-import fs2.Chunk
 
 import scala.util.{Failure, Success}
 import cats.implicits._
@@ -28,16 +24,15 @@ object App {
     val interpreter = httpInterpret
 
     val prg = for {
-      user <- UserApi.getById(UserT.myself).orFail[User]
-      file <- UserApi.downloadIcon(user.id).orFail[ByteStream]
-    } yield file
+      user <- UserApi.getById(UserT.myself).orFail
+      projects <- ProjectApi.getAll().orFail
+      project <- ProjectApi.getById(projects.head.id).orFail
+      group <- GroupApi.getAll()
+    } yield projects
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
-        case Success(data) =>
-          println(data.chunks.runFold(Seq.empty[Chunk[ByteBuffer]]) {
-            case (acc, bytes) => acc :+ bytes
-          }.unsafeRunSync())
+        case Success(data) => println(data)
         case Failure(ex) => ex.printStackTrace()
       }
       system.terminate()

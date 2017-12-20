@@ -12,7 +12,7 @@ case class Project(
   chartEnabled: Boolean,
   subtaskingEnabled: Boolean,
   projectLeaderCanEditProjectLeader: Boolean,
-  textFormatingRule: String,
+  textFormattingRule: String,
   archived: Boolean
 )
 

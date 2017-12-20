@@ -72,6 +72,7 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
             Either.left(ServerDown)
           }
         } else {
+          println(s"received $data")
           Either.right(data)
         }
       }

@@ -13,7 +13,7 @@ object syntax {
   // This will likely to change when i understand more
   // how to use FreeT monad transformer
   implicit class ResponseOps[A](response: Response[A]) {
-    def orFail[A]: ApiPrg[A] =
+    def orFail: ApiPrg[A] =
       response match {
         case Right(value) => pure(value.asInstanceOf[A])
         case Left(error) => throw BacklogApiException(error)
@@ -21,9 +21,9 @@ object syntax {
   }
 
   implicit class ApiOps[A](apiPrg: ApiPrg[Response[A]]) {
-    def orFail[A]: ApiPrg[A] =
+    def orFail: ApiPrg[A] =
       apiPrg.flatMap {
-        case Right(value) => pure(value.asInstanceOf[A])
+        case Right(value) => pure(value)
         case Left(error) => throw BacklogApiException(error)
       }
   }

@@ -11,7 +11,7 @@ object ProjectApi {
 
   private val resource = "projects"
 
-  def getAll(offset: Int, count: Int,
+  def getAll(offset: Int = 0, count: Int = 100,
              archived: Option[Boolean] = None,
              all: Boolean = false): ApiPrg[Response[Seq[Project]]] = {
     val params = archived.map(archived => Map(
