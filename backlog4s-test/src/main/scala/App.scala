@@ -34,7 +34,10 @@ object App {
       issueTypes <- IssueTypeApi.getAll(
         IdParam(projects.head.id)
       ).orFail
-    } yield issueTypes
+      statuses <- StatusApi.getAll.orFail
+      priorities <- PriorityApi.getAll.orFail
+      resolutions <- ResolutionApi.getAll.orFail
+    } yield (statuses, priorities, resolutions)
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {

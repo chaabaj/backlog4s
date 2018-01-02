@@ -141,4 +141,10 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val idIssueTypeFormat = new IdFormat[IssueType]
   implicit val issueTypeFormat = jsonFormat5(IssueType)
   implicit val updateIssueTypeFormFormat = jsonFormat2(UpdateIssueTypeForm)
+  implicit val idStatusFormat = new IdFormat[Status]
+  implicit val statusFormat = jsonFormat2(Status)
+  implicit val idResolutionFormat = new IdFormat[Resolution]
+  implicit val resolutionFormat = jsonFormat2(Resolution)
+  implicit val idPriorityFormat = new IdFormat[Priority]
+  implicit val priorityFormat = jsonFormat2(Priority)
 }
