@@ -22,10 +22,10 @@ object SprayJsonFormats extends DefaultJsonProtocol {
 
   implicit object DateTimeFormat extends RootJsonFormat[DateTime] {
 
-    private val formatter = ISODateTimeFormat.dateOptionalTimeParser()
+    val formatter = ISODateTimeFormat.dateOptionalTimeParser()
 
     def write(obj: DateTime): JsValue =
-      JsString(formatter.print(obj))
+      JsString(DateTimeFormat.formatter.print(obj))
 
     def read(json: JsValue): DateTime = json match {
       case JsString(s) =>
@@ -147,4 +147,12 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val resolutionFormat = jsonFormat2(Resolution)
   implicit val idPriorityFormat = new IdFormat[Priority]
   implicit val priorityFormat = jsonFormat2(Priority)
+  implicit val idAttchmentFormat = new IdFormat[Attachment]
+  implicit val attchmentFormat = jsonFormat3(Attachment)
+  implicit val idSharedFileFormat = new IdFormat[SharedFile]
+  implicit val sharedFileFormat = jsonFormat9(SharedFile)
+  implicit val idStarFormat = new IdFormat[Star]
+  implicit val starFormat = jsonFormat6(Star)
+  implicit val idIssueFormat = new IdFormat[Issue]
+  implicit val issueFormat = jsonFormat19(Issue)
 }

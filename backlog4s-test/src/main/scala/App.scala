@@ -2,7 +2,7 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import backlog4s.apis._
-import backlog4s.datas.{IdParam, UserT}
+import backlog4s.datas.{IdParam, IssueSearch, UserT}
 import backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
 
 import scala.util.{Failure, Success}
@@ -37,7 +37,8 @@ object App {
       statuses <- StatusApi.getAll.orFail
       priorities <- PriorityApi.getAll.orFail
       resolutions <- ResolutionApi.getAll.orFail
-    } yield (statuses, priorities, resolutions)
+      issues <- IssueApi.search(IssueSearch(count = 100)).orFail
+    } yield issues
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
