@@ -3,7 +3,7 @@ package backlog4s.apis
 import backlog4s.datas.CustomForm.CustomForm
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
-import backlog4s.dsl.HttpADT.Response
+import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
@@ -41,52 +41,50 @@ object ProjectApi {
   def getUsers(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
     get[Seq[User]](HttpQuery(s"$resource/$idOrKey/users"))
 
+  def icon(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[ByteStream]] =
+    download(HttpQuery(s"$resource/$idOrKey/image"))
+
   def create(addProjectForm: AddProjectForm): ApiPrg[Response[Project]] =
     post[AddProjectForm, Project](HttpQuery(resource), addProjectForm)
 
-  def addAdmin(projectIdOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
+  def addAdmin(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
     post[CustomForm, User](
-      HttpQuery(s"$resource/$projectIdOrKey/administrators"),
+      HttpQuery(s"$resource/$idOrKey/administrators"),
       Map(
         "userId" -> userId.value.toString
       )
     )
 
-  def removeAdmin(projectIdOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
+  def removeAdmin(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
     delete(HttpQuery(
-      path = s"$resource/$projectIdOrKey/administrators",
+      path = s"$resource/$idOrKey/administrators",
       params = Map(
         "userId" -> userId.value.toString
       )
     ))
 
-  def addUser(projectIdOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
+  def addUser(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
     post[CustomForm, User](
       HttpQuery(
-        s"$resource/$projectIdOrKey/users"
+        s"$resource/$idOrKey/users"
       ),
       Map(
         "userId" -> userId.toString
       )
     )
 
-  def removeUser(projectIdOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
+  def removeUser(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
     delete(
       HttpQuery(
-        path = s"$resource/$projectIdOrKey/users",
+        path = s"$resource/$idOrKey/users",
         params = Map(
           "userId" -> userId.value.toString
         )
       )
     )
 
-  def update(id: Id[Project], form: UpdateProjectForm): ApiPrg[Response[Project]] =
+  def update(idOrKey: IdOrKeyParam[Project], form: UpdateProjectForm): ApiPrg[Response[Project]] =
     put[UpdateProjectForm, Project](
-      HttpQuery(s"$resource/${id.value}"), form
-    )
-
-  def update(key: Key[Project], form: UpdateProjectForm): ApiPrg[Response[Project]] =
-    put[UpdateProjectForm, Project](
-      HttpQuery(s"$resource/${key.value}"), form
+      HttpQuery(s"$resource/$idOrKey"), form
     )
 }
