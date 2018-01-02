@@ -38,7 +38,9 @@ object App {
       priorities <- PriorityApi.getAll.orFail
       resolutions <- ResolutionApi.getAll.orFail
       issues <- IssueApi.search(IssueSearch(count = 100)).orFail
-    } yield issues
+      issue <- IssueApi.getById(IdParam(issues.head.id)).orFail
+      countIssues <- IssueApi.count().orFail
+    } yield countIssues
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {

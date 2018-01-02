@@ -1,6 +1,6 @@
 package backlog4s.apis
 
-import backlog4s.datas.{Issue, IssueSearch}
+import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
@@ -66,4 +66,32 @@ object IssueApi {
     get[Seq[Issue]](
       HttpQuery(resource, searchParams(issueSearch))
     )
+
+  def count(issueSearch: IssueSearch = IssueSearch()): ApiPrg[Response[Count]] =
+    get[Count](
+      HttpQuery(s"$resource/count", searchParams(issueSearch))
+    )
+
+  def getById(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Issue]] =
+    get[Issue](
+      HttpQuery(
+        path = s"$resource/$issueIdOrKey"
+      )
+    )
+
+  def add(form: AddIssueForm): ApiPrg[Response[Issue]] =
+    post[AddIssueForm, Issue](
+      HttpQuery(resource),
+      form
+    )
+
+  def update(idOrKey: IdOrKeyParam[Issue], form: UpdateIssueForm): ApiPrg[Response[Issue]] =
+    put[UpdateIssueForm, Issue](
+      HttpQuery(s"$resource/$idOrKey"),
+      form
+    )
+
+  def remove(idOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Unit]] =
+    delete(HttpQuery(s"$resource/$idOrKey"))
+
 }

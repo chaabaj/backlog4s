@@ -1,5 +1,3 @@
 package backlog4s.datas
 
-class Count {
-
-}
+case class Count(count: Long)

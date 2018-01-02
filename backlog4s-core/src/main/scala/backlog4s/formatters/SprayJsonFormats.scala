@@ -155,4 +155,7 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val starFormat = jsonFormat6(Star)
   implicit val idIssueFormat = new IdFormat[Issue]
   implicit val issueFormat = jsonFormat19(Issue)
+  implicit val countFormat = jsonFormat1(Count)
+  implicit val addIssueFormFormat = jsonFormat15(AddIssueForm)
+  implicit val updateIssueFormFormat = jsonFormat17(UpdateIssueForm)
 }

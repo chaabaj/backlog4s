@@ -88,3 +88,44 @@ case class IssueSearch(
   parentIssueIds: Seq[Id[Issue]] = Seq(),
   keyword: Option[String] = None
 )
+
+case class AddIssueForm(
+  projectId: Id[Project],
+  summary: String,
+  parentIssueId: Seq[Id[Issue]] = Seq(),
+  description: Option[String] = None,
+  startDate: Option[DateTime] = None,
+  dueDate: Option[DateTime] = None,
+  estimatedHours: Int,
+  actualHours: Int,
+  issueTypeId: Id[IssueType],
+  categoryId: Seq[Category] = Seq(),
+  // versionId
+  milestoneId: Seq[Milestone] = Seq(),
+  priorityId: Id[Priority],
+  assigneeId: Option[Id[User]] = None,
+  notifiedUserId: Seq[Id[User]] = Seq(),
+  attachmentId: Seq[Id[Attachment]] = Seq()
+)
+
+case class UpdateIssueForm(
+  summary: Option[String] = None,
+  parentIssueId: Option[Id[Issue]] = None,
+  description: Option[String] = None,
+  statusId: Option[Id[Status]] = None,
+  resolutionId: Option[Id[Resolution]] = None,
+  startDate: Option[DateTime] = None,
+  dueDate: Option[DateTime] = None,
+  estimatedHours: Option[Int] = None,
+  actualHours: Option[Int] = None,
+  // Very strange for update need confirmation from backlog team
+  issueTypeId: Id[IssueType],
+  categoryId: Option[Seq[Category]] = None,
+  // versionId
+  milestoneId: Option[Seq[Milestone]] = None,
+  priorityId: Id[Priority],
+  assigneeId: Option[Id[User]] = None,
+  notifiedUserId: Option[Seq[Id[User]]] = None,
+  attachmentId: Option[Seq[Id[Attachment]]] = None,
+  comment: Option[String] = None
+)
