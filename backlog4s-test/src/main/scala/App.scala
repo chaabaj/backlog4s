@@ -28,7 +28,10 @@ object App {
       categories <- CategoryApi.getAll(
         IdParam(projects.head.id)
       )
-    } yield categories
+      milestones <- MilestoneApi.getAll(
+        IdParam(projects.head.id)
+      )
+    } yield milestones
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {

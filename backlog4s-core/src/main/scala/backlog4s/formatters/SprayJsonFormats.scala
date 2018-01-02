@@ -122,4 +122,8 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val spaceDiskUsage = jsonFormat7(SpaceDiskUsage)
   implicit val idCategoryFormat = new IdFormat[Category]
   implicit val categoryFormat = jsonFormat3(Category)
+  implicit val idMilestoneFormat = new IdFormat[Milestone]
+  implicit val milestoneFormat = jsonFormat8(Milestone)
+  implicit val addMilestoneFormFormat = jsonFormat4(AddMilestoneForm)
+  implicit val updateMilestoneFormFormat = jsonFormat5(UpdateMilestoneForm)
 }
