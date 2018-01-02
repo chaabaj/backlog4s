@@ -1,9 +1,13 @@
 package backlog4s.formatters
 
+import java.time.ZoneId
+
 import backlog4s.datas._
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, LocalTime}
 import org.joda.time.format.ISODateTimeFormat
 import spray.json._
+
+import scala.util.Try
 
 /**
   * Define Enum type for encoding and decoding json
@@ -16,22 +20,17 @@ case object StringEnum extends EnumType
 
 object SprayJsonFormats extends DefaultJsonProtocol {
 
-
   implicit object DateTimeFormat extends RootJsonFormat[DateTime] {
 
-    val formatter = ISODateTimeFormat.basicDateTimeNoMillis
+    private val formatter = ISODateTimeFormat.dateOptionalTimeParser()
 
-    def write(obj: DateTime): JsValue = {
+    def write(obj: DateTime): JsValue =
       JsString(formatter.print(obj))
-    }
 
     def read(json: JsValue): DateTime = json match {
-      case JsString(s) => try {
-        formatter.parseDateTime(s)
-      }
-      catch {
-        case t: Throwable => error(s)
-      }
+      case JsString(s) =>
+        Try(formatter.parseDateTime(s))
+          .getOrElse(error(s))
       case _ =>
         error(json.toString())
     }
@@ -40,6 +39,19 @@ object SprayJsonFormats extends DefaultJsonProtocol {
       val example = formatter.print(0)
       deserializationError(f"'$v' is not a valid date value. Dates must be in compact ISO-8601 format, e.g. '$example'")
     }
+  }
+
+  implicit object LocalTimeFormat extends RootJsonFormat[LocalTime] {
+
+    override def read(json: JsValue): LocalTime = json match {
+      case JsString(time) =>
+        Try(LocalTime.parse(time))
+          .getOrElse(deserializationError(s"$time is not a valid time value"))
+      case _ =>
+        deserializationError(s"$json is not a valid time value")
+    }
+
+    override def write(time: LocalTime): JsValue = JsString(time.toString("hh:mm:ss"))
   }
 
   class EnumFormat[E <: Enumeration](enu: E, enumType: EnumType) extends RootJsonFormat[E#Value] {
@@ -75,6 +87,15 @@ object SprayJsonFormats extends DefaultJsonProtocol {
     override def write(obj: Key[A]): JsValue = JsString(obj.value)
   }
 
+  implicit object ZoneFormat extends RootJsonFormat[ZoneId] {
+    override def read(json: JsValue): ZoneId = json match {
+      case JsString(zone) => ZoneId.of(zone)
+      case _ =>
+        throw DeserializationException(s"Expected a timezone got ${json.prettyPrint}")
+    }
+    override def write(zone: ZoneId): JsValue = JsString(zone.toString)
+  }
+
   implicit val userIdFormat = new IdFormat[User]
   implicit val roleFormat = new EnumFormat(Role, IntEnum)
   implicit val langFormat = new EnumFormat(Lang, StringEnum)
@@ -94,4 +115,9 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val projectFormat = jsonFormat8(Project)
   implicit val addProjectFormFormat = jsonFormat5(AddProjectForm)
   implicit val updateProjectFormFormat = jsonFormat7(UpdateProjectForm)
+  implicit val spaceIdFormat = new KeyFormat[Space]
+  implicit val spaceFormat = jsonFormat9(Space)
+  implicit val spaceNotificationFormat = jsonFormat2(SpaceNotification)
+  implicit val projectDiskUsageFormat = jsonFormat6(ProjectDiskUsage)
+  implicit val spaceDiskUsage = jsonFormat7(SpaceDiskUsage)
 }

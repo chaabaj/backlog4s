@@ -1,5 +1,6 @@
 package backlog4s.apis
 
+import backlog4s.datas.CustomForm.CustomForm
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
@@ -34,9 +35,46 @@ object ProjectApi {
   def getByKey(key: Key[Project]): ApiPrg[Response[Project]] =
     get[Project](HttpQuery(s"$resource/${key.value}"))
 
+  def getAdmins(id: Id[Project]): ApiPrg[Response[Seq[User]]] =
+    get[Seq[User]](HttpQuery(s"$resource/${id.value}/administrators"))
+
+  def getAdmins(key: Key[Project]): ApiPrg[Response[Seq[User]]] =
+    get[Seq[User]](HttpQuery(s"$resource/${key.value}/administrators"))
+
   def create(addProjectForm: AddProjectForm): ApiPrg[Response[Project]] =
     post[AddProjectForm, Project](HttpQuery(resource), addProjectForm)
 
+  def addAdmin(projectId: Id[Project], userId: Id[User]): ApiPrg[Response[User]] =
+    post[CustomForm, User](
+      HttpQuery(s"$resource/${projectId.value}/administrators"),
+      Map(
+        "userId" -> userId.value.toString
+      )
+    )
+
+  def addAdmin(projectKey: Key[Project], userId: Id[User]): ApiPrg[Response[User]] =
+    post[CustomForm, User](
+      HttpQuery(s"$resource/${projectKey.value}/administrators"),
+      Map(
+        "userId" -> userId.value.toString
+      )
+    )
+
+  def removeAdmin(projectId: Id[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
+    delete(HttpQuery(
+      path = s"$resource/${projectId.value}/administrators",
+      params = Map(
+        "userId" -> userId.value.toString
+      )
+    ))
+
+  def removeAdmin(projectKey: Key[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
+    delete(HttpQuery(
+      path = s"$resource/${projectKey.value}/administrators",
+      params = Map(
+        "userId" -> userId.value.toString
+      )
+    ))
 
   def update(id: Id[Project], form: UpdateProjectForm): ApiPrg[Response[Project]] =
     put[UpdateProjectForm, Project](
