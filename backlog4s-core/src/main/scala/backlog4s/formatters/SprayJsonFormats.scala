@@ -96,6 +96,18 @@ object SprayJsonFormats extends DefaultJsonProtocol {
     override def write(zone: ZoneId): JsValue = JsString(zone.toString)
   }
 
+  implicit object RGBColorFormat extends RootJsonFormat[RGBColor] {
+    override def read(json: JsValue): RGBColor = json match {
+      case JsString(hexColor) =>
+        Color.fromHex(hexColor)
+          .getOrElse(deserializationError(s"not a valid color got $hexColor expected format #RRGGBB"))
+      case other =>
+        deserializationError(s"Color must be a string got ${other.prettyPrint}")
+    }
+
+    override def write(color: RGBColor): JsValue = JsString(color.toHex)
+  }
+
   implicit val userIdFormat = new IdFormat[User]
   implicit val roleFormat = new EnumFormat(Role, IntEnum)
   implicit val langFormat = new EnumFormat(Lang, StringEnum)
@@ -126,4 +138,7 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val milestoneFormat = jsonFormat8(Milestone)
   implicit val addMilestoneFormFormat = jsonFormat4(AddMilestoneForm)
   implicit val updateMilestoneFormFormat = jsonFormat5(UpdateMilestoneForm)
+  implicit val idIssueTypeFormat = new IdFormat[IssueType]
+  implicit val issueTypeFormat = jsonFormat5(IssueType)
+  implicit val updateIssueTypeFormFormat = jsonFormat2(UpdateIssueTypeForm)
 }

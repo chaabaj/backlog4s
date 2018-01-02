@@ -27,11 +27,14 @@ object App {
       projects <- ProjectApi.getAll().orFail
       categories <- CategoryApi.getAll(
         IdParam(projects.head.id)
-      )
+      ).orFail
       milestones <- MilestoneApi.getAll(
         IdParam(projects.head.id)
-      )
-    } yield milestones
+      ).orFail
+      issueTypes <- IssueTypeApi.getAll(
+        IdParam(projects.head.id)
+      ).orFail
+    } yield issueTypes
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
