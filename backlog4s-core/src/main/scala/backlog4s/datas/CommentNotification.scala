@@ -7,3 +7,7 @@ case class CommentNotification(
   user: User,
   resourceAlreadyRead: Boolean
 )
+
+case class AddCommentNotificationForm(
+  notifiedUserId: Seq[Id[User]]
+)

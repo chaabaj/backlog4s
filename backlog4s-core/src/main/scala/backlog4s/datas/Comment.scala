@@ -13,9 +13,8 @@ case class Comment(
   createdUser: User,
   created: DateTime,
   updated: Option[DateTime],
-  stars: Seq[Star]
-  // notification are not yet implemented
-  //notifications: Seq[]
+  stars: Seq[Star],
+  notifications: Seq[CommentNotification]
 )
 
 case class AddCommentForm(

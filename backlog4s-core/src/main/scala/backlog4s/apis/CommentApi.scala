@@ -52,4 +52,13 @@ object CommentApi {
       HttpQuery(s"${resource(issueIdOrKey)}/${id.value}/notifications")
     )
 
+  def addNotification(issueIdOrKey: IdOrKeyParam[Issue],
+                      id: Id[Comment],
+                      form: AddCommentNotificationForm): ApiPrg[Response[Comment]] =
+    post[AddCommentNotificationForm, Comment](
+      HttpQuery(
+        s"${resource(issueIdOrKey)}/${id.value}/notifications"
+      ),
+      form
+    )
 }

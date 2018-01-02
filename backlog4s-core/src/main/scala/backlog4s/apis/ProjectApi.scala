@@ -35,11 +35,11 @@ object ProjectApi {
   def getByKey(key: Key[Project]): ApiPrg[Response[Project]] =
     get[Project](HttpQuery(s"$resource/${key.value}"))
 
-  def getAdmins(id: Id[Project]): ApiPrg[Response[Seq[User]]] =
-    get[Seq[User]](HttpQuery(s"$resource/${id.value}/administrators"))
+  def getAdmins(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
+    get[Seq[User]](HttpQuery(s"$resource/$idOrKey/administrators"))
 
-  def getAdmins(key: Key[Project]): ApiPrg[Response[Seq[User]]] =
-    get[Seq[User]](HttpQuery(s"$resource/${key.value}/administrators"))
+  def getUsers(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
+    get[Seq[User]](HttpQuery(s"$resource/$idOrKey/users"))
 
   def create(addProjectForm: AddProjectForm): ApiPrg[Response[Project]] =
     post[AddProjectForm, Project](HttpQuery(resource), addProjectForm)
