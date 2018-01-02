@@ -1,7 +1,7 @@
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import backlog4s.apis.{GroupApi, ProjectApi, UserApi}
+import backlog4s.apis.{GroupApi, ProjectApi, SpaceApi, UserApi}
 import backlog4s.datas.UserT
 import backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
 
@@ -24,10 +24,7 @@ object App {
     val interpreter = httpInterpret
 
     val prg = for {
-      user <- UserApi.getById(UserT.myself).orFail
       projects <- ProjectApi.getAll().orFail
-      project <- ProjectApi.getById(projects.head.id).orFail
-      group <- GroupApi.getAll()
     } yield projects
 
     prg.foldMap(interpreter).onComplete { result =>
