@@ -44,7 +44,7 @@ object ProjectApi {
   def create(addProjectForm: AddProjectForm): ApiPrg[Response[Project]] =
     post[AddProjectForm, Project](HttpQuery(resource), addProjectForm)
 
-  private def unsafeAddAdmin(projectIdOrKey: String, userId: Id[User]): ApiPrg[Response[User]] =
+  def addAdmin(projectIdOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
     post[CustomForm, User](
       HttpQuery(s"$resource/$projectIdOrKey/administrators"),
       Map(
@@ -52,13 +52,7 @@ object ProjectApi {
       )
     )
 
-  def addAdmin(projectId: Id[Project], userId: Id[User]): ApiPrg[Response[User]] =
-    unsafeAddAdmin(projectId.value.toString, userId)
-
-  def addAdmin(projectKey: Key[Project], userId: Id[User]): ApiPrg[Response[User]] =
-    unsafeAddAdmin(projectKey.value, userId)
-
-  private def unsafeRemoveAdmin(projectIdOrKey: String, userId: Id[User]): ApiPrg[Response[Unit]] =
+  def removeAdmin(projectIdOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
     delete(HttpQuery(
       path = s"$resource/$projectIdOrKey/administrators",
       params = Map(
@@ -66,13 +60,7 @@ object ProjectApi {
       )
     ))
 
-  def removeAdmin(projectId: Id[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
-    unsafeRemoveAdmin(projectId.value.toString, userId)
-
-  def removeAdmin(projectKey: Key[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
-    unsafeRemoveAdmin(projectKey.value, userId)
-
-  private def unsafeAddUser(projectIdOrKey: String, userId: Id[User]): ApiPrg[Response[User]] =
+  def addUser(projectIdOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
     post[CustomForm, User](
       HttpQuery(
         s"$resource/$projectIdOrKey/users"
@@ -82,13 +70,7 @@ object ProjectApi {
       )
     )
 
-  def addUser(projectId: Id[Project], userId: Id[User]): ApiPrg[Response[User]] =
-    unsafeAddUser(projectId.value.toString, userId)
-
-  def addUser(projectKey: Key[Project], userId: Id[User]): ApiPrg[Response[User]] =
-    unsafeAddUser(projectKey.value, userId)
-
-  private def unsafeRemoveUser(projectIdOrKey: String, userId: Id[User]): ApiPrg[Response[Unit]] =
+  def removeUser(projectIdOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
     delete(
       HttpQuery(
         path = s"$resource/$projectIdOrKey/users",
@@ -97,12 +79,6 @@ object ProjectApi {
         )
       )
     )
-
-  def removeUser(projectId: Id[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
-    unsafeRemoveUser(projectId.value.toString, userId)
-
-  def removeUser(projectKey: Key[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
-    unsafeRemoveUser(projectKey.value, userId)
 
   def update(id: Id[Project], form: UpdateProjectForm): ApiPrg[Response[Project]] =
     put[UpdateProjectForm, Project](

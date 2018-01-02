@@ -1,8 +1,8 @@
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import backlog4s.apis.{GroupApi, ProjectApi, SpaceApi, UserApi}
-import backlog4s.datas.UserT
+import backlog4s.apis._
+import backlog4s.datas.{IdParam, UserT}
 import backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
 
 import scala.util.{Failure, Success}
@@ -25,7 +25,10 @@ object App {
 
     val prg = for {
       projects <- ProjectApi.getAll().orFail
-    } yield projects
+      categories <- CategoryApi.getAll(
+        IdParam(projects.head.id)
+      )
+    } yield categories
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
