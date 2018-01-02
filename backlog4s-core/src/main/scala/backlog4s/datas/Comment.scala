@@ -1,0 +1,25 @@
+package backlog4s.datas
+
+import org.joda.time.DateTime
+
+object CommentT {
+  def id(value: Long): Id[Comment] = Id(value)
+}
+
+case class Comment(
+  id: Id[Comment],
+  content: String,
+  //changeLog: Option[Seq[Map[String, String]]],
+  createdUser: User,
+  created: DateTime,
+  updated: Option[DateTime],
+  stars: Seq[Star]
+  // notification are not yet implemented
+  //notifications: Seq[]
+)
+
+case class AddCommentForm(
+  content: String,
+  notifiedUserId: Seq[Id[User]] = Seq(),
+  attachmentId: Seq[Id[Attachment]] = Seq()
+)

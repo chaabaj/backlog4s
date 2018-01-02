@@ -40,7 +40,8 @@ object App {
       issues <- IssueApi.search(IssueSearch(count = 100)).orFail
       issue <- IssueApi.getById(IdParam(issues.head.id)).orFail
       countIssues <- IssueApi.count().orFail
-    } yield countIssues
+      comments <- CommentApi.getAll(IdParam(issue.id)).orFail
+    } yield comments
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
