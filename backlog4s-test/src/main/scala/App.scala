@@ -41,7 +41,10 @@ object App {
       issue <- IssueApi.getById(IdParam(issues.head.id)).orFail
       countIssues <- IssueApi.count().orFail
       comments <- CommentApi.getAll(IdParam(issue.id)).orFail
-    } yield comments
+      notifications <- CommentApi.notifications(
+        IdParam(issue.id), comments.head.id
+      ).orFail
+    } yield notifications
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {

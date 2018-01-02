@@ -47,5 +47,9 @@ object CommentApi {
       )
     )
 
+  def notifications(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): ApiPrg[Response[Seq[CommentNotification]]] =
+    get[Seq[CommentNotification]](
+      HttpQuery(s"${resource(issueIdOrKey)}/${id.value}/notifications")
+    )
 
 }
