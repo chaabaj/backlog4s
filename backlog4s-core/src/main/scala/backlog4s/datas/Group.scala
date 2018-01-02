@@ -23,6 +23,6 @@ case class AddGroupForm(
 )
 
 case class UpdateGroupForm(
-  name: Option[String],
-  members: Option[Seq[User]]
+  name: Option[String] = None,
+  members: Option[Seq[User]] = None
 )

@@ -9,6 +9,6 @@ case class IssueType(
 )
 
 case class UpdateIssueTypeForm(
-  name: Option[String],
-  color: Option[RGBColor]
+  name: Option[String] = None,
+  color: Option[RGBColor] = None
 )

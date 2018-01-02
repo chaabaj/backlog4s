@@ -19,15 +19,15 @@ case class Milestone(
 
 case class AddMilestoneForm(
   name: String,
-  description: Option[String],
-  startDate: Option[DateTime],
-  releaseDueDate: Option[DateTime]
+  description: Option[String] = None,
+  startDate: Option[DateTime] = None,
+  releaseDueDate: Option[DateTime] = None
 )
 
 case class UpdateMilestoneForm(
   name: String,
-  description: Option[String],
-  startDate: Option[DateTime],
-  releaseDueDate: Option[DateTime],
-  archived: Option[Boolean]
+  description: Option[String] = None,
+  startDate: Option[DateTime] = None,
+  releaseDueDate: Option[DateTime] = None,
+  archived: Option[Boolean] = None
 )

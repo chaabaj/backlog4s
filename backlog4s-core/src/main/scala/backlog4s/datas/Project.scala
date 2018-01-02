@@ -25,11 +25,11 @@ case class AddProjectForm(
 )
 
 case class UpdateProjectForm(
-  name: Option[String],
-  key: Option[Key[Project]],
-  chartEnabled: Option[Boolean],
-  subtaskingEnabled: Option[Boolean],
-  projectLeaderCanEditProjectLeader: Option[Boolean],
-  textFormattingRule: Option[String],
-  archived: Option[Boolean]
+  name: Option[String] = None,
+  key: Option[Key[Project]] = None,
+  chartEnabled: Option[Boolean] = None,
+  subtaskingEnabled: Option[Boolean] = None,
+  projectLeaderCanEditProjectLeader: Option[Boolean] = None,
+  textFormattingRule: Option[String] = None,
+  archived: Option[Boolean] = None
 )
