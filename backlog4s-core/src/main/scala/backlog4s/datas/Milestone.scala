@@ -10,7 +10,7 @@ case class Milestone(
   id: Id[Milestone],
   projectId: Id[Project],
   name: String,
-  description: String,
+  description: Option[String],
   startDate: Option[DateTime],
   releaseDueDate: Option[DateTime],
   archived: Boolean,
