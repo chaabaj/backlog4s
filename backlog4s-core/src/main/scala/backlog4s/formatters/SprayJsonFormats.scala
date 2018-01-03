@@ -147,8 +147,9 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val resolutionFormat = jsonFormat2(Resolution)
   implicit val idPriorityFormat = new IdFormat[Priority]
   implicit val priorityFormat = jsonFormat2(Priority)
-  implicit val idAttchmentFormat = new IdFormat[Attachment]
-  implicit val attchmentFormat = jsonFormat3(Attachment)
+  implicit val idAttachmentFormat = new IdFormat[Attachment]
+  implicit val attachmentFormat = jsonFormat3(Attachment)
+  implicit val attachFormFormat = jsonFormat1(AttachForm)
   implicit val idSharedFileFormat = new IdFormat[SharedFile]
   implicit val sharedFileFormat = jsonFormat9(SharedFile)
   implicit val idStarFormat = new IdFormat[Star]
@@ -172,4 +173,14 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val activityContentFormat = jsonFormat6(ActivityContent)
   implicit val idActivityFormat = new IdFormat[Activity]
   implicit val activityFormat = jsonFormat7(Activity)
+
+  implicit val idWikiTagFormat = new IdFormat[WikiTag]
+  implicit val wikiTagFormat = jsonFormat2(WikiTag)
+  implicit val idWikiFormat = new IdFormat[Wiki]
+  implicit val wikiSummaryFormat = jsonFormat8(WikiSummary)
+  implicit val wikiFormat = jsonFormat12(Wiki)
+  implicit val addWikiFormFormat = jsonFormat4(AddWikiForm)
+  implicit val updateWikiFormFormat = jsonFormat3(UpdateWikiForm)
+  implicit val wikiHistoryFormat = jsonFormat6(WikiHistory)
+  implicit val starFormFormat = jsonFormat3(StarForm)
 }

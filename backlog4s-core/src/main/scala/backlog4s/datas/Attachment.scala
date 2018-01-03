@@ -5,3 +5,7 @@ case class Attachment(
   name: String,
   size: Long
 )
+
+case class AttachForm(
+  attachmentId: Seq[Id[Attachment]]
+)
