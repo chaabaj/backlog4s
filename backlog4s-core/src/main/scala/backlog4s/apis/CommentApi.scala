@@ -7,6 +7,7 @@ import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
+import backlog4s.utils.QueryParameter
 
 object CommentApi {
   import backlog4s.dsl.ApiDsl.HttpOp._
@@ -18,8 +19,21 @@ object CommentApi {
              minId: Option[Id[Comment]] = None,
              maxId: Option[Id[Comment]] = None,
              count: Long = 20,
-             order: Order = Order.Desc): ApiPrg[Response[Seq[Comment]]] =
-    get[Seq[Comment]](HttpQuery(resource(issueIdOrKey)))
+             order: Order = Order.Desc): ApiPrg[Response[Seq[Comment]]] = {
+    val params = Map(
+      "minId" -> minId.map(_.value.toString).getOrElse(""),
+      "maxId" -> maxId.map(_.value.toString).getOrElse(""),
+      "count" -> count.toString,
+      "order" -> order.toString
+    )
+
+    get[Seq[Comment]](
+      HttpQuery(
+        resource(issueIdOrKey),
+        QueryParameter.removeEmptyValue(params)
+      )
+    )
+  }
 
   def count(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Count]] =
     get[Count](

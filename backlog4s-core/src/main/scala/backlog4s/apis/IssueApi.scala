@@ -1,10 +1,12 @@
 package backlog4s.apis
 
+import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
+import backlog4s.utils.QueryParameter
 
 object IssueApi {
   import backlog4s.dsl.ApiDsl.HttpOp._
@@ -56,10 +58,7 @@ object IssueApi {
       "keyword" -> issueSearch.keyword.getOrElse("")
     )
 
-    params.filter {
-      case (_, value) if value.nonEmpty => true
-      case _ => false
-    }
+    QueryParameter.removeEmptyValue(params)
   }
 
   def search(issueSearch: IssueSearch = IssueSearch()): ApiPrg[Response[Seq[Issue]]] =
@@ -77,6 +76,13 @@ object IssueApi {
       HttpQuery(
         path = s"$resource/$issueIdOrKey"
       )
+    )
+
+  def recentlyViewed(order: Order = Order.Desc,
+                     offset: Long = 0,
+                     count: Long = 20): ApiPrg[Response[Seq[Issue]]] =
+    get[Seq[Issue]](
+      HttpQuery("users/myself/recentlyViewedIssues")
     )
 
   def add(form: AddIssueForm): ApiPrg[Response[Issue]] =

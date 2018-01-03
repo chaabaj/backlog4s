@@ -1,6 +1,7 @@
 package backlog4s.apis
 
 import backlog4s.datas.CustomForm.CustomForm
+import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
@@ -43,6 +44,13 @@ object ProjectApi {
 
   def icon(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[ByteStream]] =
     download(HttpQuery(s"$resource/$idOrKey/image"))
+
+  def recentlyViewed(order: Order = Order.Desc): ApiPrg[Response[Seq[Project]]] =
+    get[Seq[Project]](
+      HttpQuery(
+        "users/myself/recentlyViewedProjects"
+      )
+    )
 
   def create(addProjectForm: AddProjectForm): ApiPrg[Response[Project]] =
     post[AddProjectForm, Project](HttpQuery(resource), addProjectForm)
