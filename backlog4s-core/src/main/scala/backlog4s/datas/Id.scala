@@ -4,7 +4,7 @@ case class Id[A](value: Long) extends AnyVal
 case class Key[A](value: String) extends AnyVal
 
 sealed trait IdOrKeyParam[A] {
-  def toString: String
+  override def toString: String
 }
 case class IdParam[A](id: Id[A]) extends IdOrKeyParam[A] {
   override def toString: String = id.value.toString

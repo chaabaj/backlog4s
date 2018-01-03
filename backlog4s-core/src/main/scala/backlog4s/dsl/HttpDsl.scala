@@ -1,6 +1,5 @@
 package backlog4s.dsl
 
-
 import java.nio.ByteBuffer
 import java.io.File
 import cats.effect.IO
@@ -29,8 +28,7 @@ case class Post[Payload, A](
   payload: Payload,
   format: JsonFormat[A],
   payloadFormat: JsonFormat[Payload]
-)
-  extends HttpADT[Response[A]]
+) extends HttpADT[Response[A]]
 case class Put[Payload, A](
   query: HttpQuery,
   payload: Payload,

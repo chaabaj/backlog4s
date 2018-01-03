@@ -90,7 +90,18 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                                   payloadFormat: JsonFormat[Payload]): Future[Response[A]] =
     for {
       serverResponse <- doRequest(createRequest(HttpMethods.POST, query, payload, payloadFormat))
-      response = serverResponse.map(_.parseJson.convertTo[A](format))
+      response = serverResponse
+        .map { content =>
+          // Hackfix to fix invalid usage of 204 error code returned by the api
+          // So in case of no content we have an empty object
+          // The user of this method should use Map object to make this hackfix work
+          // I will prefer to not do this kind of hackfix and have it fixed properly
+          // in the API side. POST should always return a response since it create content
+          // on the server side. This will be removed once the API return the created object
+          // on Add Star api call
+          if (content.isEmpty) "{}" else content
+        }
+        .map(_.parseJson.convertTo[A](format))
     } yield response
 
 

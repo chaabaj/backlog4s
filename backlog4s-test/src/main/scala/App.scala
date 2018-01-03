@@ -41,7 +41,8 @@ object App {
       issue <- IssueApi.getById(IdParam(issues.head.id)).orFail
       countIssues <- IssueApi.count().orFail
       activities <- ActivityApi.space
-    } yield activities
+      repositories <- GitApi.getAll(IdParam(projects.head.id)).orFail
+    } yield repositories
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {

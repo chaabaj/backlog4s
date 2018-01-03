@@ -183,4 +183,7 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val updateWikiFormFormat = jsonFormat3(UpdateWikiForm)
   implicit val wikiHistoryFormat = jsonFormat6(WikiHistory)
   implicit val starFormFormat = jsonFormat3(StarForm)
+
+  implicit val idGitRepository = new IdFormat[GitRepository]
+  implicit val gitRepository = jsonFormat13(GitRepository)
 }

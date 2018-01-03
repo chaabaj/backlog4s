@@ -1,5 +1,6 @@
 package backlog4s.apis
 
+import backlog4s.datas.NoContent.NoContent
 import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
@@ -52,9 +53,10 @@ object StarApi {
     )
   }
 
+
   // Api is not consistent here No Content is sent instead of a Star object
-  def star(starForm: StarForm): ApiPrg[Response[Star]] =
-    post[StarForm, Star](
+  def star(starForm: StarForm): ApiPrg[Response[NoContent]] =
+    post[StarForm, NoContent](
       HttpQuery("stars"),
       starForm
     )

@@ -1,5 +1,7 @@
 package backlog4s.apis
 
+import backlog4s.datas.CustomForm.CustomForm
+import backlog4s.datas.NoContent.NoContent
 import backlog4s.datas.Order.Order
 import backlog4s.datas.{Count, Id, Notification, Order}
 import backlog4s.dsl.ApiDsl.ApiPrg
@@ -45,7 +47,19 @@ object NotificationApi {
     )
   }
 
-  // Need slightly different post allowing no form to be send
-  //def markAllAsRead: ApiPrg[Response[Count]] =
-    //post[Nothing]
+  def markAllAsRead: ApiPrg[Response[Count]] =
+    post[CustomForm, Count](
+      HttpQuery(
+        s"$resource/markAsRead"
+      ),
+      Map()
+    )
+
+  def read(id: Id[Notification]): ApiPrg[Response[NoContent]] =
+    post[CustomForm, NoContent](
+      HttpQuery(
+        s"notifications/${id.value}/markAsRead"
+      ),
+      Map()
+    )
 }
