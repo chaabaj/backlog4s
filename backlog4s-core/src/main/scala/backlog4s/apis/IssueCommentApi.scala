@@ -9,7 +9,7 @@ import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 import backlog4s.utils.QueryParameter
 
-object CommentApi {
+object IssueCommentApi {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   def resource(issueIdOrKey: IdOrKeyParam[Issue]): String =
