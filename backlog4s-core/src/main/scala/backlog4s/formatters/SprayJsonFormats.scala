@@ -186,4 +186,14 @@ object SprayJsonFormats extends DefaultJsonProtocol {
 
   implicit val idGitRepository = new IdFormat[GitRepository]
   implicit val gitRepository = jsonFormat13(GitRepository)
+
+  implicit val prStatusTypeFormat = new EnumFormat(PRStatusType, StringEnum)
+  implicit val idPrStatus = new IdFormat[PullRequestStatus]
+  implicit val prStatusFormat = jsonFormat2(PullRequestStatus)
+  implicit val prIssue = jsonFormat1(PullRequestIssue)
+  implicit val idPullRequest = new IdFormat[PullRequest]
+  implicit val prSummaryFormat = jsonFormat19(PullRequestSummary)
+  implicit val prFormat = jsonFormat21(PullRequest)
+  implicit val addPrFormat = jsonFormat8(AddPullRequestForm)
+  implicit val updatePrFormat = jsonFormat6(UpdatePullRequestForm)
 }
