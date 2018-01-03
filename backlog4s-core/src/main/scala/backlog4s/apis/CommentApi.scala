@@ -47,15 +47,15 @@ object CommentApi {
       )
     )
 
-  def notifications(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): ApiPrg[Response[Seq[CommentNotification]]] =
-    get[Seq[CommentNotification]](
+  def notifications(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): ApiPrg[Response[Seq[Notification]]] =
+    get[Seq[Notification]](
       HttpQuery(s"${resource(issueIdOrKey)}/${id.value}/notifications")
     )
 
   def addNotification(issueIdOrKey: IdOrKeyParam[Issue],
                       id: Id[Comment],
-                      form: AddCommentNotificationForm): ApiPrg[Response[Comment]] =
-    post[AddCommentNotificationForm, Comment](
+                      form: AddNotificationForm): ApiPrg[Response[Comment]] =
+    post[AddNotificationForm, Comment](
       HttpQuery(
         s"${resource(issueIdOrKey)}/${id.value}/notifications"
       ),

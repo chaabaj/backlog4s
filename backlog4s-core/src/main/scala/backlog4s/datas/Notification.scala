@@ -1,13 +1,13 @@
 package backlog4s.datas
 
-case class CommentNotification(
-  id: Id[Comment],
+case class Notification(
+  id: Id[Notification],
   alreadyRead: Boolean,
   reason: Int,
   user: User,
   resourceAlreadyRead: Boolean
 )
 
-case class AddCommentNotificationForm(
+case class AddNotificationForm(
   notifiedUserId: Seq[Id[User]]
 )

@@ -14,7 +14,7 @@ case class Comment(
   created: DateTime,
   updated: Option[DateTime],
   stars: Seq[Star],
-  notifications: Seq[CommentNotification]
+  notifications: Seq[Notification]
 )
 
 case class AddCommentForm(

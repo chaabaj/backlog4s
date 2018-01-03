@@ -159,8 +159,17 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val addIssueFormFormat = jsonFormat15(AddIssueForm)
   implicit val updateIssueFormFormat = jsonFormat17(UpdateIssueForm)
   implicit val idCommentFormat = new IdFormat[Comment]
-  implicit val commentNotificationFormat = jsonFormat5(CommentNotification)
-  implicit val addCommentNotificationFormFormat = jsonFormat1(AddCommentNotificationForm)
+  implicit val idNotificationFormat = new IdFormat[Notification]
+  implicit val notificationFormat = jsonFormat5(Notification)
+  implicit val addNotificationFormFormat = jsonFormat1(AddNotificationForm)
   implicit val commentFormat = jsonFormat7(Comment)
   implicit val addCommentFormFormat = jsonFormat3(AddCommentForm)
+  implicit val activityTypeFormat = new EnumFormat(ActivityType, IntEnum)
+  implicit val activityChangeFormat = jsonFormat4(ActivityChange)
+  implicit val idActivityCommentFormat = new IdFormat[ActivityComment]
+  implicit val activityCommentFormat = jsonFormat2(ActivityComment)
+  implicit val idActivityContentFormat = new IdFormat[ActivityContent]
+  implicit val activityContentFormat = jsonFormat6(ActivityContent)
+  implicit val idActivityFormat = new IdFormat[Activity]
+  implicit val activityFormat = jsonFormat7(Activity)
 }
