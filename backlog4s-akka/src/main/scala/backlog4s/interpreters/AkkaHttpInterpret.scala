@@ -1,12 +1,15 @@
 package backlog4s.interpreters
 
+import java.io.File
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.{FileIO, Sink, Source}
 import cats.effect.IO
 import backlog4s.datas.ApiErrors
 import backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
@@ -14,6 +17,7 @@ import backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
 import spray.json._
 import cats.implicits._
 import fs2.interop.reactivestreams._
+
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -158,6 +162,30 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
           Future.successful(Either.right(stream))
         }
       }
+    } yield response
+  }
+
+  override def upload[A](query: HttpQuery,
+                         file: File,
+                         format: JsonFormat[A]): Future[Response[A]] = {
+    val formData = Multipart.FormData(
+      Source.single(
+        Multipart.FormData.BodyPart(
+          file.getName,
+          HttpEntity(MediaTypes.`application/octet-stream`, file.length(), FileIO.fromPath(file.toPath)),
+          Map(
+            "name" -> "file",
+            "filename" -> file.getName
+          )
+        )
+      )
+    )
+
+    for {
+      entity <- Marshal(formData).to[RequestEntity]
+      request = createRequest(HttpMethods.POST, query).withEntity(entity)
+      serverResponse <- doRequest(request)
+      response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
   }
 }

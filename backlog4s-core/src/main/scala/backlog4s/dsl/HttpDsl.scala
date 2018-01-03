@@ -2,7 +2,7 @@ package backlog4s.dsl
 
 
 import java.nio.ByteBuffer
-
+import java.io.File
 import cats.effect.IO
 import cats.free.Free
 import cats.{InjectK, ~>}
@@ -40,8 +40,11 @@ case class Put[Payload, A](
 case class Delete(query: HttpQuery) extends HttpADT[Response[Unit]]
 case class Download(query: HttpQuery)
   extends HttpADT[Response[ByteStream]]
+case class Upload[A](query: HttpQuery,
+                     file: File,
+                     format: JsonFormat[A])
+  extends HttpADT[Response[A]]
 case class Pure[A](a: A) extends HttpADT[A]
-
 
 class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
 
@@ -66,6 +69,9 @@ class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
 
   def download(query: HttpQuery): HttpF[Response[ByteStream]] =
     Free.inject[HttpADT, F](Download(query))
+
+  def upload[A](query: HttpQuery, file: File)(implicit format: JsonFormat[A]): HttpF[Response[A]] =
+    Free.inject[HttpADT, F](Upload(query, file, format))
 }
 
 object BacklogHttpOp {
@@ -85,6 +91,7 @@ trait BacklogHttpInterpret[F[_]] extends (HttpADT ~> F) {
                          payloadFormat: JsonFormat[Payload]): F[Response[A]]
   def delete(query: HttpQuery): F[Response[Unit]]
   def download(query: HttpQuery): F[Response[ByteStream]]
+  def upload[A](query: HttpQuery, file: File, format: JsonFormat[A]): F[Response[A]]
   def pure[A](a: A): F[A]
 
   override def apply[A](fa: HttpADT[A]): F[A] = fa match {
@@ -99,5 +106,7 @@ trait BacklogHttpInterpret[F[_]] extends (HttpADT ~> F) {
       delete(query)
     case Download(query) =>
       download(query)
+    case Upload(query, file, format) =>
+      upload(query, file, format)
   }
 }
