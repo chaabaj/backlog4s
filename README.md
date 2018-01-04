@@ -25,6 +25,13 @@ Not published yet on maven use this git repository
 
 ## How to use
 
+First create a Key.scala file like this:
+```scala
+object ApiKey {
+  val accessKey = "YOUR_API_KEY_HERE"
+}
+```
+
 Using Akka Http:
 
 ```scala
@@ -52,8 +59,8 @@ object App {
 
     val prg = for {
       file <- UserApi.downloadIcon(UserT.id(0))
-      user <- UserApi.getById(UserT.myself)
-      users <- UserApi.getAll(0, 1000)
+      user <- UserApi.byId(UserT.myself)
+      users <- UserApi.all(0, 1000)
     } yield Seq(file, user, users)
 
     prg.foldMap(interpreter).onComplete { result =>
