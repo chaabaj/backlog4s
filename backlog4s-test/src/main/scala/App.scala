@@ -42,7 +42,8 @@ object App {
       countIssues <- IssueApi.count().orFail
       activities <- ActivityApi.space
       repositories <- GitApi.all(IdParam(projects.head.id)).orFail
-    } yield repositories
+      webhooks <- WebhookApi.allOf(IdParam(projects.head.id)).orFail
+    } yield webhooks
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
