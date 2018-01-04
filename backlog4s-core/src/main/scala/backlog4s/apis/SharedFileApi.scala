@@ -19,34 +19,4 @@ object SharedFileApi {
     get[Seq[SharedFile]](
       HttpQuery(s"projects/$projectIdOrKey/files/metadata/$path")
     )
-
-  def linked(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Seq[SharedFile]]] =
-    get[Seq[SharedFile]](
-      HttpQuery(s"issues/$issueIdOrKey/sharedFiles")
-    )
-
-  def downloadFile(projectIdOrKey: IdOrKeyParam[Project],
-                   id: Id[SharedFile]): ApiPrg[Response[ByteStream]] =
-    download(
-      HttpQuery(
-        s"projects/$projectIdOrKey/files/${id.value}"
-      )
-    )
-
-  def link(issueIdOrKey: IdOrKeyParam[Issue],
-           fileIds: NonEmptyList[Id[SharedFile]]): ApiPrg[Response[SharedFile]] =
-    post[LinkFilesForm, SharedFile](
-      HttpQuery(
-        s"issues/$issueIdOrKey/sharedFiles"
-      ),
-      LinkFilesForm(fileIds.toList)
-    )
-
-  def unlink(issueIdOrKey: IdOrKeyParam[Issue],
-             id: Id[SharedFile]): ApiPrg[Response[Unit]] =
-    delete(
-      HttpQuery(
-        s"issues/$issueIdOrKey/sharedFiles/${id.value}"
-      )
-    )
 }

@@ -2,7 +2,7 @@ package backlog4s.apis
 
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
-import backlog4s.dsl.HttpADT.Response
+import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
@@ -71,4 +71,34 @@ object GitApi {
       ),
       form
     )
+
+  def attachments(projectIdOrKey: IdOrKeyParam[Project],
+                  repoIdOrName: IdOrKeyParam[GitRepository],
+                  pullRequestNumber: Long): ApiPrg[Response[Seq[Attachment]]] =
+    get[Seq[Attachment]](
+      HttpQuery(
+        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments"
+      )
+    )
+
+  def downloadAttachment(projectIdOrKey: IdOrKeyParam[Project],
+                         repoIdOrName: IdOrKeyParam[GitRepository],
+                         pullRequestNumber: Long,
+                         attachmentId: Id[Attachment]): ApiPrg[Response[ByteStream]] =
+    download(
+      HttpQuery(
+        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments/${attachmentId.value}"
+      )
+    )
+
+  def removeAttachment(projectIdOrKey: IdOrKeyParam[Project],
+                       repoIdOrName: IdOrKeyParam[GitRepository],
+                       pullRequestNumber: Long,
+                       attachmentId: Id[Attachment]): ApiPrg[Response[Unit]] =
+    delete(
+      HttpQuery(
+        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments/${attachmentId.value}"
+      )
+    )
+
 }

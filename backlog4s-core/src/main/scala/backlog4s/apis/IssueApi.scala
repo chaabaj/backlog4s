@@ -3,10 +3,11 @@ package backlog4s.apis
 import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
-import backlog4s.dsl.HttpADT.Response
+import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 import backlog4s.utils.QueryParameter
+import cats.data.NonEmptyList
 
 object IssueApi {
   import backlog4s.dsl.ApiDsl.HttpOp._
@@ -100,4 +101,56 @@ object IssueApi {
   def remove(idOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Unit]] =
     delete(HttpQuery(s"$resource/$idOrKey"))
 
+  def linked(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Seq[SharedFile]]] =
+    get[Seq[SharedFile]](
+      HttpQuery(s"$resource/$issueIdOrKey/sharedFiles")
+    )
+
+  def downloadFile(projectIdOrKey: IdOrKeyParam[Project],
+                   id: Id[SharedFile]): ApiPrg[Response[ByteStream]] =
+    download(
+      HttpQuery(
+        s"projects/$projectIdOrKey/files/${id.value}"
+      )
+    )
+
+  def link(issueIdOrKey: IdOrKeyParam[Issue],
+           fileIds: NonEmptyList[Id[SharedFile]]): ApiPrg[Response[SharedFile]] =
+    post[LinkFilesForm, SharedFile](
+      HttpQuery(
+        s"$resource/$issueIdOrKey/sharedFiles"
+      ),
+      LinkFilesForm(fileIds.toList)
+    )
+
+  def unlink(issueIdOrKey: IdOrKeyParam[Issue],
+             id: Id[SharedFile]): ApiPrg[Response[Unit]] =
+    delete(
+      HttpQuery(
+        s"$resource/$issueIdOrKey/sharedFiles/${id.value}"
+      )
+    )
+
+  def attach(idOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Seq[Attachment]]] =
+    get[Seq[Attachment]](
+      HttpQuery(
+        s"$resource/$idOrKey/attachments"
+      )
+    )
+
+  def downloadAttachment(idOrKey: IdOrKeyParam[Issue],
+                         attachmentId: Id[Attachment]): ApiPrg[Response[ByteStream]] =
+    download(
+      HttpQuery(
+        s"$resource/$idOrKey/attachments/${attachmentId.value}"
+      )
+    )
+
+  def removeAttachment(idOrKey: IdOrKeyParam[Issue],
+                       attachmentId: Id[Attachment]): ApiPrg[Response[Unit]] =
+    delete(
+      HttpQuery(
+        s"$resource/$idOrKey/attachments/${attachmentId.value}"
+      )
+    )
 }

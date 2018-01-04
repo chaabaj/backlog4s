@@ -31,7 +31,7 @@ object ProjectApi {
   }
 
   def byIdOrKey(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Project]] =
-    get[Project](HttpQuery(s"$resource/$id"))
+    get[Project](HttpQuery(s"$resource/$idOrKey"))
 
   def admins(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
     get[Seq[User]](HttpQuery(s"$resource/$idOrKey/administrators"))
