@@ -219,4 +219,9 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val idWatchingFormat = new IdFormat[Watching]
   implicit val watchingFormat = jsonFormat8(Watching)
   implicit val addWatchingFormFormat = jsonFormat2(AddWatchingForm)
+
+  implicit val idWebhookFormat = new IdFormat[Webhook]
+  implicit val webhookFormat = jsonFormat10(Webhook)
+  implicit val addWebhookFormFormat = jsonFormat5(AddWebhookForm)
+  implicit val updateWebhookFormFormat = jsonFormat5(UpdateWebhookForm)
 }
