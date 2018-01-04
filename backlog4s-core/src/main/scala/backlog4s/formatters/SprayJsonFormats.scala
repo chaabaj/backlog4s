@@ -87,6 +87,16 @@ object SprayJsonFormats extends DefaultJsonProtocol {
     override def write(obj: Key[A]): JsValue = JsString(obj.value)
   }
 
+  class IdOrKeyFormat[A]() extends RootJsonFormat[IdOrKeyParam[A]] {
+    override def read(json: JsValue): IdOrKeyParam[A] = json match {
+      case JsNumber(idVal) => IdParam[A](Id[A](idVal.toLong))
+      case JsString(keyVal) => KeyParam[A](Key[A](keyVal))
+      case _ => deserializationError(s"Expected a string or a number for IdOrKeyParam got ${json.prettyPrint}")
+    }
+
+    override def write(idOrKey: IdOrKeyParam[A]): JsValue = JsString(idOrKey.toString)
+  }
+
   implicit object ZoneFormat extends RootJsonFormat[ZoneId] {
     override def read(json: JsValue): ZoneId = json match {
       case JsString(zone) => ZoneId.of(zone)
@@ -115,30 +125,38 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val orderFormat = new EnumFormat(Order, StringEnum)
   implicit val errorFormat = jsonFormat3(ApiError)
   implicit val errorsFormat = jsonFormat1(ApiErrors)
+
   implicit val userFormat: JsonFormat[User] = jsonFormat6(User)
   implicit val addUserFormFormat = jsonFormat5(AddUserForm)
   implicit val updateUserFormFormat = jsonFormat4(UpdateUserForm)
+
   implicit val idGroupFormat = new IdFormat[Group]
   implicit val group = jsonFormat8(Group)
   implicit val addGroupFormFormat = jsonFormat1(AddGroupForm)
   implicit val updateGroupFormFormat = jsonFormat2(UpdateGroupForm)
+
   implicit val idProjectFormat = new IdFormat[Project]
   implicit val keyProjectFormat = new KeyFormat[Project]
   implicit val projectFormat = jsonFormat8(Project)
   implicit val addProjectFormFormat = jsonFormat5(AddProjectForm)
   implicit val updateProjectFormFormat = jsonFormat7(UpdateProjectForm)
+
   implicit val spaceIdFormat = new KeyFormat[Space]
   implicit val spaceFormat = jsonFormat9(Space)
   implicit val spaceNotificationFormat = jsonFormat2(SpaceNotification)
   implicit val projectDiskUsageFormat = jsonFormat6(ProjectDiskUsage)
   implicit val spaceDiskUsage = jsonFormat7(SpaceDiskUsage)
+
   implicit val idCategoryFormat = new IdFormat[Category]
   implicit val categoryFormat = jsonFormat3(Category)
+
   implicit val idMilestoneFormat = new IdFormat[Milestone]
   implicit val milestoneFormat = jsonFormat8(Milestone)
   implicit val addMilestoneFormFormat = jsonFormat4(AddMilestoneForm)
   implicit val updateMilestoneFormFormat = jsonFormat5(UpdateMilestoneForm)
+
   implicit val idIssueTypeFormat = new IdFormat[IssueType]
+  implicit val idOrKeyIssueFormat = new IdOrKeyFormat[Issue]
   implicit val issueTypeFormat = jsonFormat5(IssueType)
   implicit val updateIssueTypeFormFormat = jsonFormat2(UpdateIssueTypeForm)
   implicit val idStatusFormat = new IdFormat[Status]
@@ -150,11 +168,9 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val idAttachmentFormat = new IdFormat[Attachment]
   implicit val attachmentFormat = jsonFormat3(Attachment)
   implicit val attachFormFormat = jsonFormat1(AttachForm)
-
   implicit val idSharedFileFormat = new IdFormat[SharedFile]
   implicit val sharedFileFormat = jsonFormat9(SharedFile)
   implicit val linkFilesForm = jsonFormat1(LinkFilesForm)
-
   implicit val idStarFormat = new IdFormat[Star]
   implicit val starFormat = jsonFormat6(Star)
   implicit val idIssueFormat = new IdFormat[Issue]
@@ -199,4 +215,8 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val prFormat = jsonFormat21(PullRequest)
   implicit val addPrFormat = jsonFormat8(AddPullRequestForm)
   implicit val updatePrFormat = jsonFormat6(UpdatePullRequestForm)
+
+  implicit val idWatchingFormat = new IdFormat[Watching]
+  implicit val watchingFormat = jsonFormat8(Watching)
+  implicit val addWatchingFormFormat = jsonFormat2(AddWatchingForm)
 }

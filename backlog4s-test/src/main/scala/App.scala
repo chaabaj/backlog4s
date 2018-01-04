@@ -24,24 +24,24 @@ object App {
     val interpreter = httpInterpret
 
     val prg = for {
-      projects <- ProjectApi.getAll().orFail
-      categories <- CategoryApi.getAll(
+      projects <- ProjectApi.all().orFail
+      categories <- CategoryApi.all(
         IdParam(projects.head.id)
       ).orFail
-      milestones <- MilestoneApi.getAll(
+      milestones <- MilestoneApi.all(
         IdParam(projects.head.id)
       ).orFail
-      issueTypes <- IssueTypeApi.getAll(
+      issueTypes <- IssueTypeApi.all(
         IdParam(projects.head.id)
       ).orFail
-      statuses <- StatusApi.getAll.orFail
-      priorities <- PriorityApi.getAll.orFail
-      resolutions <- ResolutionApi.getAll.orFail
+      statuses <- StatusApi.all.orFail
+      priorities <- PriorityApi.all.orFail
+      resolutions <- ResolutionApi.all.orFail
       issues <- IssueApi.search(IssueSearch(count = 100)).orFail
-      issue <- IssueApi.getById(IdParam(issues.head.id)).orFail
+      issue <- IssueApi.byIdOrKey(IdParam(issues.head.id)).orFail
       countIssues <- IssueApi.count().orFail
       activities <- ActivityApi.space
-      repositories <- GitApi.getAll(IdParam(projects.head.id)).orFail
+      repositories <- GitApi.all(IdParam(projects.head.id)).orFail
     } yield repositories
 
     prg.foldMap(interpreter).onComplete { result =>
