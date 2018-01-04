@@ -2,11 +2,13 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import backlog4s.apis._
-import backlog4s.datas.{IdParam, IssueSearch, UserT}
-import backlog4s.interpreters.{AccessKey, AkkaHttpInterpret}
+import backlog4s.datas.{AccessKey, IdParam, IssueSearch, UserT}
+import backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
+import cats.effect.IO
 
 import scala.util.{Failure, Success}
 import cats.implicits._
+import hammock.jvm._
 
 object App {
 
@@ -15,12 +17,13 @@ object App {
   implicit val system = ActorSystem("test")
   implicit val mat = ActorMaterializer()
   implicit val exc = system.dispatcher
+  implicit val hammockInterpreter = Interpreter[IO]
+  val baseUrl = "https://nulab.backlog.jp/api/v2/"
 
-  def main(args: Array[String]): Unit = {
+  def usingAkka(): Unit = {
     val httpInterpret = new AkkaHttpInterpret(
-      "https://nulab.backlog.jp/api/v2/", AccessKey(ApiKey.accessKey)
+      baseUrl, AccessKey(ApiKey.accessKey)
     )
-
     val interpreter = httpInterpret
 
     val prg = for {
@@ -52,5 +55,24 @@ object App {
       }
       system.terminate()
     }
+  }
+
+  def usingHammock(): Unit = {
+    val hammockHttpInterpreter = new HammockInterpreter(
+      baseUrl, AccessKey(ApiKey.accessKey)
+    )
+
+    val prg = for {
+      projects <- ProjectApi.all().orFail
+      webhooks <- WebhookApi.allOf(IdParam(projects.head.id))
+    } yield (webhooks, projects)
+
+    val result = prg.foldMap(hammockHttpInterpreter).unsafeRunSync()
+    println(result)
+  }
+
+  def main(args: Array[String]): Unit = {
+    //usingAkka()
+    usingHammock()
   }
 }

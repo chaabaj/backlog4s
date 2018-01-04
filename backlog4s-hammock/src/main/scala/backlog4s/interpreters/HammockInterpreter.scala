@@ -2,23 +2,17 @@ package backlog4s.interpreters
 
 import java.io.File
 
-import backlog4s.datas.ApiErrors
+import backlog4s.datas.{AccessKey, ApiErrors, Credentials, OAuth2Token}
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
 import cats.effect.IO
 import hammock.jvm.Interpreter
 import hammock._
-import cats._
 import cats.implicits._
-import hammock.marshalling._
 import spray.json._
 import hammock.hi._
 import backlog4s.formatters.SprayJsonFormats._
 import hammock.Entity.StringEntity
-
-sealed trait Credentials
-case class AccessKey(key: String) extends Credentials
-case class OAuth2Token(token: String) extends Credentials
 
 object HammockInterpreter {
   implicit object StringCodec extends Codec[String] {
@@ -30,12 +24,11 @@ object HammockInterpreter {
 }
 
 class HammockInterpreter(baseUrl: String, credentials: Credentials)
+                        (implicit val hammockInterpreter: Interpreter[IO])
   extends BacklogHttpInterpret[IO] {
 
-  implicit val interpreter = Interpreter[IO]
-
   import HammockInterpreter._
-  
+
   private val reqHeaders =
     header("User-Agent" -> "backlog4s") >>>
     header("Content-Type" -> "application/json") >>>

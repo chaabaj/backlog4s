@@ -11,7 +11,7 @@ import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Sink, Source}
 import cats.effect.IO
-import backlog4s.datas.ApiErrors
+import backlog4s.datas.{AccessKey, ApiErrors, Credentials, OAuth2Token}
 import backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
 import backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
 import spray.json._
@@ -21,12 +21,6 @@ import fs2.interop.reactivestreams._
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
-
-sealed trait Credentials
-case class AccessKey(key: String) extends Credentials
-case class OAuth2Token(token: String) extends Credentials
-
-
 
 class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
