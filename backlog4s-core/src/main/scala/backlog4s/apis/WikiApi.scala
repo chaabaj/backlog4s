@@ -12,7 +12,7 @@ object WikiApi {
 
   val resource = "wikis"
 
-  def all(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[WikiSummary]]] =
+  def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[WikiSummary]]] =
     get[Seq[WikiSummary]](
       HttpQuery(
         resource,

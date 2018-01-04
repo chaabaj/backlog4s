@@ -13,7 +13,7 @@ object MilestoneApi {
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
     s"projects/$projectIdOrKey/versions"
 
-  def all(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Milestone]]] =
+  def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Milestone]]] =
     get[Seq[Milestone]](
       HttpQuery(resource(projectIdOrKey))
     )

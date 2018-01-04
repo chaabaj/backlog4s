@@ -15,11 +15,11 @@ object IssueCommentApi {
   def resource(issueIdOrKey: IdOrKeyParam[Issue]): String =
     s"issues/$issueIdOrKey/comments"
 
-  def all(issueIdOrKey: IdOrKeyParam[Issue],
-          minId: Option[Id[Comment]] = None,
-          maxId: Option[Id[Comment]] = None,
-          count: Long = 20,
-          order: Order = Order.Desc): ApiPrg[Response[Seq[Comment]]] = {
+  def allOf(issueIdOrKey: IdOrKeyParam[Issue],
+            minId: Option[Id[Comment]] = None,
+            maxId: Option[Id[Comment]] = None,
+            count: Long = 20,
+            order: Order = Order.Desc): ApiPrg[Response[Seq[Comment]]] = {
     val params = Map(
       "minId" -> minId.map(_.value.toString).getOrElse(""),
       "maxId" -> maxId.map(_.value.toString).getOrElse(""),

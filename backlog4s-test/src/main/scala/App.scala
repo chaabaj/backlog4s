@@ -25,13 +25,13 @@ object App {
 
     val prg = for {
       projects <- ProjectApi.all().orFail
-      categories <- CategoryApi.all(
+      categories <- CategoryApi.allOf(
         IdParam(projects.head.id)
       ).orFail
-      milestones <- MilestoneApi.all(
+      milestones <- MilestoneApi.allOf(
         IdParam(projects.head.id)
       ).orFail
-      issueTypes <- IssueTypeApi.all(
+      issueTypes <- IssueTypeApi.allOf(
         IdParam(projects.head.id)
       ).orFail
       statuses <- StatusApi.all.orFail
@@ -41,7 +41,7 @@ object App {
       issue <- IssueApi.byIdOrKey(IdParam(issues.head.id)).orFail
       countIssues <- IssueApi.count().orFail
       activities <- ActivityApi.space
-      repositories <- GitApi.all(IdParam(projects.head.id)).orFail
+      repositories <- GitApi.allOf(IdParam(projects.head.id)).orFail
       webhooks <- WebhookApi.allOf(IdParam(projects.head.id)).orFail
     } yield webhooks
 

@@ -11,11 +11,11 @@ import cats.data.NonEmptyList
 object SharedFileApi {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
-  def all(projectIdOrKey: IdOrKeyParam[Project],
-          path: String,
-          order: Order = Order.Desc,
-          offset: Long = 0,
-          count: Long = 20): ApiPrg[Response[Seq[SharedFile]]] =
+  def allOf(projectIdOrKey: IdOrKeyParam[Project],
+            path: String,
+            order: Order = Order.Desc,
+            offset: Long = 0,
+            count: Long = 20): ApiPrg[Response[Seq[SharedFile]]] =
     get[Seq[SharedFile]](
       HttpQuery(s"projects/$projectIdOrKey/files/metadata/$path")
     )

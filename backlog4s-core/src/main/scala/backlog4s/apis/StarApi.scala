@@ -53,8 +53,6 @@ object StarApi {
     )
   }
 
-
-  // Api is not consistent here No Content is sent instead of a Star object
   def star(starForm: StarForm): ApiPrg[Response[NoContent]] =
     post[StarForm, NoContent](
       HttpQuery("stars"),

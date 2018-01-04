@@ -13,7 +13,7 @@ object GitApi {
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
     s"projects/$projectIdOrKey/git/repositories"
 
-  def all(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[GitRepository]]] =
+  def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[GitRepository]]] =
     get[Seq[GitRepository]](
       HttpQuery(resource(projectIdOrKey))
     )

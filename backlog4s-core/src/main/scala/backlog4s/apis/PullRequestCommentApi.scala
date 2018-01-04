@@ -1,6 +1,5 @@
 package backlog4s.apis
 
-import backlog4s.apis.GitApi.resource
 import backlog4s.datas.CustomForm.CustomForm
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
