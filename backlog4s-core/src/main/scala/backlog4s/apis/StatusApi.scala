@@ -12,6 +12,6 @@ object StatusApi {
 
   val resource = "statuses"
 
-  def getAll: ApiPrg[Response[Seq[Status]]] =
+  def all: ApiPrg[Response[Seq[Status]]] =
     get[Seq[Status]](HttpQuery(resource))
 }

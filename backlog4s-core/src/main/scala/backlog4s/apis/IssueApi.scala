@@ -71,7 +71,7 @@ object IssueApi {
       HttpQuery(s"$resource/count", searchParams(issueSearch))
     )
 
-  def getById(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Issue]] =
+  def byIdOrKey(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Issue]] =
     get[Issue](
       HttpQuery(
         path = s"$resource/$issueIdOrKey"

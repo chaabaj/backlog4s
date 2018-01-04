@@ -13,7 +13,7 @@ object IssueTypeApi {
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
     s"projects/$projectIdOrKey/issueTypes"
 
-  def getAll(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[IssueType]]] =
+  def all(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[IssueType]]] =
     get[Seq[IssueType]](
       HttpQuery(resource(projectIdOrKey))
     )

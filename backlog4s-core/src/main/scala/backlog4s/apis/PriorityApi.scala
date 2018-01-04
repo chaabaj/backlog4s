@@ -12,6 +12,6 @@ object PriorityApi {
 
   val resource = "priorities"
 
-  def getAll: ApiPrg[Response[Seq[Priority]]] =
+  def all: ApiPrg[Response[Seq[Priority]]] =
     get[Seq[Priority]](HttpQuery(resource))
 }

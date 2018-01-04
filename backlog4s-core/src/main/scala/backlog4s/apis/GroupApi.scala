@@ -12,16 +12,16 @@ object GroupApi {
 
   import backlog4s.dsl.ApiDsl.HttpOp._
 
-  def getAll(offset: Int = 0,
-             limit: Int = 100,
-             order: Order = Order.Desc): ApiPrg[Response[Seq[Group]]] =
+  def all(offset: Int = 0,
+          limit: Int = 100,
+          order: Order = Order.Desc): ApiPrg[Response[Seq[Group]]] =
     get[Seq[Group]](HttpQuery(s"$resource", Map(
       "offset" -> offset.toString,
       "count" -> limit.toString,
       "order" -> order.toString
     )))
 
-  def getById(id: Id[Group]): ApiPrg[Response[Group]] =
+  def byId(id: Id[Group]): ApiPrg[Response[Group]] =
     get[Group](HttpQuery(s"$resource/${id.value}"))
 
   def create(addGroupForm: AddGroupForm): ApiPrg[Response[Group]] =

@@ -13,13 +13,13 @@ object GitApi {
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
     s"projects/$projectIdOrKey/git/repositories"
 
-  def getAll(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[GitRepository]]] =
+  def all(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[GitRepository]]] =
     get[Seq[GitRepository]](
       HttpQuery(resource(projectIdOrKey))
     )
 
-  def getById(projectIdOrKey: IdOrKeyParam[Project],
-              repoIdOrName: IdOrKeyParam[GitRepository]): ApiPrg[Response[GitRepository]] =
+  def byIdOrName(projectIdOrKey: IdOrKeyParam[Project],
+                 repoIdOrName: IdOrKeyParam[GitRepository]): ApiPrg[Response[GitRepository]] =
     get[GitRepository](
       HttpQuery(
         s"${resource(projectIdOrKey)}/$repoIdOrName"

@@ -13,9 +13,9 @@ object ProjectApi {
 
   private val resource = "projects"
 
-  def getAll(offset: Int = 0, count: Int = 100,
-             archived: Option[Boolean] = None,
-             all: Boolean = false): ApiPrg[Response[Seq[Project]]] = {
+  def all(offset: Int = 0, count: Int = 100,
+          archived: Option[Boolean] = None,
+          all: Boolean = false): ApiPrg[Response[Seq[Project]]] = {
     val params = archived.map(archived => Map(
       "offset" -> offset.toString,
       "count" -> count.toString,
@@ -30,16 +30,13 @@ object ProjectApi {
     get[Seq[Project]](HttpQuery(resource, params))
   }
 
-  def getById(id: Id[Project]): ApiPrg[Response[Project]] =
-    get[Project](HttpQuery(s"$resource/${id.value}"))
+  def byIdOrKey(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Project]] =
+    get[Project](HttpQuery(s"$resource/$id"))
 
-  def getByKey(key: Key[Project]): ApiPrg[Response[Project]] =
-    get[Project](HttpQuery(s"$resource/${key.value}"))
-
-  def getAdmins(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
+  def admins(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
     get[Seq[User]](HttpQuery(s"$resource/$idOrKey/administrators"))
 
-  def getUsers(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
+  def users(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
     get[Seq[User]](HttpQuery(s"$resource/$idOrKey/users"))
 
   def icon(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[ByteStream]] =

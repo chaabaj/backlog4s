@@ -13,7 +13,7 @@ object CategoryApi {
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
     s"projects/$projectIdOrKey/categories"
 
-  def getAll(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Category]]] =
+  def all(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Category]]] =
     get[Seq[Category]](
       HttpQuery(resource(projectIdOrKey))
     )

@@ -13,3 +13,7 @@ case class SharedFile(
   updatedUser: Option[User],
   updated: Option[DateTime]
 )
+
+case class LinkFilesForm(
+  fileId: Seq[Id[SharedFile]]
+)

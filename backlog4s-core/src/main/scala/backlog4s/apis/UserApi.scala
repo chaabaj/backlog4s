@@ -12,7 +12,7 @@ object UserApi {
 
   private val resource = "users"
 
-  def getAll(offset: Int = 0, limit: Int = 100): ApiPrg[Response[Seq[User]]] =
+  def all(offset: Int = 0, limit: Int = 100): ApiPrg[Response[Seq[User]]] =
     get[Seq[User]](HttpQuery(resource))
 
   def getById(id: Id[User]): ApiPrg[Response[User]] =

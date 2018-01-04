@@ -15,10 +15,10 @@ object NotificationApi {
 
   val resource = "notifications"
 
-  def getAll(minId: Option[Id[Notification]] = None,
-             maxId: Option[Id[Notification]] = None,
-             count: Long = 20,
-             order: Order = Order.Desc): ApiPrg[Response[Seq[Notification]]] = {
+  def all(minId: Option[Id[Notification]] = None,
+          maxId: Option[Id[Notification]] = None,
+          count: Long = 20,
+          order: Order = Order.Desc): ApiPrg[Response[Seq[Notification]]] = {
     val params = Map(
       "minId" -> minId.map(_.value.toString).getOrElse(""),
       "maxId" -> maxId.map(_.value.toString).getOrElse(""),

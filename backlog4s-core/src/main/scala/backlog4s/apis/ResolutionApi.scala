@@ -12,6 +12,6 @@ object ResolutionApi {
 
   val resource = "resolutions"
 
-  def getAll: ApiPrg[Response[Seq[Resolution]]] =
+  def all: ApiPrg[Response[Seq[Resolution]]] =
     get[Seq[Resolution]](HttpQuery(resource))
 }

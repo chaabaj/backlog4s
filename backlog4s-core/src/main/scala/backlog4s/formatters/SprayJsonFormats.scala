@@ -150,8 +150,11 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val idAttachmentFormat = new IdFormat[Attachment]
   implicit val attachmentFormat = jsonFormat3(Attachment)
   implicit val attachFormFormat = jsonFormat1(AttachForm)
+
   implicit val idSharedFileFormat = new IdFormat[SharedFile]
   implicit val sharedFileFormat = jsonFormat9(SharedFile)
+  implicit val linkFilesForm = jsonFormat1(LinkFilesForm)
+
   implicit val idStarFormat = new IdFormat[Star]
   implicit val starFormat = jsonFormat6(Star)
   implicit val idIssueFormat = new IdFormat[Issue]
