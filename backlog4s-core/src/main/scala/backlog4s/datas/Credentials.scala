@@ -1,5 +1,5 @@
 package backlog4s.datas
 
-class Credentials {
-
-}
+sealed trait Credentials
+case class AccessKey(key: String) extends Credentials
+case class OAuth2Token(token: String) extends Credentials
