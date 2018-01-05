@@ -9,18 +9,20 @@ import cats.effect.IO
 import scala.util.{Failure, Success}
 import cats.implicits._
 import hammock.jvm._
+import fs2._
 
 object App {
 
   import backlog4s.dsl.syntax._
 
-  implicit val system = ActorSystem("test")
-  implicit val mat = ActorMaterializer()
-  implicit val exc = system.dispatcher
   implicit val hammockInterpreter = Interpreter[IO]
   val baseUrl = "https://nulab.backlog.jp/api/v2/"
 
   def usingAkka(): Unit = {
+    implicit val system = ActorSystem("test")
+    implicit val mat = ActorMaterializer()
+    implicit val exc = system.dispatcher
+
     val httpInterpret = new AkkaHttpInterpret(
       baseUrl, AccessKey(ApiKey.accessKey)
     )
@@ -63,12 +65,15 @@ object App {
     )
 
     val prg = for {
+      user <- UserApi.byId(UserT.myself).orFail
+      icon <- UserApi.downloadIcon(user.id).orFail
       projects <- ProjectApi.all().orFail
-      webhooks <- WebhookApi.allOf(IdParam(projects.head.id))
-    } yield (webhooks, projects)
+    } yield icon
 
     val result = prg.foldMap(hammockHttpInterpreter).unsafeRunSync()
-    println(result)
+    result.map { buffer =>
+      buffer
+    }
   }
 
   def main(args: Array[String]): Unit = {

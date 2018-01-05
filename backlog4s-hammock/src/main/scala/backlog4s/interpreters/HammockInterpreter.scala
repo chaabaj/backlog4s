@@ -36,8 +36,9 @@ class HammockInterpreter(baseUrl: String, credentials: Credentials)
 
   private val reqHeaders =
     header("User-Agent" -> "backlog4s") >>>
-    header("Content-Type" -> "application/json") >>>
     header("Accept-Charset" -> "UTF-8")
+
+  private val utf8 = Charset.forName("UTF-8")
 
   private def createRequest[A](method: Method,
                                query: HttpQuery,
@@ -46,19 +47,28 @@ class HammockInterpreter(baseUrl: String, credentials: Credentials)
     val uri = Uri.unsafeParse(baseUrl + query.path)
       .copy(query = query.params)
 
+    val contentType = body.map {
+      case _: StringEntity => header("Content-Type" -> "application/json")
+      case _: ByteArrayEntity => header("Content-Type" -> "application/octet-stream")
+    }.getOrElse(header("Content-Type" -> "application/json"))
+
     credentials match {
       case AccessKey(key) =>
         Hammock.withOpts(
           method,
           uri.copy(query = uri.query + ("apiKey" -> key)),
-          reqHeaders(opts),
+          (reqHeaders >>> contentType)(opts),
           body
         )
       case OAuth2Token(token) =>
         Hammock.withOpts(
           method,
           uri,
-          (reqHeaders >>> auth(Auth.OAuth2Bearer(token)))(opts),
+          (
+            reqHeaders >>>
+              auth(Auth.OAuth2Bearer(token)) >>>
+              contentType
+          )(opts),
           body
         )
     }
@@ -81,7 +91,10 @@ class HammockInterpreter(baseUrl: String, credentials: Credentials)
   private def jsonResponseAs[A](response: Response[Entity],
                                 format: JsonFormat[A]): Response[A] = {
     response.map { entity =>
-      entity.cata(_.body, _.body.toString).parseJson.convertTo[A](format)
+      val content = entity.cata(_.body, _.body.toString)
+
+      println(s"received $content")
+      content.parseJson.convertTo[A](format)
     }
   }
 
@@ -92,8 +105,15 @@ class HammockInterpreter(baseUrl: String, credentials: Credentials)
     response.flatMap {
       case ByteArrayEntity(bytes, _) =>
         Either.right(Stream.eval(IO.pure(ByteBuffer.wrap(bytes))))
-      case x =>
-        Either.left(InvalidResponse(s"Expecting a ByteArrayEntity got $x"))
+      case StringEntity(content, contentType) =>
+        println(contentType.name)
+        Either.right(
+          Stream.eval(
+            IO.pure(
+              ByteBuffer.wrap(content.getBytes(utf8))
+            )
+          )
+        )
     }
 
   private def jsonEntity[Payload](payload: Payload, format: JsonFormat[Payload]): StringEntity =

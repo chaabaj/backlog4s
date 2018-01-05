@@ -15,7 +15,7 @@ object UserApi {
   def all(offset: Int = 0, limit: Int = 100): ApiPrg[Response[Seq[User]]] =
     get[Seq[User]](HttpQuery(resource))
 
-  def getById(id: Id[User]): ApiPrg[Response[User]] =
+  def byId(id: Id[User]): ApiPrg[Response[User]] =
     if (id == UserT.myself)
       get[User](HttpQuery(s"$resource/myself"))
     else
