@@ -56,8 +56,18 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
     }
 
   private def createRequest[Payload](method: HttpMethod, query: HttpQuery,
-                                     payload: Payload, format: JsonFormat[Payload]): HttpRequest =
-    createRequest(method, query).withEntity(payload.toJson(format).compactPrint)
+                                     payload: Payload, format: JsonFormat[Payload]): Future[HttpRequest] = {
+    val formData = FormData(
+      payload.toJson(format).asJsObject.fields.map {
+        case (key, value) => key -> value.toString()
+      }
+    )
+
+    Marshal(formData).to[RequestEntity].map { entity =>
+      createRequest(method, query).withEntity(entity)
+    }
+  }
+
 
   private def doRequest(request: HttpRequest): Future[Response[Bytes]] =
     for {
@@ -72,7 +82,6 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
             Either.left(ServerDown)
           }
         } else {
-          println(s"received $data")
           Either.right(data)
         }
       }
@@ -85,7 +94,8 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                                   format: JsonFormat[A],
                                   payloadFormat: JsonFormat[Payload]): Future[Response[A]] =
     for {
-      serverResponse <- doRequest(createRequest(HttpMethods.POST, query, payload, payloadFormat))
+      request <- createRequest(HttpMethods.POST, query, payload, payloadFormat)
+      serverResponse <- doRequest(request)
       response = serverResponse
         .map { content =>
           // Hackfix to fix invalid usage of 204 error code returned by the api
@@ -112,7 +122,8 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                                   format: JsonFormat[A],
                                   payloadFormat: JsonFormat[Payload]): Future[Response[A]] =
     for {
-      serverResponse <- doRequest(createRequest(HttpMethods.PUT, query, payload, payloadFormat))
+      request <- createRequest(HttpMethods.PUT, query, payload, payloadFormat)
+      serverResponse <- doRequest(request)
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 
