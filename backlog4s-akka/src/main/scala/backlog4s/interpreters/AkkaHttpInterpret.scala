@@ -42,10 +42,12 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
     credentials match {
       case AccessKey(key) =>
         HttpRequest(
+          method = method,
           uri = Uri(baseUrl + query.path).withQuery(Query(query.params + ("apiKey" -> key))),
         ).withHeaders(reqHeaders)
       case OAuth2Token(token) =>
         HttpRequest(
+          method = method,
           uri = Uri(baseUrl + query.path).withQuery(Query(query.params))
         ).withHeaders(
           reqHeaders :+

@@ -32,7 +32,7 @@ case class User (
 )
 
 case class AddUserForm(
-  id: Id[User],
+  userId: String,
   password: String,
   name: String,
   mailAddress: String,
