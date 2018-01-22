@@ -59,6 +59,7 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
                                      payload: Payload, format: JsonFormat[Payload]): Future[HttpRequest] = {
     val formData = FormData(
       payload.toJson(format).asJsObject.fields.map {
+        case (key, JsString(value)) => key -> value
         case (key, value) => key -> value.toString()
       }
     )
