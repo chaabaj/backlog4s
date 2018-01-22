@@ -6,7 +6,8 @@ import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
-object WebhookApi {
+class WebhookApi(override val baseUrl: String,
+                 override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
@@ -14,14 +15,20 @@ object WebhookApi {
 
   def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Webhook]]] =
     get[Seq[Webhook]](
-      HttpQuery(resource(projectIdOrKey))
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def add(projectIdOrKey: IdOrKeyParam[Project],
           form: AddWebhookForm): ApiPrg[Response[Webhook]] =
     post[AddWebhookForm, Webhook](
       HttpQuery(
-        resource(projectIdOrKey)
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
@@ -31,7 +38,9 @@ object WebhookApi {
              form: UpdateWebhookForm): ApiPrg[Response[Webhook]] =
     put[UpdateWebhookForm, Webhook](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/${id.value}"
+        path = s"${resource(projectIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
@@ -40,7 +49,14 @@ object WebhookApi {
              id: Id[Webhook]): ApiPrg[Response[Unit]] =
     delete(
       HttpQuery(
-        s"${resource(projectIdOrKey)}/${id.value}"
+        path = s"${resource(projectIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
+}
+
+object WebhookApi extends ApiContext[WebhookApi] {
+  override def apply(baseUrl: String, credentials: Credentials): WebhookApi =
+    new WebhookApi(baseUrl, credentials)
 }

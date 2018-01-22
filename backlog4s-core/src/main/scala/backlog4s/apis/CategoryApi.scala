@@ -1,13 +1,14 @@
 package backlog4s.apis
 
 import backlog4s.datas.CustomForm.CustomForm
-import backlog4s.datas.{Category, Id, IdOrKeyParam, Project}
+import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
-object CategoryApi {
+class CategoryApi(override val baseUrl: String,
+                  override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
@@ -15,12 +16,20 @@ object CategoryApi {
 
   def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Category]]] =
     get[Seq[Category]](
-      HttpQuery(resource(projectIdOrKey))
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def add(projectIdOrKey: IdOrKeyParam[Project], name: String): ApiPrg[Response[Category]] =
     post[CustomForm, Category](
-      HttpQuery(resource(projectIdOrKey)),
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       Map(
         "name" -> name
       )
@@ -31,7 +40,9 @@ object CategoryApi {
              newName: String): ApiPrg[Response[Category]] =
     put[CustomForm, Category](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/${id.value}"
+        path = s"${resource(projectIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       Map(
         "name" -> newName
@@ -41,6 +52,15 @@ object CategoryApi {
   def remove(projectIdOrKey: IdOrKeyParam[Project],
              id: Id[Category]): ApiPrg[Response[Unit]] =
     delete(
-      HttpQuery(s"${resource(projectIdOrKey)}/${id.value}")
+      HttpQuery(
+        path = s"${resource(projectIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
+}
+
+object CategoryApi extends ApiContext[CategoryApi] {
+  override def apply(baseUrl: String, credentials: Credentials): CategoryApi =
+    new CategoryApi(baseUrl, credentials)
 }

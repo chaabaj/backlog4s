@@ -2,10 +2,11 @@ package backlog4s.dsl
 
 import java.nio.ByteBuffer
 import java.io.File
+
 import cats.effect.IO
 import cats.free.Free
 import cats.{InjectK, ~>}
-import backlog4s.datas.ApiErrors
+import backlog4s.datas.{ApiErrors, Credentials}
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import spray.json.JsonFormat
 import fs2.Stream
@@ -22,7 +23,8 @@ object HttpADT {
 }
 
 sealed trait HttpADT[A]
-case class Get[A](query: HttpQuery, format: JsonFormat[A])
+case class Get[A](query: HttpQuery,
+                  format: JsonFormat[A])
   extends HttpADT[Response[A]]
 case class Post[Payload, A](
   query: HttpQuery,

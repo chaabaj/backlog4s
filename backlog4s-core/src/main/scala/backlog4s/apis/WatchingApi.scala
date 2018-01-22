@@ -10,7 +10,8 @@ import backlog4s.utils.QueryParameter
 import backlog4s.formatters.SprayJsonFormats._
 
 
-object WatchingApi {
+class WatchingApi(override val baseUrl: String,
+                  override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   val resource = "watchings"
@@ -31,7 +32,9 @@ object WatchingApi {
     get[Seq[Watching]](
       HttpQuery(
         s"users/${userId.value}/$resource",
-        QueryParameter.removeEmptyValue(params)
+        QueryParameter.removeEmptyValue(params),
+        credentials,
+        baseUrl
       )
     )
   }
@@ -48,7 +51,10 @@ object WatchingApi {
 
     get[Count](
       HttpQuery(
-        s"users/${userId.value}/$resource/count"
+        path = s"users/${userId.value}/$resource/count",
+        params,
+        credentials,
+        baseUrl
       )
     )
   }
@@ -56,14 +62,18 @@ object WatchingApi {
   def byId(id: Id[Watching]): ApiPrg[Response[Watching]] =
     get[Watching](
       HttpQuery(
-        s"$resource/${id.value}"
+        path = s"$resource/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def add(form: AddWatchingForm): ApiPrg[Response[Watching]] =
     post[AddWatchingForm, Watching](
       HttpQuery(
-        resource
+        path = resource,
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
@@ -71,7 +81,9 @@ object WatchingApi {
   def update(id: Id[Watching], note: String): ApiPrg[Response[Watching]] =
     put[CustomForm, Watching](
       HttpQuery(
-        s"$resource/${id.value}"
+        path = s"$resource/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       Map(
         "note" -> note
@@ -81,15 +93,24 @@ object WatchingApi {
   def remove(id: Id[Watching]): ApiPrg[Response[Unit]] =
     delete(
       HttpQuery(
-        s"$resource/${id.value}"
+        path = s"$resource/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def markAsRead(id: Id[Watching]): ApiPrg[Response[NoContent]] =
     post[CustomForm, NoContent](
       HttpQuery(
-        s"$resource/${id.value}/markAsRead"
+        path = s"$resource/${id.value}/markAsRead",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       Map()
     )
+}
+
+object WatchingApi extends ApiContext[WatchingApi] {
+  override def apply(baseUrl: String, credentials: Credentials): WatchingApi =
+    new WatchingApi(baseUrl, credentials)
 }

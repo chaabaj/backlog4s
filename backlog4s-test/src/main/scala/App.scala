@@ -2,7 +2,7 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import backlog4s.apis._
-import backlog4s.datas.{AccessKey, IdParam, IssueSearch, UserT}
+import backlog4s.datas._
 import backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
 import cats.effect.IO
 
@@ -23,32 +23,44 @@ object App {
     implicit val mat = ActorMaterializer()
     implicit val exc = system.dispatcher
 
-    val httpInterpret = new AkkaHttpInterpret(
-      baseUrl, AccessKey(ApiKey.accessKey)
-    )
+    val httpInterpret = new AkkaHttpInterpret
     val interpreter = httpInterpret
+    val accessKey = ApiKey.accessKey
+    val api = AllApi.accessKey(baseUrl, accessKey)
+
+    import api._
 
     val prg = for {
-      projects <- ProjectApi.all().orFail
-      categories <- CategoryApi.allOf(
+      projects <- projectApi.all().orFail
+      categories <- categoryApi.allOf(
         IdParam(projects.head.id)
       ).orFail
-      milestones <- MilestoneApi.allOf(
+      milestones <- milestoneApi.allOf(
         IdParam(projects.head.id)
       ).orFail
-      issueTypes <- IssueTypeApi.allOf(
+      issueTypes <- issueTypeApi.allOf(
         IdParam(projects.head.id)
       ).orFail
-      statuses <- StatusApi.all.orFail
-      priorities <- PriorityApi.all.orFail
-      resolutions <- ResolutionApi.all.orFail
-      issues <- IssueApi.search(IssueSearch(count = 100)).orFail
-      issue <- IssueApi.byIdOrKey(IdParam(issues.head.id)).orFail
-      countIssues <- IssueApi.count().orFail
-      activities <- ActivityApi.space
-      repositories <- GitApi.allOf(IdParam(projects.head.id)).orFail
-      webhooks <- WebhookApi.allOf(IdParam(projects.head.id)).orFail
+      statuses <- statusApi.all.orFail
+      priorities <- priorityApi.all.orFail
+      resolutions <- resolutionApi.all.orFail
+      issues <- issueApi.search(IssueSearch(count = 100)).orFail
+      issue <- issueApi.byIdOrKey(IdParam(issues.head.id)).orFail
+      countIssues <- issueApi.count().orFail
+      activities <- activityApi.space
+      repositories <- gitApi.allOf(IdParam(projects.head.id)).orFail
+      webhooks <- webhookApi.allOf(IdParam(projects.head.id)).orFail
     } yield webhooks
+
+    val prg2 = userApi.create(
+      AddUserForm(
+        "userId",
+        "vsdv",
+        "vsd",
+        ")@gmail.com",
+        Role.Admin
+      )
+    )
 
     prg.foldMap(interpreter).onComplete { result =>
       result match {
@@ -60,7 +72,7 @@ object App {
   }
 
   def usingHammock(): Unit = {
-    val hammockHttpInterpreter = new HammockInterpreter(
+    /*val hammockHttpInterpreter = new HammockInterpreter(
       baseUrl, AccessKey(ApiKey.accessKey)
     )
 
@@ -73,11 +85,12 @@ object App {
     val result = prg.foldMap(hammockHttpInterpreter).unsafeRunSync()
     result.map { buffer =>
       buffer
-    }
+    }*/
+
   }
 
   def main(args: Array[String]): Unit = {
-    //usingAkka()
-    usingHammock()
+    usingAkka()
+    //usingHammock()
   }
 }
