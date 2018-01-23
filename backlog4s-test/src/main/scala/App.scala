@@ -25,10 +25,9 @@ object App {
 
     val httpInterpret = new AkkaHttpInterpret
     val interpreter = httpInterpret
-    val accessKey = ApiKey.accessKey
-    val api = AllApi.accessKey(baseUrl, accessKey)
+    val allApi = AllApi.accessKey(baseUrl, ApiKey.accessKey)
 
-    import api._
+    import allApi._
 
     val prg = for {
       projects <- projectApi.all().orFail
@@ -49,8 +48,7 @@ object App {
       countIssues <- issueApi.count().orFail
       activities <- activityApi.space
       repositories <- gitApi.allOf(IdParam(projects.head.id)).orFail
-      webhooks <- webhookApi.allOf(IdParam(projects.head.id)).orFail
-    } yield webhooks
+    } yield repositories
 
     val prg2 = userApi.create(
       AddUserForm(
