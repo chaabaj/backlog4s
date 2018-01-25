@@ -22,8 +22,7 @@ import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
-                       (implicit actorSystem: ActorSystem, mat: Materializer,
+class AkkaHttpInterpret(implicit actorSystem: ActorSystem, mat: Materializer,
                         exc: ExecutionContext) extends BacklogHttpInterpret[Future] {
 
 
@@ -39,16 +38,16 @@ class AkkaHttpInterpret(baseUrl: String, credentials: Credentials)
   )
 
   private def createRequest(method: HttpMethod, query: HttpQuery): HttpRequest =
-    credentials match {
+    query.credentials match {
       case AccessKey(key) =>
         HttpRequest(
           method = method,
-          uri = Uri(baseUrl + query.path).withQuery(Query(query.params + ("apiKey" -> key))),
+          uri = Uri(query.baseUrl + query.path).withQuery(Query(query.params + ("apiKey" -> key))),
         ).withHeaders(reqHeaders)
       case OAuth2Token(token) =>
         HttpRequest(
           method = method,
-          uri = Uri(baseUrl + query.path).withQuery(Query(query.params))
+          uri = Uri(query.baseUrl + query.path).withQuery(Query(query.params))
         ).withHeaders(
           reqHeaders :+
             headers.Authorization(OAuth2BearerToken(token))

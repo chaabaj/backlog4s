@@ -6,7 +6,8 @@ import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
-object GitApi {
+class GitApi(override val baseUrl: String,
+             override val credentials: Credentials) extends Api {
 
   import backlog4s.dsl.ApiDsl.HttpOp._
 
@@ -15,14 +16,20 @@ object GitApi {
 
   def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[GitRepository]]] =
     get[Seq[GitRepository]](
-      HttpQuery(resource(projectIdOrKey))
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def byIdOrName(projectIdOrKey: IdOrKeyParam[Project],
                  repoIdOrName: IdOrKeyParam[GitRepository]): ApiPrg[Response[GitRepository]] =
     get[GitRepository](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -30,7 +37,9 @@ object GitApi {
                    repoIdOrName: IdOrKeyParam[GitRepository]): ApiPrg[Response[Seq[PullRequestSummary]]] =
     get[Seq[PullRequestSummary]](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -38,7 +47,9 @@ object GitApi {
                         repoIdOrName: IdOrKeyParam[GitRepository]): ApiPrg[Response[Count]] =
     get[Count](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/count"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/count",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -47,7 +58,9 @@ object GitApi {
                   pullRequestNumber: Long): ApiPrg[Response[PullRequest]] =
     get[PullRequest](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -56,7 +69,9 @@ object GitApi {
                         form: AddPullRequestForm): ApiPrg[Response[PullRequest]] =
     post[AddPullRequestForm, PullRequest](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
@@ -67,7 +82,9 @@ object GitApi {
                         form: UpdatePullRequestForm): ApiPrg[Response[PullRequest]] =
     put[UpdatePullRequestForm, PullRequest](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
@@ -77,7 +94,9 @@ object GitApi {
                   pullRequestNumber: Long): ApiPrg[Response[Seq[Attachment]]] =
     get[Seq[Attachment]](
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -87,7 +106,9 @@ object GitApi {
                          attachmentId: Id[Attachment]): ApiPrg[Response[ByteStream]] =
     download(
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments/${attachmentId.value}"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments/${attachmentId.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -97,8 +118,15 @@ object GitApi {
                        attachmentId: Id[Attachment]): ApiPrg[Response[Unit]] =
     delete(
       HttpQuery(
-        s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments/${attachmentId.value}"
+        path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments/${attachmentId.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
+}
+
+object GitApi extends ApiContext[GitApi] {
+  override def apply(baseUrl: String, credentials: Credentials): GitApi =
+    new GitApi(baseUrl, credentials)
 }

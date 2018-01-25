@@ -7,7 +7,8 @@ import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
-object PullRequestCommentApi {
+class PullRequestCommentApi(override val baseUrl: String,
+                            override val credentials: Credentials) extends Api {
 
   import backlog4s.dsl.ApiDsl.HttpOp._
 
@@ -21,7 +22,9 @@ object PullRequestCommentApi {
                pullRequestNumber: Long): ApiPrg[Response[Seq[Comment]]] =
     get[Seq[Comment]](
       HttpQuery(
-        resource(projectIdOrKey, repoIdOrName, pullRequestNumber)
+        path = resource(projectIdOrKey, repoIdOrName, pullRequestNumber),
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -29,7 +32,11 @@ object PullRequestCommentApi {
             repoIdOrName: IdOrKeyParam[GitRepository],
             pullRequestNumber: Long): ApiPrg[Response[Count]] =
     get[Count](
-      HttpQuery(s"${resource(projectIdOrKey, repoIdOrName, pullRequestNumber)}/count")
+      HttpQuery(
+        path = s"${resource(projectIdOrKey, repoIdOrName, pullRequestNumber)}/count",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def postComment(projectIdOrKey: IdOrKeyParam[Project],
@@ -38,7 +45,9 @@ object PullRequestCommentApi {
                   form: AddCommentForm): ApiPrg[Response[Comment]] =
     post[AddCommentForm, Comment](
       HttpQuery(
-        resource(projectIdOrKey, repoIdOrName, pullRequestNumber)
+        path = resource(projectIdOrKey, repoIdOrName, pullRequestNumber),
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
@@ -50,10 +59,17 @@ object PullRequestCommentApi {
                   newContent: String): ApiPrg[Response[Comment]] =
     put[CustomForm, Comment](
       HttpQuery(
-        s"${resource(projectIdOrKey, repoIdOrName, pullRequestNumber)}/${commentId.value}"
+        path = s"${resource(projectIdOrKey, repoIdOrName, pullRequestNumber)}/${commentId.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       Map(
         "content" -> newContent
       )
     )
+}
+
+object PullRequestCommentApi extends ApiContext[PullRequestCommentApi] {
+  override def apply(baseUrl: String, credentials: Credentials): PullRequestCommentApi =
+    new PullRequestCommentApi(baseUrl, credentials)
 }

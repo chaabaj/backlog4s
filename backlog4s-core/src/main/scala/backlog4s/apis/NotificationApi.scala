@@ -3,14 +3,15 @@ package backlog4s.apis
 import backlog4s.datas.CustomForm.CustomForm
 import backlog4s.datas.NoContent.NoContent
 import backlog4s.datas.Order.Order
-import backlog4s.datas.{Count, Id, Notification, Order}
+import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
 import backlog4s.utils.QueryParameter
 import backlog4s.formatters.SprayJsonFormats._
 
-object NotificationApi {
+class NotificationApi(override val baseUrl: String,
+                      override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   val resource = "notifications"
@@ -28,7 +29,9 @@ object NotificationApi {
     get[Seq[Notification]](
       HttpQuery(
         resource,
-        QueryParameter.removeEmptyValue(params)
+        QueryParameter.removeEmptyValue(params),
+        credentials,
+        baseUrl
       )
     )
   }
@@ -42,7 +45,9 @@ object NotificationApi {
     get[Count](
       HttpQuery(
         s"$resource/count",
-        QueryParameter.removeEmptyValue(params)
+        QueryParameter.removeEmptyValue(params),
+        credentials,
+        baseUrl
       )
     )
   }
@@ -50,7 +55,9 @@ object NotificationApi {
   def markAllAsRead: ApiPrg[Response[Count]] =
     post[CustomForm, Count](
       HttpQuery(
-        s"$resource/markAsRead"
+        path = s"$resource/markAsRead",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       Map()
     )
@@ -58,8 +65,15 @@ object NotificationApi {
   def read(id: Id[Notification]): ApiPrg[Response[NoContent]] =
     post[CustomForm, NoContent](
       HttpQuery(
-        s"notifications/${id.value}/markAsRead"
+        path = s"notifications/${id.value}/markAsRead",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       Map()
     )
+}
+
+object NotificationApi extends ApiContext[NotificationApi] {
+  override def apply(baseUrl: String, credentials: Credentials): NotificationApi =
+    new NotificationApi(baseUrl, credentials)
 }

@@ -9,7 +9,8 @@ import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 import backlog4s.utils.QueryParameter
 
-object IssueCommentApi {
+class IssueCommentApi(override val baseUrl: String,
+                      override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   def resource(issueIdOrKey: IdOrKeyParam[Issue]): String =
@@ -30,24 +31,38 @@ object IssueCommentApi {
     get[Seq[Comment]](
       HttpQuery(
         resource(issueIdOrKey),
-        QueryParameter.removeEmptyValue(params)
+        QueryParameter.removeEmptyValue(params),
+        credentials,
+        baseUrl
       )
     )
   }
 
   def count(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Count]] =
     get[Count](
-      HttpQuery(s"${resource(issueIdOrKey)}/count)")
+      HttpQuery(
+        path = s"${resource(issueIdOrKey)}/count)",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def getById(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): ApiPrg[Response[Comment]] =
     get[Comment](
-      HttpQuery(s"${resource(issueIdOrKey)}/${id.value}")
+      HttpQuery(
+        path = s"${resource(issueIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def add(issueIdOrKey: IdOrKeyParam[Issue], form: AddCommentForm): ApiPrg[Response[Comment]] =
     post[AddCommentForm, Comment](
-      HttpQuery(resource(issueIdOrKey)),
+      HttpQuery(
+        path = resource(issueIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       form
     )
 
@@ -55,7 +70,11 @@ object IssueCommentApi {
              id: Id[Comment],
              newContent: String): ApiPrg[Response[Comment]] =
     put[CustomForm, Comment](
-      HttpQuery(s"${resource(issueIdOrKey)}/${id.value}"),
+      HttpQuery(
+        path = s"${resource(issueIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       Map(
         "content" -> newContent
       )
@@ -63,7 +82,11 @@ object IssueCommentApi {
 
   def notifications(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): ApiPrg[Response[Seq[Notification]]] =
     get[Seq[Notification]](
-      HttpQuery(s"${resource(issueIdOrKey)}/${id.value}/notifications")
+      HttpQuery(
+        path = s"${resource(issueIdOrKey)}/${id.value}/notifications",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def addNotification(issueIdOrKey: IdOrKeyParam[Issue],
@@ -71,8 +94,15 @@ object IssueCommentApi {
                       form: AddNotificationForm): ApiPrg[Response[Comment]] =
     post[AddNotificationForm, Comment](
       HttpQuery(
-        s"${resource(issueIdOrKey)}/${id.value}/notifications"
+        path = s"${resource(issueIdOrKey)}/${id.value}/notifications",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
+}
+
+object IssueCommentApi extends ApiContext[IssueCommentApi] {
+  override def apply(baseUrl: String, credentials: Credentials): IssueCommentApi =
+    new IssueCommentApi(baseUrl, credentials)
 }

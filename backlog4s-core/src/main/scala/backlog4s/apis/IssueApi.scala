@@ -9,7 +9,8 @@ import backlog4s.formatters.SprayJsonFormats._
 import backlog4s.utils.QueryParameter
 import cats.data.NonEmptyList
 
-object IssueApi {
+class IssueApi(override val baseUrl: String,
+               override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   val resource = "issues"
@@ -64,18 +65,20 @@ object IssueApi {
 
   def search(issueSearch: IssueSearch = IssueSearch()): ApiPrg[Response[Seq[Issue]]] =
     get[Seq[Issue]](
-      HttpQuery(resource, searchParams(issueSearch))
+      HttpQuery(resource, searchParams(issueSearch), credentials, baseUrl)
     )
 
   def count(issueSearch: IssueSearch = IssueSearch()): ApiPrg[Response[Count]] =
     get[Count](
-      HttpQuery(s"$resource/count", searchParams(issueSearch))
+      HttpQuery(s"$resource/count", searchParams(issueSearch), credentials, baseUrl)
     )
 
   def byIdOrKey(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Issue]] =
     get[Issue](
       HttpQuery(
-        path = s"$resource/$issueIdOrKey"
+        path = s"$resource/$issueIdOrKey",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -83,34 +86,54 @@ object IssueApi {
                      offset: Long = 0,
                      count: Long = 20): ApiPrg[Response[Seq[Issue]]] =
     get[Seq[Issue]](
-      HttpQuery("users/myself/recentlyViewedIssues")
+      HttpQuery(
+        path = "users/myself/recentlyViewedIssues",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def add(form: AddIssueForm): ApiPrg[Response[Issue]] =
     post[AddIssueForm, Issue](
-      HttpQuery(resource),
+      HttpQuery(path = resource, credentials = credentials, baseUrl = baseUrl),
       form
     )
 
   def update(idOrKey: IdOrKeyParam[Issue], form: UpdateIssueForm): ApiPrg[Response[Issue]] =
     put[UpdateIssueForm, Issue](
-      HttpQuery(s"$resource/$idOrKey"),
+      HttpQuery(
+        path = s"$resource/$idOrKey",
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       form
     )
 
   def remove(idOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Unit]] =
-    delete(HttpQuery(s"$resource/$idOrKey"))
+    delete(
+      HttpQuery(
+        path = s"$resource/$idOrKey",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
+    )
 
   def linked(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Seq[SharedFile]]] =
     get[Seq[SharedFile]](
-      HttpQuery(s"$resource/$issueIdOrKey/sharedFiles")
+      HttpQuery(
+        path = s"$resource/$issueIdOrKey/sharedFiles",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def downloadFile(projectIdOrKey: IdOrKeyParam[Project],
                    id: Id[SharedFile]): ApiPrg[Response[ByteStream]] =
     download(
       HttpQuery(
-        s"projects/$projectIdOrKey/files/${id.value}"
+        path = s"projects/$projectIdOrKey/files/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -118,7 +141,9 @@ object IssueApi {
            fileIds: NonEmptyList[Id[SharedFile]]): ApiPrg[Response[SharedFile]] =
     post[LinkFilesForm, SharedFile](
       HttpQuery(
-        s"$resource/$issueIdOrKey/sharedFiles"
+        path = s"$resource/$issueIdOrKey/sharedFiles",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       LinkFilesForm(fileIds.toList)
     )
@@ -127,14 +152,18 @@ object IssueApi {
              id: Id[SharedFile]): ApiPrg[Response[Unit]] =
     delete(
       HttpQuery(
-        s"$resource/$issueIdOrKey/sharedFiles/${id.value}"
+        path = s"$resource/$issueIdOrKey/sharedFiles/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def attach(idOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Seq[Attachment]]] =
     get[Seq[Attachment]](
       HttpQuery(
-        s"$resource/$idOrKey/attachments"
+        path = s"$resource/$idOrKey/attachments",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -142,7 +171,9 @@ object IssueApi {
                          attachmentId: Id[Attachment]): ApiPrg[Response[ByteStream]] =
     download(
       HttpQuery(
-        s"$resource/$idOrKey/attachments/${attachmentId.value}"
+        path = s"$resource/$idOrKey/attachments/${attachmentId.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -150,7 +181,14 @@ object IssueApi {
                        attachmentId: Id[Attachment]): ApiPrg[Response[Unit]] =
     delete(
       HttpQuery(
-        s"$resource/$idOrKey/attachments/${attachmentId.value}"
+        path = s"$resource/$idOrKey/attachments/${attachmentId.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
+}
+
+object IssueApi extends ApiContext[IssueApi] {
+  override def apply(baseUrl: String, credentials: Credentials): IssueApi =
+    new IssueApi(baseUrl, credentials)
 }
