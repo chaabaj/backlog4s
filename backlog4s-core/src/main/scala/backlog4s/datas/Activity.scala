@@ -56,5 +56,5 @@ case class ActivityChange(
   field: String,
   new_value: String,
   old_value: String,
-  `type`: String
+  `type`: Option[String]
 )

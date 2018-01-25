@@ -7,7 +7,8 @@ import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
-object IssueTypeApi {
+class IssueTypeApi(override val baseUrl: String,
+                   override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
@@ -15,12 +16,20 @@ object IssueTypeApi {
 
   def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[IssueType]]] =
     get[Seq[IssueType]](
-      HttpQuery(resource(projectIdOrKey))
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def add(projectIdOrKey: IdOrKeyParam[Project], color: RGBColor): ApiPrg[Response[IssueType]] =
     post[CustomForm, IssueType](
-      HttpQuery(resource(projectIdOrKey)),
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       Map(
         "color" -> color.toHex
       )
@@ -30,12 +39,25 @@ object IssueTypeApi {
              id: Id[IssueType],
              form: UpdateIssueTypeForm): ApiPrg[Response[IssueType]] =
     put[UpdateIssueTypeForm, IssueType](
-      HttpQuery(s"${resource(projectIdOrKey)}/${id.value}"),
+      HttpQuery(
+        path = s"${resource(projectIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       form
     )
 
   def remove(projectIdOrKey: IdOrKeyParam[Project], id: Id[IssueType]): ApiPrg[Response[Unit]] =
     delete(
-      HttpQuery(s"${resource(projectIdOrKey)}/${id.value}")
+      HttpQuery(
+        path = s"${resource(projectIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
+}
+
+object IssueTypeApi extends ApiContext[IssueTypeApi] {
+  override def apply(baseUrl: String, credentials: Credentials): IssueTypeApi =
+    new IssueTypeApi(baseUrl, credentials)
 }

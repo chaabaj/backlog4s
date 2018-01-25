@@ -6,7 +6,8 @@ import backlog4s.dsl.HttpADT.Response
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
-object MilestoneApi {
+class MilestoneApi(override val baseUrl: String,
+                   override val credentials: Credentials) extends Api{
 
   import backlog4s.dsl.ApiDsl.HttpOp._
 
@@ -15,13 +16,21 @@ object MilestoneApi {
 
   def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Milestone]]] =
     get[Seq[Milestone]](
-      HttpQuery(resource(projectIdOrKey))
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
 
   def add(projectIdOrKey: IdOrKeyParam[Project],
           form: AddMilestoneForm): ApiPrg[Response[Milestone]] =
     post[AddMilestoneForm, Milestone](
-      HttpQuery(resource(projectIdOrKey)),
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       form
     )
 
@@ -29,12 +38,25 @@ object MilestoneApi {
              id: Id[Milestone],
              form: UpdateMilestoneForm): ApiPrg[Response[Milestone]] =
     put[UpdateMilestoneForm, Milestone](
-      HttpQuery(resource(projectIdOrKey)),
+      HttpQuery(
+        path = resource(projectIdOrKey),
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       form
     )
 
   def remove(projectIdOrKey: IdOrKeyParam[Project], id: Id[Milestone]): ApiPrg[Response[Unit]] =
     delete(
-      HttpQuery(s"${resource(projectIdOrKey)}/${id.value}")
+      HttpQuery(
+        path = s"${resource(projectIdOrKey)}/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
     )
+}
+
+object MilestoneApi extends ApiContext[MilestoneApi] {
+  override def apply(baseUrl: String, credentials: Credentials): MilestoneApi =
+    new MilestoneApi(baseUrl, credentials)
 }

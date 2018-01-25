@@ -7,7 +7,8 @@ import backlog4s.dsl.HttpQuery
 import cats.data.NonEmptyList
 import backlog4s.formatters.SprayJsonFormats._
 
-object WikiApi {
+class WikiApi(override val baseUrl: String,
+              override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   val resource = "wikis"
@@ -18,7 +19,9 @@ object WikiApi {
         resource,
         Map(
           "projectIdOrKey" -> projectIdOrKey.toString
-        )
+        ),
+        credentials,
+        baseUrl
       )
     )
 
@@ -28,7 +31,9 @@ object WikiApi {
         s"$resource/count",
         Map(
           "projectIdOrKey" -> projectIdOrKey.toString
-        )
+        ),
+        credentials,
+        baseUrl
       )
     )
 
@@ -38,28 +43,36 @@ object WikiApi {
         s"$resource/tags",
         Map(
           "projectIdOrKey" -> projectIdOrKey.toString
-        )
+        ),
+        credentials,
+        baseUrl
       )
     )
 
   def attachments(id: Id[Wiki]): ApiPrg[Response[Seq[Attachment]]] =
     get[Seq[Attachment]](
       HttpQuery(
-        s"$resource/${id.value}/attachments"
+        path = s"$resource/${id.value}/attachments",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def downloadAttachment(id: Id[Wiki], attachmentId: Id[Attachment]): ApiPrg[Response[ByteStream]] =
     download(
       HttpQuery(
-        s"$resource/${id.value}/attachments/${attachmentId.value}"
+        path = s"$resource/${id.value}/attachments/${attachmentId.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def attach(id: Id[Wiki], attachmentIds: NonEmptyList[Id[Attachment]]): ApiPrg[Response[Attachment]] =
     post[AttachForm, Attachment](
       HttpQuery(
-        s"$resource/${id.value}/attachments"
+        path = s"$resource/${id.value}/attachments",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       AttachForm(attachmentIds.toList)
     )
@@ -67,28 +80,36 @@ object WikiApi {
   def removeAttachment(id: Id[Wiki], attachmentId: Id[Attachment]): ApiPrg[Response[Unit]] =
     delete(
       HttpQuery(
-        s"$resource/${id.value}/attachments/${attachmentId.value}"
+        path = s"$resource/${id.value}/attachments/${attachmentId.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def sharedFiles(id: Id[Wiki]): ApiPrg[Response[Seq[SharedFile]]] =
     get[Seq[SharedFile]](
       HttpQuery(
-        s"$resource/${id.value}/sharedFiles"
+        path = s"$resource/${id.value}/sharedFiles",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def history(id: Id[Wiki]): ApiPrg[Response[Seq[WikiHistory]]] =
     get[Seq[WikiHistory]](
       HttpQuery(
-        s"$resource/${id.value}/history"
+        path = s"$resource/${id.value}/history",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def stars(id: Id[Wiki]): ApiPrg[Response[Seq[Star]]] =
     get[Seq[Star]](
       HttpQuery(
-        s"$resource/${id.value}/stars"
+        path = s"$resource/${id.value}/stars",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
@@ -97,7 +118,9 @@ object WikiApi {
   def add(form: AddWikiForm): ApiPrg[Response[Wiki]] =
     post[AddWikiForm, Wiki](
       HttpQuery(
-        resource
+        path = resource,
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
@@ -105,7 +128,9 @@ object WikiApi {
   def update(id: Id[Wiki], form: UpdateWikiForm): ApiPrg[Response[Wiki]] =
     put[UpdateWikiForm, Wiki](
       HttpQuery(
-        resource
+        path = resource,
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       form
     )
@@ -116,7 +141,14 @@ object WikiApi {
         s"$resource/${id.value}",
         Map(
           "mailNotify" -> mailNotify.toString
-        )
+        ),
+        credentials,
+        baseUrl
       )
     )
+}
+
+object WikiApi extends ApiContext[WikiApi] {
+  override def apply(baseUrl: String, credentials: Credentials): WikiApi =
+    new WikiApi(baseUrl, credentials)
 }
