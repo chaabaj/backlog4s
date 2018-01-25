@@ -8,7 +8,8 @@ import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import backlog4s.dsl.HttpQuery
 import backlog4s.formatters.SprayJsonFormats._
 
-object ProjectApi {
+class ProjectApi(override val baseUrl: String,
+                 override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   private val resource = "projects"
@@ -27,34 +28,67 @@ object ProjectApi {
       "all" -> all.toString
     ))
 
-    get[Seq[Project]](HttpQuery(resource, params))
+    get[Seq[Project]](HttpQuery(resource, params, credentials, baseUrl))
   }
 
   def byIdOrKey(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Project]] =
-    get[Project](HttpQuery(s"$resource/$idOrKey"))
+    get[Project](
+      HttpQuery(
+        path = s"$resource/$idOrKey",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
+    )
 
   def admins(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
-    get[Seq[User]](HttpQuery(s"$resource/$idOrKey/administrators"))
+    get[Seq[User]](
+      HttpQuery(
+        path = s"$resource/$idOrKey/administrators",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
+    )
 
   def users(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
-    get[Seq[User]](HttpQuery(s"$resource/$idOrKey/users"))
+    get[Seq[User]](
+      HttpQuery(
+        path = s"$resource/$idOrKey/users",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
+    )
 
   def icon(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[ByteStream]] =
-    download(HttpQuery(s"$resource/$idOrKey/image"))
+    download(
+      HttpQuery(
+        path = s"$resource/$idOrKey/image",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
+    )
 
   def recentlyViewed(order: Order = Order.Desc): ApiPrg[Response[Seq[Project]]] =
     get[Seq[Project]](
       HttpQuery(
-        "users/myself/recentlyViewedProjects"
+        path = "users/myself/recentlyViewedProjects",
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def create(addProjectForm: AddProjectForm): ApiPrg[Response[Project]] =
-    post[AddProjectForm, Project](HttpQuery(resource), addProjectForm)
+    post[AddProjectForm, Project](
+      HttpQuery(path = resource, credentials = credentials, baseUrl = baseUrl),
+      addProjectForm
+    )
 
   def addAdmin(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
     post[CustomForm, User](
-      HttpQuery(s"$resource/$idOrKey/administrators"),
+      HttpQuery(
+        path = s"$resource/$idOrKey/administrators",
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
       Map(
         "userId" -> userId.value.toString
       )
@@ -65,13 +99,17 @@ object ProjectApi {
       path = s"$resource/$idOrKey/administrators",
       params = Map(
         "userId" -> userId.value.toString
-      )
+      ),
+      credentials = credentials,
+      baseUrl = baseUrl
     ))
 
   def addUser(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
     post[CustomForm, User](
       HttpQuery(
-        s"$resource/$idOrKey/users"
+        path = s"$resource/$idOrKey/users",
+        credentials = credentials,
+        baseUrl = baseUrl
       ),
       Map(
         "userId" -> userId.toString
@@ -84,12 +122,24 @@ object ProjectApi {
         path = s"$resource/$idOrKey/users",
         params = Map(
           "userId" -> userId.value.toString
-        )
+        ),
+        credentials = credentials,
+        baseUrl = baseUrl
       )
     )
 
   def update(idOrKey: IdOrKeyParam[Project], form: UpdateProjectForm): ApiPrg[Response[Project]] =
     put[UpdateProjectForm, Project](
-      HttpQuery(s"$resource/$idOrKey"), form
+      HttpQuery(
+        path = s"$resource/$idOrKey",
+        credentials = credentials,
+        baseUrl = baseUrl
+      ),
+      form
     )
+}
+
+object ProjectApi extends ApiContext[ProjectApi] {
+  override def apply(baseUrl: String, credentials: Credentials): ProjectApi =
+    new ProjectApi(baseUrl, credentials)
 }

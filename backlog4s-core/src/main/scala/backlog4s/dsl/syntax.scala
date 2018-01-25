@@ -27,4 +27,25 @@ object syntax {
         case Left(error) => throw BacklogApiException(error)
       }
   }
+
+  implicit class ApiSeqOps[A](apiPrg: Seq[ApiPrg[A]]) {
+    // Allow to run a sequence of operation
+    // This is not running in parallel still sequential
+    // I need to study about combining Free monad and Free applicative
+    // To understand how can i run multiple program step in parallel
+    // Also i want to keep the syntax of writing Api program
+    // as simple as possible the performance cost will be here
+    // important because we will not be able to exploit multiple cores
+    // to dispatch multiple api request at the same time
+    // For now this is an enough solution
+    def sequence: ApiPrg[Seq[A]] =
+      apiPrg.foldLeft(pure(Seq.empty[A])) {
+        case (newPrg, prg) =>
+          newPrg.flatMap { results =>
+            prg.map { result =>
+              results :+ result
+            }
+          }
+      }
+  }
 }

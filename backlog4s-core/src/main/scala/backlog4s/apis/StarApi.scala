@@ -10,7 +10,8 @@ import org.joda.time.DateTime
 import backlog4s.formatters.SprayJsonFormats._
 import backlog4s.utils.QueryParameter
 
-object StarApi {
+class StarApi(override val baseUrl: String,
+              override val credentials: Credentials) extends Api {
   import backlog4s.dsl.ApiDsl.HttpOp._
 
   def user(id: Id[User],
@@ -28,7 +29,9 @@ object StarApi {
     get[Seq[Star]](
       HttpQuery(
         s"users/${id.value}/stars",
-        QueryParameter.removeEmptyValue(params)
+        QueryParameter.removeEmptyValue(params),
+        credentials,
+        baseUrl
       )
     )
   }
@@ -48,14 +51,21 @@ object StarApi {
     get[Count](
       HttpQuery(
         s"users/${id.value}/stars/count",
-        QueryParameter.removeEmptyValue(params)
+        QueryParameter.removeEmptyValue(params),
+        credentials,
+        baseUrl
       )
     )
   }
 
   def star(starForm: StarForm): ApiPrg[Response[NoContent]] =
     post[StarForm, NoContent](
-      HttpQuery("stars"),
+      HttpQuery(path = "stars", credentials = credentials, baseUrl = baseUrl),
       starForm
     )
+}
+
+object StarApi extends ApiContext[StarApi] {
+  override def apply(baseUrl: String, credentials: Credentials): StarApi =
+    new StarApi(baseUrl, credentials)
 }
