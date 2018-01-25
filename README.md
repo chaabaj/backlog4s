@@ -25,12 +25,12 @@ Not published yet on maven use this git repository
 
 ## How to use
 
-First create a Key.scala file like this:
+Look at backlog4s-test contain a program sample
+
+To compile the program sample you need to create a Key.scala file like this:
 ```scala
 object ApiKey {
   val accessKey = "YOUR_API_KEY_HERE"
 }
 ```
-
-Look at backlog4s-test for sample code :)
 
