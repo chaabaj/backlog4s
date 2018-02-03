@@ -127,10 +127,10 @@ class AkkaHttpInterpret(implicit actorSystem: ActorSystem, mat: Materializer,
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 
-  override def delete(query: HttpQuery): Future[Response[Unit]] =
+  override def delete[A](query: HttpQuery, format: JsonFormat[A]): Future[Response[A]] =
     for {
       serverResponse <- doRequest(createRequest(HttpMethods.DELETE, query))
-      response = serverResponse.map(_ => ())
+      response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 
   // Follow redirection in case of download files

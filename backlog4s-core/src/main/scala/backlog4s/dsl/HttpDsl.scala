@@ -38,7 +38,10 @@ case class Put[Payload, A](
   format: JsonFormat[A],
   payloadFormat: JsonFormat[Payload]
 ) extends HttpADT[Response[A]]
-case class Delete(query: HttpQuery) extends HttpADT[Response[Unit]]
+case class Delete[A](
+  query: HttpQuery,
+  format: JsonFormat[A],
+) extends HttpADT[Response[A]]
 case class Download(query: HttpQuery)
   extends HttpADT[Response[ByteStream]]
 case class Upload[A](query: HttpQuery,
@@ -65,8 +68,9 @@ class BacklogHttpOp[F[_]](implicit I: InjectK[HttpADT, F]) {
             (implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): HttpF[Response[A]] =
     Free.inject[HttpADT, F](Put(query, payload, format, payloadFormat))
 
-  def delete(query: HttpQuery): HttpF[Response[Unit]] =
-    Free.inject[HttpADT, F](Delete(query))
+  def delete[A](query: HttpQuery)
+            (implicit format: JsonFormat[A]): HttpF[Response[A]] =
+    Free.inject[HttpADT, F](Delete(query, format))
 
   def download(query: HttpQuery): HttpF[Response[ByteStream]] =
     Free.inject[HttpADT, F](Download(query))
@@ -90,7 +94,7 @@ trait BacklogHttpInterpret[F[_]] extends (HttpADT ~> F) {
                          payload: Payload,
                          format: JsonFormat[A],
                          payloadFormat: JsonFormat[Payload]): F[Response[A]]
-  def delete(query: HttpQuery): F[Response[Unit]]
+  def delete[A](query: HttpQuery, format: JsonFormat[A]): F[Response[A]]
   def download(query: HttpQuery): F[Response[ByteStream]]
   def upload[A](query: HttpQuery, file: File, format: JsonFormat[A]): F[Response[A]]
   def pure[A](a: A): F[A]
@@ -103,8 +107,8 @@ trait BacklogHttpInterpret[F[_]] extends (HttpADT ~> F) {
       update(query, payload, format, payloadFormat)
     case Post(query, payload, format, payloadFormat) =>
       create(query, payload, format, payloadFormat)
-    case Delete(query) =>
-      delete(query)
+    case Delete(query, format) =>
+      delete(query, format)
     case Download(query) =>
       download(query)
     case Upload(query, file, format) =>

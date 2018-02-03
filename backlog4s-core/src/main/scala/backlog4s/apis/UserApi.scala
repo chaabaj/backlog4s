@@ -57,7 +57,7 @@ class UserApi(override val baseUrl: String,
       form
     )
 
-  def remove(id: Id[User]): ApiPrg[Response[Unit]] =
+  def remove(id: Id[User]): ApiPrg[Response[User]] =
     delete(
       HttpQuery(
         path = s"$resource/${id.value}",
