@@ -55,17 +55,20 @@ object StreamingEffect {
 
     override def flatMap[A, B](fa: ApiPrg[A])(f: A => ApiPrg[B]): ApiPrg[B] =
       fa.flatMap(f)
-
-    override def raiseError[A](e: Throwable): ApiPrg[A] = throw e
+    
+    // Delay throwing until its interpretation
+    override def raiseError[A](e: Throwable): ApiPrg[A] =
+      suspend(throw e)
 
     override def pure[A](x: A): ApiPrg[A] =
       BacklogHttpOp.pure(x)
 
-    override def handleErrorWith[A](fa: ApiPrg[A])(f: Throwable => ApiPrg[A]): ApiPrg[A] =
-      try {
-        fa.step
-      } catch {
-        case NonFatal(ex) => f(ex)
-      }
+    // If an exception is gonna to happen it's during the interpretation not here
+    // They are maybe some way to implement here if i had ApiPrg[Throwable \/ A] but here
+    // We don't know if fa during it's interpretation would fails
+    // So don't call this method and expect this behavior it's not gonna to work
+    // For IO monad it's perfectly normal but for Free monad this type signature isn't enough
+    // To make it simple i don't know how to implement this without evaluate fa
+    override def handleErrorWith[A](fa: ApiPrg[A])(f: Throwable => ApiPrg[A]): ApiPrg[A] = fa
   }
 }
