@@ -4,16 +4,17 @@ import akka.stream.ActorMaterializer
 import backlog4s.apis._
 import backlog4s.datas._
 import backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
+import backlog4s.streaming.Streaming
 import cats.effect.IO
 
 import scala.util.{Failure, Success}
 import cats.implicits._
 import hammock.jvm._
-import fs2._
 
 object App {
 
   import backlog4s.dsl.syntax._
+  import backlog4s.streaming.StreamingEffect._
 
   implicit val hammockInterpreter = Interpreter[IO]
   val baseUrl = "https://nulab.backlog.jp/api/v2/"
@@ -29,44 +30,20 @@ object App {
 
     import allApi._
 
-    val prg = for {
-      projects <- projectApi.all().orFail
-      categories <- categoryApi.allOf(
-        IdParam(projects.head.id)
-      ).orFail
-      milestones <- milestoneApi.allOf(
-        IdParam(projects.head.id)
-      ).orFail
-      issueTypes <- issueTypeApi.allOf(
-        IdParam(projects.head.id)
-      ).orFail
-      statuses <- statusApi.all.orFail
-      priorities <- priorityApi.all.orFail
-      resolutions <- resolutionApi.all.orFail
-      issues <- issueApi.search(IssueSearch(count = 100)).orFail
-      issue <- issueApi.byIdOrKey(IdParam(issues.head.id)).orFail
-      countIssues <- issueApi.count().orFail
-      activities <- activityApi.space
-      repositories <- gitApi.allOf(IdParam(projects.head.id)).orFail
-    } yield repositories
+    val userStream = Streaming.stream(1000)(index => userApi.all(index))
 
-    val prg2 = userApi.create(
-      AddUserForm(
-        "userId",
-        "vsdv",
-        "vsd",
-        ")@gmail.com",
-        Role.Admin
-      )
-    )
+    userStream.compile.toVector.foldMap(interpreter).onComplete {
+      case Success(data) => println(data)
+      case Failure(ex) => ex.printStackTrace()
+    }
 
-    prg.foldMap(interpreter).onComplete { result =>
+    /*prg.foldMap(interpreter).onComplete { result =>
       result match {
         case Success(data) => println(data)
         case Failure(ex) => ex.printStackTrace()
       }
       system.terminate()
-    }
+    }*/
   }
 
   def usingHammock(): Unit = {
@@ -86,6 +63,7 @@ object App {
     }*/
 
   }
+
 
   def main(args: Array[String]): Unit = {
     usingAkka()

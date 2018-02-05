@@ -1,6 +1,9 @@
 package backlog4s.dsl
 
+import cats.effect.Sync
 import cats.free.Free
+
+import scala.util.control.NonFatal
 
 /**
   * ApiDSL definition
@@ -11,5 +14,5 @@ object ApiDsl {
   type ApiADT[A] = HttpADT[A]
   type ApiPrg[A] = Free[ApiADT, A]
 
-  val HttpOp = implicitly[BacklogHttpOp[ApiADT]]
+  val HttpOp = BacklogHttpOp
 }

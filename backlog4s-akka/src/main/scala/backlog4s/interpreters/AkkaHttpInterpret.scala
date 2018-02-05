@@ -15,6 +15,7 @@ import backlog4s.datas.{AccessKey, ApiErrors, Credentials, OAuth2Token}
 import backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
 import backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
 import spray.json._
+import cats.Monad
 import cats.implicits._
 import fs2.interop.reactivestreams._
 
@@ -27,6 +28,8 @@ class AkkaHttpInterpret(implicit actorSystem: ActorSystem, mat: Materializer,
 
 
   import backlog4s.formatters.SprayJsonFormats._
+
+  implicit val monad = implicitly[Monad[Future]]
 
   private val http = Http()
   private val timeout = 10.seconds
