@@ -17,14 +17,14 @@ object Streaming {
   type ApiStream[A] = Stream[ApiPrg, Seq[A]]
 
   // Example of users streaming
-  def streamUser(userApi: UserApi, start: Int, limit: Int): ApiStream[User] = {
+  /*def streamUser(userApi: UserApi, start: Int, limit: Int): ApiStream[User] = {
     stream[User]() { index =>
       if (index < limit)
         Some(userApi.all(index))
       else
         None
     }
-  }
+  }*/
 
   def stream[A](index: Int = 0, step: Int = 100)(f: (Int) => Option[T[A]]): ApiStream[A] = {
     Stream.unfoldEval[ApiPrg, Int, Seq[A]](index) { acc =>
