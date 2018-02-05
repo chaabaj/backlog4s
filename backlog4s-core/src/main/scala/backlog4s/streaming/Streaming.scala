@@ -63,7 +63,7 @@ object StreamingEffect {
 
     override def handleErrorWith[A](fa: ApiPrg[A])(f: Throwable => ApiPrg[A]): ApiPrg[A] =
       try {
-        fa.map(res => res)
+        fa.step
       } catch {
         case NonFatal(ex) => f(ex)
       }
