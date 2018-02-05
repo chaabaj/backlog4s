@@ -14,6 +14,7 @@ import cats.implicits._
 import spray.json._
 import hammock.hi._
 import backlog4s.formatters.SprayJsonFormats._
+import cats.Monad
 import hammock.Entity.{ByteArrayEntity, StringEntity}
 import fs2.Stream
 
@@ -31,6 +32,8 @@ object HammockInterpreter {
 class HammockInterpreter(baseUrl: String, credentials: Credentials)
                         (implicit val hammockInterpreter: Interpreter[IO])
   extends BacklogHttpInterpret[IO] {
+
+  implicit val monad = implicitly[Monad[IO]]
 
   import HammockInterpreter._
 
