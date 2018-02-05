@@ -16,25 +16,18 @@ object Streaming {
   type UserStream = Stream[ApiPrg, Seq[User]]
   type ApiStream[A] = Stream[ApiPrg, Seq[A]]
 
-  // Example of users streaming
-  /*def streamUser(userApi: UserApi, start: Int, limit: Int): ApiStream[User] = {
-    stream[User]() { index =>
-      if (index < limit)
-        Some(userApi.all(index))
-      else
-        None
-    }
-  }*/
+  def streamUser(userApi: UserApi, start: Int, limit: Int): ApiStream[User] =
+    stream[User](1000)(index => userApi.all(index))
 
-  def stream[A](index: Int = 0, step: Int = 100)(f: (Int) => Option[T[A]]): ApiStream[A] = {
-    Stream.unfoldEval[ApiPrg, Int, Seq[A]](index) { acc =>
-      f() match {
-        case Some(prg) =>
-          prg.orFail.map { result =>
-            if (result.isEmpty) None
-            else Some((result, index + step))
-          }
-        case None => pure[Option[(Seq[A], Int)]](None)
+  def stream[A](limit: Int, start: Int = 0, step: Int = 100)(f: (Int) => T[A]): ApiStream[A] = {
+    Stream.unfoldEval[ApiPrg, Int, Seq[A]](start) { index =>
+      if (index >= limit)
+        pure[Option[(Seq[A], Int)]](None)
+      else {
+        f().orFail.map { result =>
+              if (result.isEmpty) None
+              else Some((result, index + step))
+        }
       }
     }
   }
