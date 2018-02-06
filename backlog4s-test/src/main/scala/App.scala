@@ -4,7 +4,7 @@ import akka.stream.ActorMaterializer
 import backlog4s.apis._
 import backlog4s.datas._
 import backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
-import backlog4s.streaming.Streaming
+import backlog4s.streaming.ApiStream
 import cats.effect.IO
 
 import scala.util.{Failure, Success}
@@ -30,16 +30,15 @@ object App {
 
     import allApi._
 
-    val issueStream = Streaming.stream(10000)(
-      index => issueApi.search(IssueSearch(offset = index))
+    val issueStream = ApiStream.parallel(1000, 4)(
+      (index, count) => issueApi.search(IssueSearch(offset = index, count = count))
     )
 
     val issuesPrg = Seq.range(0, 2000, 100).map(index => issueApi.search(IssueSearch(offset = index)).orFail)
 
-    issuesPrg.parallel.foldMap(interpreter).onComplete { result =>
+    issueStream.compile.drain.foldMap(interpreter).onComplete { result =>
       result match {
-        case Success(data) =>
-          println(data.flatten.length)
+        case Success(data) => println("Stream processed")
         case Failure(ex) => ex.printStackTrace()
       }
     }
