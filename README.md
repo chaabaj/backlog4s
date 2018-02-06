@@ -8,7 +8,7 @@
        For now by default we use akka-http.
        Later we will provide support for others libraries
 3. [ ] Data aggregation
-4. [ ] Streaming support
+4. [x] Streaming support
 5. [ ] Setup webhook
 6. [ ] OAuth2 support
 
