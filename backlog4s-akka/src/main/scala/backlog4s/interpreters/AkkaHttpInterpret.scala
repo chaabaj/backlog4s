@@ -36,7 +36,6 @@ class AkkaHttpInterpret(implicit actorSystem: ActorSystem, mat: Materializer,
   private val maxRedirCount = 20
   private val reqHeaders: Seq[HttpHeader] = Seq(
     headers.`User-Agent`("backlog4s"),
-    headers.`Content-Type`(ContentTypes.`application/json`),
     headers.`Accept-Charset`(HttpCharsets.`UTF-8`)
   )
 
