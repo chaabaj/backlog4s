@@ -8,7 +8,7 @@ import fs2.Stream
 
 import scala.util.control.NonFatal
 
-object Streaming {
+object ApiStream {
 
   import backlog4s.dsl.ApiDsl.HttpOp._
   import backlog4s.dsl.syntax._
@@ -28,14 +28,30 @@ object Streaming {
     * @tparam A type of the data to get
     * @return
     */
-  def stream[A](limit: Int, start: Int = 0, step: Int = 100)(f: (Int) => ApiResponse[A]): ApiStream[A] = {
+  def sequential[A](limit: Int, start: Int = 0, step: Int = 100)(f: (Int, Int) => ApiResponse[A]): ApiStream[A] = {
     Stream.unfoldEval[ApiPrg, Int, Seq[A]](start) { index =>
       if (index >= limit)
         pure[Option[(Seq[A], Int)]](None)
       else {
-        f(index).orFail.map { result =>
+        f(index, index + step).orFail.map { result =>
           if (result.isEmpty) None
           else Some((result, index + step))
+        }
+      }
+    }
+  }
+
+  def parallel[A](limit: Int, parallelism: Int, start: Int = 0, step: Int = 100)
+                 (f: (Int, Int) => ApiResponse[A]): ApiStream[A] = {
+    Stream.unfoldEval[ApiPrg, Int, Seq[A]](start) { index =>
+      if (index >= limit)
+        pure[Option[(Seq[A], Int)]](None)
+      else {
+        val end = index + parallelism * step
+        val prgs = Seq.range(index, end, step).map(index => f(index, step).orFail)
+        prgs.parallel.map { result =>
+          if (result.exists(_.isEmpty)) None
+          else Some((result.flatten, end))
         }
       }
     }
