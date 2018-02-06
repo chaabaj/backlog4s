@@ -12,6 +12,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Sink, Source}
 import cats.effect.IO
 import backlog4s.datas.{AccessKey, ApiErrors, Credentials, OAuth2Token}
+import backlog4s.dsl.BacklogHttpOp.HttpF
 import backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
 import backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
 import spray.json._
@@ -90,6 +91,15 @@ class AkkaHttpInterpret(implicit actorSystem: ActorSystem, mat: Materializer,
     } yield result
 
   override def pure[A](a: A): Future[A] = Future.successful(a)
+
+  override def parallel[A](prgs: scala.Seq[HttpF[A]]): Future[scala.Seq[A]] = {
+    Future.sequence(
+      prgs.map(_.foldMap(this))
+    ).map { result =>
+      result
+    }
+  }
+
 
   override def create[Payload, A](query: HttpQuery,
                                   payload: Payload,

@@ -30,12 +30,32 @@ object App {
 
     import allApi._
 
-    val userStream = Streaming.stream(1000)(index => userApi.all(index))
+    val issueStream = Streaming.stream(10000)(
+      index => issueApi.search(IssueSearch(offset = index))
+    )
 
-    userStream.compile.toVector.foldMap(interpreter).onComplete {
-      case Success(data) => println(data)
-      case Failure(ex) => ex.printStackTrace()
+    val issuesPrg = Seq.range(0, 2000, 100).map(index => issueApi.search(IssueSearch(offset = index)).orFail)
+
+    issuesPrg.parallel.foldMap(interpreter).onComplete { result =>
+      result match {
+        case Success(data) =>
+          println(data.flatten.length)
+        case Failure(ex) => ex.printStackTrace()
+      }
     }
+    /*issuesPrg.sequence.foldMap(interpreter).onComplete { result =>
+      result match {
+        case Success(data) => println(data)
+        case Failure(ex) => ex.printStackTrace()
+      }
+    }*/
+    /*issueStream.compile.toVector.foldMap(interpreter).onComplete { result =>
+      result match {
+        case Success(data) => println(data)
+        case Failure(ex) => ex.printStackTrace()
+      }
+      system.terminate()
+    }*/
 
     /*prg.foldMap(interpreter).onComplete { result =>
       result match {

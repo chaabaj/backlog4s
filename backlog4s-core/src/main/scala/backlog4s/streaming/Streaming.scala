@@ -3,7 +3,7 @@ package backlog4s.streaming
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.BacklogHttpOp
 import backlog4s.dsl.HttpADT.Response
-import cats.effect.Sync
+import cats.effect.{Effect, IO, Sync}
 import fs2.Stream
 
 import scala.util.control.NonFatal
@@ -45,7 +45,7 @@ object Streaming {
 object StreamingEffect {
   implicit object ApiPrgSync extends Sync[ApiPrg] {
     override def suspend[A](thunk: => ApiPrg[A]): ApiPrg[A] =
-      BacklogHttpOp.suspend(thunk)
+      thunk
 
     override def tailRecM[A, B](a: A)(f: A => ApiPrg[Either[A, B]]): ApiPrg[B] =
       f(a) flatMap {

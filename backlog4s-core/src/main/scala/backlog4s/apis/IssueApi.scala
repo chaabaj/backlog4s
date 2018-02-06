@@ -31,6 +31,7 @@ class IssueApi(override val baseUrl: String,
       "sort" -> issueSearch.sort.map(_.toString).getOrElse(""),
       "order" -> issueSearch.order.toString,
       "count" -> issueSearch.count.toString,
+      "offset" -> issueSearch.offset.toString,
       "createdSince" -> issueSearch.createdSince
         .map(_.toString(DateTimeFormat.formatter))
         .getOrElse(""),

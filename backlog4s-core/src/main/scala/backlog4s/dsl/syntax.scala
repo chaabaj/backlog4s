@@ -28,7 +28,7 @@ object syntax {
       }
   }
 
-  implicit class ApiSeqOps[A](apiPrg: Seq[ApiPrg[A]]) {
+  implicit class ApiSeqOps[A](apiPrgs: Seq[ApiPrg[A]]) {
     // Allow to run a sequence of operation
     // This is not running in parallel still sequential
     // I need to study about combining Free monad and Free applicative
@@ -39,7 +39,7 @@ object syntax {
     // to dispatch multiple api request at the same time
     // For now this is an enough solution
     def sequence: ApiPrg[Seq[A]] =
-      apiPrg.foldLeft(pure(Seq.empty[A])) {
+      apiPrgs.foldLeft(pure(Seq.empty[A])) {
         case (newPrg, prg) =>
           newPrg.flatMap { results =>
             prg.map { result =>
@@ -47,5 +47,8 @@ object syntax {
             }
           }
       }
+
+    def parallel: ApiPrg[Seq[A]] =
+      BacklogHttpOp.parallel(apiPrgs)
   }
 }

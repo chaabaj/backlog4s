@@ -7,6 +7,7 @@ import cats.effect.IO
 import cats.free.Free
 import cats.{InjectK, Monad, ~>}
 import backlog4s.datas.{ApiErrors, Credentials}
+import backlog4s.dsl.BacklogHttpOp.HttpF
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import spray.json.JsonFormat
 import fs2.Stream
@@ -47,6 +48,7 @@ private[dsl] case class Upload[A](query: HttpQuery,
   extends HttpADT[Response[A]]
 private[dsl] case class Pure[A](a: A) extends HttpADT[A]
 private[dsl] case class Suspend[A](a: () => Free[HttpADT, A]) extends HttpADT[A]
+private[dsl] case class Parallel[A](prgs: Seq[Free[HttpADT, A]]) extends HttpADT[Seq[A]]
 
 object BacklogHttpOp {
   type HttpF[A] = Free[HttpADT, A]
@@ -56,6 +58,9 @@ object BacklogHttpOp {
 
   def suspend[A](a: => HttpF[A]): HttpF[A] =
     Free.liftF(Suspend(() => a))
+
+  def parallel[A](prgs: Seq[HttpF[A]]): HttpF[Seq[A]] =
+    Free.liftF[HttpADT, Seq[A]](Parallel(prgs))
 
   def post[Payload, A](query: HttpQuery, payload: Payload)
                       (implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): HttpF[Response[A]] =
@@ -92,12 +97,14 @@ trait BacklogHttpInterpret[F[_]] extends (HttpADT ~> F) {
   def download(query: HttpQuery): F[Response[ByteStream]]
   def upload[A](query: HttpQuery, file: File, format: JsonFormat[A]): F[Response[A]]
   def pure[A](a: A): F[A]
+  def parallel[A](prgs: Seq[HttpF[A]]): F[Seq[A]]
 
   implicit def monad: Monad[F]
 
   override def apply[A](fa: HttpADT[A]): F[A] = fa match {
     case Pure(a) => pure(a)
     case Suspend(prg) => prg().foldMap(this)
+    case Parallel(prgs) => parallel(prgs)
     case Get(query, format) =>
       get(query, format)
     case Put(query, payload, format, payloadFormat) =>

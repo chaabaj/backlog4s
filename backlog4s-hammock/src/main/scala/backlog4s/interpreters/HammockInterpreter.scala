@@ -18,6 +18,8 @@ import cats.Monad
 import hammock.Entity.{ByteArrayEntity, StringEntity}
 import fs2.Stream
 
+import scala.concurrent.Future
+
 object HammockInterpreter {
   // hmmm... no way to pass directly a entity to hammock
   // need to define a codec for entity(just doing nothing lol)
@@ -125,6 +127,8 @@ class HammockInterpreter(baseUrl: String, credentials: Credentials)
 
 
   override def pure[A](a: A): IO[A] = IO.apply(a)
+
+  override def parallel[A](prgs: Seq[BacklogHttpOp.HttpF[A]]): IO[Seq[A]] = ???
 
   override def get[A](query: HttpQuery, format: JsonFormat[A]): IO[Response[A]] =
     createRequest(Method.GET, query)
