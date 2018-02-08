@@ -90,7 +90,11 @@ class IssueApi(override val baseUrl: String,
       HttpQuery(
         path = "users/myself/recentlyViewedIssues",
         credentials = credentials,
-        baseUrl = baseUrl
+        baseUrl = baseUrl,
+        params = Map(
+          "offset" -> offset.toString,
+          "count" -> count.toString
+        )
       )
     )
 

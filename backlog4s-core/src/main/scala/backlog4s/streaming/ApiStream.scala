@@ -33,6 +33,9 @@ object ApiStream {
       if (index >= limit)
         pure[Option[(Seq[A], Int)]](None)
       else {
+        var end = index + step
+        if (end > limit)
+          end = limit - index
         f(index, index + step).orFail.map { result =>
           if (result.isEmpty) None
           else Some((result, index + step))

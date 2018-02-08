@@ -5,12 +5,15 @@ import java.io.File
 
 import cats.effect.IO
 import cats.free.Free
-import cats.{InjectK, Monad, ~>}
-import backlog4s.datas.{ApiErrors, Credentials}
+import cats.{Monad, ~>}
+import backlog4s.datas.ApiErrors
+import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.BacklogHttpOp.HttpF
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
+import backlog4s.streaming.ApiStream.ApiStream
 import spray.json.JsonFormat
 import fs2.Stream
+import backlog4s.streaming.StreamingEffect._
 
 sealed trait HttpError
 case class RequestError(errors: ApiErrors) extends HttpError
@@ -98,6 +101,12 @@ trait BacklogHttpInterpret[F[_]] extends (HttpADT ~> F) {
   def upload[A](query: HttpQuery, file: File, format: JsonFormat[A]): F[Response[A]]
   def pure[A](a: A): F[A]
   def parallel[A](prgs: Seq[HttpF[A]]): F[Seq[A]]
+
+  def run[A](apiPrg: ApiPrg[A]): F[A] = apiPrg.foldMap(this)
+  def runStream[A](stream: ApiStream[A]): F[Unit] =
+    stream.compile.drain.foldMap(this)
+  def runStreamWithResult[A](stream: ApiStream[A]): F[Vector[Seq[A]]] =
+    stream.compile.toVector.foldMap(this)
 
   implicit def monad: Monad[F]
 

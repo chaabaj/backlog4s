@@ -1,6 +1,8 @@
+package backlog4s.graphql
+
+import backlog4s.datas.Project
 import sangria.execution.deferred.{Fetcher, HasId}
 import backlog4s.graphql
-import backlog4s.graphql.{CharacterRepo, Droid, Episode, Human}
 import sangria.schema._
 
 import scala.concurrent.Future
@@ -49,6 +51,12 @@ object SchemaDefinition {
           Some("Which movies they appear in."),
           resolve = _.value.appearsIn map (e ⇒ Some(e)))
       ))
+
+  /*val Project: InterfaceType[ProjectRepository, Project] =
+    InterfaceType(
+      "Project",
+
+    )*/
 
   val Human =
     ObjectType(
@@ -100,6 +108,9 @@ object SchemaDefinition {
 
   val EpisodeArg = Argument("episode", OptionInputType(EpisodeEnum),
     description = "If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.")
+
+
+
 
   val Query = ObjectType(
     "Query", fields[CharacterRepo, Unit](

@@ -8,10 +8,6 @@ object syntax {
 
   import ApiDsl.HttpOp._
 
-  // Extension methods to easily stop execution of
-  // program when the program cannot continue
-  // This will likely to change when i understand more
-  // how to use FreeT monad transformer
   implicit class ResponseOps[A](response: Response[A]) {
     def orFail: ApiPrg[A] =
       response match {
@@ -38,7 +34,7 @@ object syntax {
     // important because we will not be able to exploit multiple cores
     // to dispatch multiple api request at the same time
     // For now this is an enough solution
-    def sequence: ApiPrg[Seq[A]] =
+    def sequential: ApiPrg[Seq[A]] =
       apiPrgs.foldLeft(pure(Seq.empty[A])) {
         case (newPrg, prg) =>
           newPrg.flatMap { results =>

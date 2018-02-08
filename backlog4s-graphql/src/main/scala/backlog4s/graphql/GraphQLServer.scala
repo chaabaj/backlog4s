@@ -2,23 +2,31 @@ package backlog4s.graphql
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import backlog4s.apis.AllApi
 import sangria.execution.deferred.DeferredResolver
-import sangria.execution.{ErrorWithResolver, Executor, QueryAnalysisError}
 import sangria.parser.QueryParser
+import sangria.execution.{ErrorWithResolver, Executor, QueryAnalysisError}
+import sangria.marshalling.sprayJson._
 import spray.json._
 
 import scala.util.{Failure, Success}
 
-object Server extends App {
+object Api {
+  val all = AllApi.accessKey(
+    "https://nulab.backlog.jp/api/v2/",
+    ApiKey.accessKey
+  )
+}
+
+object GraphQLServer extends App {
   implicit val system = ActorSystem("sangria-server")
   implicit val materializer = ActorMaterializer()
-
-  import system.dispatcher
+  implicit val exc = system.dispatcher
 
   val route: Route =
     (post & path("graphql")) {
@@ -55,15 +63,9 @@ object Server extends App {
             complete(BadRequest, JsObject("error" → JsString(error.getMessage)))
         }
       }
-    } ~
-      get {
-        getFromResource("graphiql.html")
-      }
-
-  Http().bindAndHandle(route, "0.0.0.0", sys.props.get("http.port").fold(8080)(_.toInt))
-}
-
-object GraphQLServer {
+    }
 
 
+  Http().bindAndHandle(route, "0.0.0.0", 3000)
+  println("Running")
 }

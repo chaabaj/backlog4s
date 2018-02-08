@@ -21,3 +21,7 @@ lazy val hammock = (project in file("backlog4s-hammock"))
 lazy val backlog4sTest = (project in file("backlog4s-test"))
   .settings(commonSettings)
   .dependsOn(core, akka, hammock)
+
+lazy val backlog4sGraphQl = (project in file("backlog4s-graphql"))
+  .settings(commonSettings)
+  .dependsOn(core, akka, backlog4sTest)
