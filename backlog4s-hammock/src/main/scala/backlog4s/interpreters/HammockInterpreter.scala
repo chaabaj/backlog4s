@@ -31,8 +31,7 @@ object HammockInterpreter {
   }
 }
 
-class HammockInterpreter(baseUrl: String, credentials: Credentials)
-                        (implicit val hammockInterpreter: Interpreter[IO])
+class HammockInterpreter()(implicit val hammockInterpreter: Interpreter[IO])
   extends BacklogHttpInterpret[IO] {
 
   implicit val monad = implicitly[Monad[IO]]
@@ -49,7 +48,7 @@ class HammockInterpreter(baseUrl: String, credentials: Credentials)
                                query: HttpQuery,
                                body: Option[Entity] = None,
                                opts: Opts = Opts.empty) = {
-    val uri = Uri.unsafeParse(baseUrl + query.path)
+    val uri = Uri.unsafeParse(query.baseUrl + query.path)
       .copy(query = query.params)
 
     val contentType = body.map {
@@ -57,7 +56,7 @@ class HammockInterpreter(baseUrl: String, credentials: Credentials)
       case _: ByteArrayEntity => header("Content-Type" -> "application/octet-stream")
     }.getOrElse(header("Content-Type" -> "application/json"))
 
-    credentials match {
+    query.credentials match {
       case AccessKey(key) =>
         Hammock.withOpts(
           method,

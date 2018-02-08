@@ -1,23 +1,41 @@
 package backlog4s.graphql
 
-import backlog4s.datas.Project
+import backlog4s.datas.{Id, Project}
+import backlog4s.dsl.BacklogHttpInterpret
 import sangria.execution.deferred.{Fetcher, HasId}
 import backlog4s.graphql
 import sangria.schema._
 
 import scala.concurrent.Future
+import backlog4s.dsl.syntax._
+import cats.effect.IO
+
 
 /**
   * Defines a GraphQL schema for the current project
   */
-object SchemaDefinition {
+class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
   /**
     * Resolves the lists of characters. These resolutions are batched and
     * cached for the duration of a query.
     */
+
+
+  implicit object ProjectHasId extends HasId[Project, Long] {
+    override def id(project: Project): Long = project.id.value
+  }
+
   val characters = Fetcher.caching(
     (ctx: CharacterRepo, ids: Seq[String]) ⇒
       Future.successful(ids.flatMap(id ⇒ ctx.getHuman(id) orElse ctx.getDroid(id))))(HasId(_.id))
+
+  val projects = Fetcher.caching(
+    (projectRepo: ProjectRepository, ids: Seq[Long]) =>
+      interp.run(
+        ids.map(projectRepo.getProject).parallel
+      )
+  )
+
 
   val EpisodeEnum = EnumType(
     "Episode",
@@ -52,11 +70,62 @@ object SchemaDefinition {
           resolve = _.value.appearsIn map (e ⇒ Some(e)))
       ))
 
-  /*val Project: InterfaceType[ProjectRepository, Project] =
-    InterfaceType(
-      "Project",
 
-    )*/
+  val ProjectType: ObjectType[ProjectRepository, Project] =
+    ObjectType(
+      "Project",
+      "Backlog project",
+      () => fields[ProjectRepository, Project](
+        Field(
+          "id",
+          LongType,
+          Some("Project id"),
+          resolve = _.value.id.value
+        ),
+        Field(
+          "projectKey",
+          StringType,
+          Some("Project key"),
+          resolve = _.value.projectKey.value
+        ),
+        Field(
+          "name",
+          StringType,
+          Some("Name"),
+          resolve = _.value.name
+        ),
+        Field(
+          "chartEnabled",
+          BooleanType,
+          Some("Chart enabled"),
+          resolve = _.value.chartEnabled
+        ),
+        Field(
+          "subtaskingEnabled",
+          BooleanType,
+          Some("Subtasking enabled"),
+          resolve = _.value.subtaskingEnabled
+        ),
+        Field(
+          "projectLeaderCanEditProjectLeader",
+          BooleanType,
+          Some("Who know what it is"),
+          resolve = _.value.projectLeaderCanEditProjectLeader
+        ),
+        Field(
+          "textFormattingRule",
+          StringType,
+          Some("text formatting rule"),
+          resolve = _.value.textFormattingRule
+        ),
+        Field(
+          "archived",
+          BooleanType,
+          Some("Project is archived?"),
+          resolve = _.value.archived
+        )
+      )
+    )
 
   val Human =
     ObjectType(
@@ -104,27 +173,44 @@ object SchemaDefinition {
         resolve = _.value.primaryFunction)
     ))
 
-  val ID = Argument("id", StringType, description = "id of the character")
+  val CharacterID = Argument("id", StringType, description = "id of the character")
+  val ID = Argument("id", IntType, description = "id of the project")
+
 
   val EpisodeArg = Argument("episode", OptionInputType(EpisodeEnum),
     description = "If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.")
 
-
-
-
-  val Query = ObjectType(
+  val HeroQuery = ObjectType(
     "Query", fields[CharacterRepo, Unit](
       Field("hero", Character,
         arguments = EpisodeArg :: Nil,
         deprecationReason = Some("Use `human` or `droid` fields instead"),
         resolve = (ctx) ⇒ ctx.ctx.getHero(ctx.arg(EpisodeArg))),
       Field("human", OptionType(Human),
-        arguments = ID :: Nil,
-        resolve = ctx ⇒ ctx.ctx.getHuman(ctx arg ID)),
+        arguments = CharacterID :: Nil,
+        resolve = ctx ⇒ ctx.ctx.getHuman(ctx arg CharacterID)),
       Field("droid", Droid,
-        arguments = ID :: Nil,
-        resolve = Projector((ctx, f) ⇒ ctx.ctx.getDroid(ctx arg ID).get))
+        arguments = CharacterID :: Nil,
+        resolve = Projector((ctx, f) ⇒ ctx.ctx.getDroid(ctx arg CharacterID).get)),
     ))
 
-  val StarWarsSchema = Schema(Query)
+  val ProjectQuery = ObjectType(
+    "Query", fields[ProjectRepository, Unit](
+      Field(
+        "project",
+        ProjectType,
+        arguments = ID :: Nil,
+        resolve = ctx => interp.run(ctx.ctx.getProject(ctx arg ID))
+      ),
+      Field(
+        "projects",
+        ListType(ProjectType),
+        arguments = Nil,
+        resolve = ctx => interp.run(ctx.ctx.getProjects())
+      )
+    )
+  )
+
+  val StarWarsSchema = Schema(HeroQuery)
+  val ProjectSchema = Schema(ProjectQuery)
 }
