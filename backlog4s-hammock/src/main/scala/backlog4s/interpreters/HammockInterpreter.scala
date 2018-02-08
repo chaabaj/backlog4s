@@ -18,7 +18,7 @@ import cats.Monad
 import hammock.Entity.{ByteArrayEntity, StringEntity}
 import fs2.Stream
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object HammockInterpreter {
   // hmmm... no way to pass directly a entity to hammock
@@ -31,10 +31,11 @@ object HammockInterpreter {
   }
 }
 
-class HammockInterpreter()(implicit val hammockInterpreter: Interpreter[IO])
-  extends BacklogHttpInterpret[IO] {
+class HammockInterpreter()(implicit val hammockInterpreter: Interpreter[IO],
+                           exc: ExecutionContext)
+  extends BacklogHttpInterpret[Future] {
 
-  implicit val monad = implicitly[Monad[IO]]
+  implicit val monad = implicitly[Monad[Future]]
 
   import HammockInterpreter._
 
@@ -97,7 +98,6 @@ class HammockInterpreter()(implicit val hammockInterpreter: Interpreter[IO])
     response.map { entity =>
       val content = entity.cata(_.body, _.body.toString)
 
-      println(s"received $content")
       content.parseJson.convertTo[A](format)
     }
   }
@@ -125,51 +125,54 @@ class HammockInterpreter()(implicit val hammockInterpreter: Interpreter[IO])
 
 
 
-  override def pure[A](a: A): IO[A] = IO.apply(a)
+  override def pure[A](a: A): Future[A] = Future.successful(a)
 
-  override def parallel[A](prgs: Seq[BacklogHttpOp.HttpF[A]]): IO[Seq[A]] = ???
+  override def parallel[A](prgs: Seq[BacklogHttpOp.HttpF[A]]): Future[Seq[A]] =
+    Future.sequence(
+      prgs.map(_.foldMap(this))
+    )
 
-  override def get[A](query: HttpQuery, format: JsonFormat[A]): IO[Response[A]] =
+  override def get[A](query: HttpQuery, format: JsonFormat[A]): Future[Response[A]] =
     createRequest(Method.GET, query)
       .map(handleResponse)
       .map(jsonResponseAs[A](_, format))
-      .exec[IO]
+      .exec[IO].unsafeToFuture()
 
 
   override def create[Payload, A](query: HttpQuery,
                                   payload: Payload,
                                   format: JsonFormat[A],
-                                  payloadFormat: JsonFormat[Payload]): IO[Response[A]] = {
+                                  payloadFormat: JsonFormat[Payload]): Future[Response[A]] = {
     createRequest(Method.POST, query, Some(jsonEntity(payload, payloadFormat)))
       .map(handleResponse)
       .map(jsonResponseAs[A](_, format))
-      .exec[IO]
+      .exec[IO].unsafeToFuture()
   }
 
 
-  override def delete(query: HttpQuery): IO[Response[Unit]] =
+  override def delete(query: HttpQuery): Future[Response[Unit]] =
     createRequest(Method.DELETE, query)
       .map(handleResponse)
       .map(discardBody)
-      .exec[IO]
+      .exec[IO].unsafeToFuture()
 
   override def update[Payload, A](query: HttpQuery,
                                   payload: Payload,
                                   format: JsonFormat[A],
-                                  payloadFormat: JsonFormat[Payload]): IO[Response[A]] =
+                                  payloadFormat: JsonFormat[Payload]): Future[Response[A]] =
     createRequest(Method.PUT, query, Some(jsonEntity(payload, payloadFormat)))
       .map(handleResponse)
       .map(jsonResponseAs[A](_, format))
-      .exec[IO]
+      .exec[IO].unsafeToFuture()
 
-  override def download(query: HttpQuery): IO[Response[ByteStream]] =
+  override def download(query: HttpQuery): Future[Response[ByteStream]] =
     createRequest(Method.GET, query)
       .map(handleResponse)
       .map(asByteStream)
-      .exec[IO]
+      .exec[IO].unsafeToFuture()
 
   // not supported yet need to figure out how to upload a file using hammock
   override def upload[A](query: HttpQuery,
                          file: File,
-                         format: JsonFormat[A]): IO[Response[A]] = ???
+                         format: JsonFormat[A]): Future[Response[A]] = ???
 }
