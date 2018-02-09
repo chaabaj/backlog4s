@@ -43,7 +43,7 @@ object GraphQLServer {
 
         // query parsed successfully, time to execute it!
         case Success(queryAst) ⇒
-          complete(Executor.execute(schemaDefinition.ProjectSchema, queryAst, new ProjectRepository,
+          complete(Executor.execute(schemaDefinition.ProjectSchema, queryAst, new BacklogRepository,
             variables = vars,
             operationName = operation,
             deferredResolver = DeferredResolver.fetchers(schemaDefinition.projects))

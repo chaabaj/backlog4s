@@ -26,7 +26,7 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
   }
 
   val projects = Fetcher(
-    (projectRepo: ProjectRepository, ids: Seq[Long]) =>
+    (projectRepo: BacklogRepository, ids: Seq[Long]) =>
       interp.run(
         ids.map(projectRepo.getProject).parallel
       )
@@ -39,11 +39,13 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
       )
   )*/
 
-  val ProjectType: ObjectType[ProjectRepository, Project] =
+  val issueSchema = new IssueSchema(interp)
+
+  val ProjectType: ObjectType[BacklogRepository, Project] =
     ObjectType(
       "Project",
       "Backlog project",
-      () => fields[ProjectRepository, Project](
+      () => fields[BacklogRepository, Project](
         Field(
           "id",
           LongType,
@@ -94,7 +96,7 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
         ),
         Field(
           "issues",
-          ListType(IssueSchema.schema),
+          ListType(issueSchema.schema),
           resolve = ctx => interp.run(ctx.ctx.getIssues(ctx.value.id.value))
         )
       )
@@ -103,7 +105,7 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
   val ID = Argument("id", IntType, description = "id of the project")
 
   val ProjectQuery = ObjectType(
-    "Query", fields[ProjectRepository, Unit](
+    "Query", fields[BacklogRepository, Unit](
       Field(
         "project",
         ProjectType,
@@ -115,6 +117,12 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
         ListType(ProjectType),
         arguments = Nil,
         resolve = ctx => interp.run(ctx.ctx.getProjects())
+      ),
+      Field(
+        "issue",
+        issueSchema.schema,
+        arguments = ID :: Nil,
+        resolve = ctx => interp.run(ctx.ctx.getIssue(ctx arg ID))
       )
     )
   )

@@ -1,9 +1,12 @@
 package backlog4s.graphql
 
 import backlog4s.datas._
+import backlog4s.dsl.BacklogHttpInterpret
 import sangria.schema._
 
-object IssueSchema {
+import scala.concurrent.Future
+
+class IssueSchema(interp: BacklogHttpInterpret[Future]) {
 
   val issueType: ObjectType[Unit, IssueType] =
     ObjectType(
@@ -43,11 +46,11 @@ object IssueSchema {
       )
     )
 
-  val schema: ObjectType[ProjectRepository, Issue] =
+  val schema: ObjectType[BacklogRepository, Issue] =
     ObjectType(
       "Issue",
       "Backlog issue",
-      () => fields[ProjectRepository, Issue](
+      () => fields[BacklogRepository, Issue](
         Field(
           "id",
           LongType,
@@ -139,6 +142,11 @@ object IssueSchema {
           "updated",
           StringType,
           resolve = _.value.updated.toString
+        ),
+        Field(
+          "comment",
+          ListType(CommentSchema.schema),
+          resolve = ctx => interp.run(ctx.ctx.getComments(ctx.value.id.value))
         )
       )
     )
