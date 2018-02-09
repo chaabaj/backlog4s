@@ -21,4 +21,11 @@ class ProjectRepository {
     ).orFail
   }
 
+  def getIssues(ids: Seq[Long]): ApiPrg[Seq[Issue]] = {
+    issueApi.search(
+      IssueSearch(projectIds = ids.map(ProjectT.id))
+    ).orFail
+  }
+
+
 }

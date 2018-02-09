@@ -18,7 +18,6 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
     * cached for the duration of a query.
     */
 
-
   implicit object ProjectHasId extends HasId[Project, Long] {
     override def id(project: Project): Long = project.id.value
   }
@@ -26,12 +25,19 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
     override def id(issue: Issue): Long = issue.id.value
   }
 
-  val projects = Fetcher.caching(
+  val projects = Fetcher(
     (projectRepo: ProjectRepository, ids: Seq[Long]) =>
       interp.run(
         ids.map(projectRepo.getProject).parallel
       )
   )
+
+  /*val issues = Fetcher(
+    (projectRepo: ProjectRepository, ids: Seq[Long]) =>
+      interp.run(
+        projectRepo.getIssues(ids)
+      )
+  )*/
 
   val ProjectType: ObjectType[ProjectRepository, Project] =
     ObjectType(

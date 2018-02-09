@@ -36,6 +36,7 @@ object App {
       issues
     }
 
+
     for {
       issues <- issueApi.search().orFail
     } yield issues

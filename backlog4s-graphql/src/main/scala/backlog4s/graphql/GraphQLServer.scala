@@ -60,25 +60,27 @@ object GraphQLServer {
     }
 
     val route: Route =
-      post {
-        entity(as[JsValue]) { requestJson ⇒
-          val JsObject(fields) = requestJson
+      Cors.default() {
+        post {
+          entity(as[JsValue]) { requestJson ⇒
+            val JsObject(fields) = requestJson
 
-          val JsString(query) = fields("query")
+            val JsString(query) = fields("query")
 
-          val operation = fields.get("operationName") collect {
-            case JsString(op) ⇒ op
+            val operation = fields.get("operationName") collect {
+              case JsString(op) ⇒ op
+            }
+
+            val vars = fields.get("variables") match {
+              case Some(obj: JsObject) ⇒ obj
+              case _ ⇒ JsObject.empty
+            }
+
+            parseProject(query, vars, operation)
           }
-
-          val vars = fields.get("variables") match {
-            case Some(obj: JsObject) ⇒ obj
-            case _ ⇒ JsObject.empty
-          }
-
-          parseProject(query, vars, operation)
+        } ~ get {
+          complete(schemaDefinition.ProjectSchema.renderPretty)
         }
-      } ~ get {
-        complete(schemaDefinition.ProjectSchema.renderPretty)
       }
 
     Http().bindAndHandle(route, "0.0.0.0", 3000)
