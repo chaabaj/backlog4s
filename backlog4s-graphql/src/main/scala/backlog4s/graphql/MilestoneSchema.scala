@@ -12,15 +12,15 @@ object MilestoneSchema {
       () => fields[Unit, Milestone](
         Field(
           "id",
-          LongType,
+          IntType,
           Some("id"),
-          resolve = _.value.id.value
+          resolve = _.value.id.value.toInt
         ),
         Field(
           "projectId",
-          LongType,
+          IntType,
           Some("projectId"),
-          resolve = _.value.projectId.value
+          resolve = _.value.projectId.value.toInt
         ),
         Field(
           "name",
@@ -49,8 +49,8 @@ object MilestoneSchema {
         ),
         Field(
           "displayOrder",
-          LongType,
-          resolve = _.value.displayOrder
+          IntType,
+          resolve = _.value.displayOrder.toInt
         )
       )
     )

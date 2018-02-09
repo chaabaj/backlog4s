@@ -15,15 +15,15 @@ class IssueSchema(interp: BacklogHttpInterpret[Future]) {
       () => fields[Unit, IssueType](
         Field(
           "id",
-          LongType,
+          IntType,
           Some("issue type id"),
-          resolve = _.value.id.value
+          resolve = _.value.id.value.toInt
         ),
         Field(
           "projectId",
-          LongType,
+          IntType,
           Some("Project id"),
-          resolve = _.value.projectId.value
+          resolve = _.value.projectId.value.toInt
         ),
         Field(
           "name",
@@ -39,9 +39,9 @@ class IssueSchema(interp: BacklogHttpInterpret[Future]) {
         ),
         Field(
           "displayOrder",
-          LongType,
+          IntType,
           Some("Display order"),
-          resolve = _.value.displayOrder
+          resolve = _.value.displayOrder.toInt
         )
       )
     )
@@ -53,21 +53,21 @@ class IssueSchema(interp: BacklogHttpInterpret[Future]) {
       () => fields[BacklogRepository, Issue](
         Field(
           "id",
-          LongType,
+          IntType,
           Some("Issue id"),
-          resolve = _.value.id.value
+          resolve = _.value.id.value.toInt
         ),
         Field(
           "projectId",
-          LongType,
+          IntType,
           Some("Project id"),
-          resolve = _.value.projectId.value
+          resolve = _.value.projectId.value.toInt
         ),
         Field(
           "keyId",
-          LongType,
+          IntType,
           Some("issue key"),
-          resolve = _.value.keyId
+          resolve = _.value.keyId.toInt
         ),
         Field(
           "issueType",

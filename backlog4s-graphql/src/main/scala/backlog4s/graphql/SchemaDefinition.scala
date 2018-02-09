@@ -48,9 +48,9 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
       () => fields[BacklogRepository, Project](
         Field(
           "id",
-          LongType,
+          IntType,
           Some("Project id"),
-          resolve = _.value.id.value
+          resolve = _.value.id.value.toInt
         ),
         Field(
           "projectKey",

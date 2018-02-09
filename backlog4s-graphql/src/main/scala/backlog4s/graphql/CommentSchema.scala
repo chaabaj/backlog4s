@@ -12,8 +12,8 @@ object CommentSchema {
       () => fields[Unit, Star](
         Field(
           "id",
-          LongType,
-          resolve = _.value.id.value
+          IntType,
+          resolve = _.value.id.value.toInt
         ),
         Field(
           "comment",
@@ -50,8 +50,8 @@ object CommentSchema {
       () => fields[Unit, Notification](
         Field(
           "id",
-          LongType,
-          resolve = _.value.id.value
+          IntType,
+          resolve = _.value.id.value.toInt
         ),
         Field(
           "alreadyRead",
@@ -83,8 +83,8 @@ object CommentSchema {
       () => fields[BacklogRepository, Comment](
         Field(
           "id",
-          LongType,
-          resolve = _.value.id.value
+          IntType,
+          resolve = _.value.id.value.toInt
         ),
         Field(
           "content",
