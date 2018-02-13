@@ -3,21 +3,19 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import backlog4s.apis._
 import backlog4s.datas._
-import backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
+import backlog4s.interpreters.AkkaHttpInterpret
 import backlog4s.streaming.ApiStream
 import cats.effect.IO
 
 import scala.util.{Failure, Success}
-import cats.implicits._
 import hammock.jvm._
 
 object App {
 
-  import backlog4s.dsl.syntax._
-  import backlog4s.streaming.StreamingEffect._
-
   implicit val hammockInterpreter = Interpreter[IO]
   val baseUrl = "https://nulab.backlog.jp/api/v2/"
+
+  import backlog4s.dsl.syntax._
 
   def usingAkka(): Unit = {
     implicit val system = ActorSystem("test")
@@ -30,39 +28,25 @@ object App {
 
     import allApi._
 
-    val issueStream = ApiStream.parallel(1000, 4)(
+    val stream = ApiStream.parallel(10000, 4)(
       (index, count) => issueApi.search(IssueSearch(offset = index, count = count))
-    )
+    ).map { issues =>
+      println(issues.map(_.summary).mkString("\n"))
+      println()
+      issues
+    }
 
-    val issuesPrg = Seq.range(0, 2000, 100).map(index => issueApi.search(IssueSearch(offset = index)).orFail)
 
-    issueStream.compile.drain.foldMap(interpreter).onComplete { result =>
+    for {
+      issues <- issueApi.search().orFail
+    } yield issues
+
+    interpreter.runStream(stream).onComplete { result =>
       result match {
         case Success(data) => println("Stream processed")
         case Failure(ex) => ex.printStackTrace()
       }
     }
-    /*issuesPrg.sequence.foldMap(interpreter).onComplete { result =>
-      result match {
-        case Success(data) => println(data)
-        case Failure(ex) => ex.printStackTrace()
-      }
-    }*/
-    /*issueStream.compile.toVector.foldMap(interpreter).onComplete { result =>
-      result match {
-        case Success(data) => println(data)
-        case Failure(ex) => ex.printStackTrace()
-      }
-      system.terminate()
-    }*/
-
-    /*prg.foldMap(interpreter).onComplete { result =>
-      result match {
-        case Success(data) => println(data)
-        case Failure(ex) => ex.printStackTrace()
-      }
-      system.terminate()
-    }*/
   }
 
   def usingHammock(): Unit = {
@@ -80,7 +64,6 @@ object App {
     result.map { buffer =>
       buffer
     }*/
-
   }
 
 

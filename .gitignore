@@ -14,3 +14,4 @@ project/plugins/project/
 .idea
 
 backlog4s-test/src/main/scala/ApiKey.scala
+backlog4s-graphql/src/main/scala/backlog4s/graphql/ApiKey.scala
