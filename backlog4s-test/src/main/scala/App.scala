@@ -48,31 +48,13 @@ object App {
     }
   }
 
-  def usingHammock(): Unit = {
-    /*val hammockHttpInterpreter = new HammockInterpreter(
-      baseUrl, AccessKey(ApiKey.accessKey)
-    )
-
-    val prg = for {
-      user <- UserApi.byId(UserT.myself).orFail
-      icon <- UserApi.downloadIcon(user.id).orFail
-      projects <- ProjectApi.all().orFail
-    } yield icon
-
-    val result = prg.foldMap(hammockHttpInterpreter).unsafeRunSync()
-    result.map { buffer =>
-      buffer
-    }*/
-  }
-
-
   def main(args: Array[String]): Unit = {
     if (args.length > 1) {
       val apiUrl = args.apply(0)
       val apiKey = args.apply(1)
       usingAkka(apiUrl, apiKey)
+    } else {
+      println("Missing argument api url and api key")
     }
-
-    //usingHammock()
   }
 }

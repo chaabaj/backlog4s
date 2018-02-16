@@ -82,6 +82,9 @@ object GraphQLServer {
 
       Http().bindAndHandle(route, "0.0.0.0", 3000)
       println("Running")
+    } else {
+      println("Missing api url and api key argument")
+      system.terminate()
     }
   }
 }
