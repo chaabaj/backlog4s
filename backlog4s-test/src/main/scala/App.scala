@@ -13,18 +13,17 @@ import hammock.jvm._
 object App {
 
   implicit val hammockInterpreter = Interpreter[IO]
-  val baseUrl = "https://nulab.backlog.jp/api/v2/"
 
   import backlog4s.dsl.syntax._
 
-  def usingAkka(): Unit = {
+  def usingAkka(apiUrl: String, apiKey: String): Unit = {
     implicit val system = ActorSystem("test")
     implicit val mat = ActorMaterializer()
     implicit val exc = system.dispatcher
 
     val httpInterpret = new AkkaHttpInterpret
     val interpreter = httpInterpret
-    val allApi = AllApi.accessKey(baseUrl, ApiKey.accessKey)
+    val allApi = AllApi.accessKey(apiUrl, apiKey)
 
     import allApi._
 
@@ -68,7 +67,12 @@ object App {
 
 
   def main(args: Array[String]): Unit = {
-    usingAkka()
+    if (args.length > 1) {
+      val apiUrl = args.apply(0)
+      val apiKey = args.apply(1)
+      usingAkka(apiUrl, apiKey)
+    }
+
     //usingHammock()
   }
 }

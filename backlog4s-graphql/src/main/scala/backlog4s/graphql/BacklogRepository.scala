@@ -1,14 +1,15 @@
 package backlog4s.graphql
 
+import backlog4s.apis.AllApi
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.syntax._
 
-class BacklogRepository {
+class BacklogRepository(allApi: AllApi) {
 
-  private val projectApi = Api.all.projectApi
-  private val issueApi = Api.all.issueApi
-  private val commentApi = Api.all.issueCommentApi
+  private val projectApi = allApi.projectApi
+  private val issueApi = allApi.issueApi
+  private val commentApi = allApi.issueCommentApi
 
   def getProject(id: Long): ApiPrg[Project] =
     projectApi.byIdOrKey(IdParam(ProjectT.id(id))).orFail

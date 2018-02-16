@@ -1,5 +1,6 @@
 package backlog4s.graphql
 
+import backlog4s.apis.AllApi
 import backlog4s.datas.{Issue, Project}
 import backlog4s.dsl.BacklogHttpInterpret
 import sangria.execution.deferred._
@@ -12,7 +13,7 @@ import backlog4s.dsl.syntax._
 /**
   * Defines a GraphQL schema for the current project
   */
-class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
+class SchemaDefinition(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
   /**
     * Resolves the lists of characters. These resolutions are batched and
     * cached for the duration of a query.
@@ -32,14 +33,7 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future]) {
       )
   )
 
-  /*val issues = Fetcher(
-    (projectRepo: ProjectRepository, ids: Seq[Long]) =>
-      interp.run(
-        projectRepo.getIssues(ids)
-      )
-  )*/
-
-  val issueSchema = new IssueSchema(interp)
+  val issueSchema = new IssueSchema(interp, allApi)
 
   val ProjectType: ObjectType[BacklogRepository, Project] =
     ObjectType(

@@ -1,12 +1,13 @@
 package backlog4s.graphql
 
+import backlog4s.apis.AllApi
 import backlog4s.datas._
 import backlog4s.dsl.BacklogHttpInterpret
 import sangria.schema._
 
 import scala.concurrent.Future
 
-class IssueSchema(interp: BacklogHttpInterpret[Future]) {
+class IssueSchema(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
 
   val issueType: ObjectType[Unit, IssueType] =
     ObjectType(
