@@ -137,6 +137,15 @@ class ProjectApi(override val baseUrl: String,
       ),
       form
     )
+
+  def remove(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Unit]] =
+    delete(
+      HttpQuery(
+        path = s"$resource/$idOrKey",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
+    )
 }
 
 object ProjectApi extends ApiContext[ProjectApi] {
