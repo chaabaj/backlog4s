@@ -1,6 +1,7 @@
 package backlog4s.interpreters
 
 import java.io.File
+import java.nio.ByteBuffer
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -14,19 +15,20 @@ import cats.effect.IO
 import backlog4s.datas.{AccessKey, ApiErrors, Credentials, OAuth2Token}
 import backlog4s.dsl.BacklogHttpOp.HttpF
 import backlog4s.dsl.HttpADT.{ByteStream, Bytes, Response}
-import backlog4s.dsl.{BacklogHttpInterpret, HttpQuery, RequestError, ServerDown}
+import backlog4s.dsl._
 import spray.json._
 import cats.Monad
 import cats.implicits._
-import fs2.interop.reactivestreams._
+import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
 class AkkaHttpInterpret(implicit actorSystem: ActorSystem, mat: Materializer,
-                        exc: ExecutionContext) extends BacklogHttpInterpret[Future] {
-
+                        override val exc: ExecutionContext)
+  extends BacklogHttpInterpret[Future]
+    with WithFutureCompletion {
 
   import backlog4s.formatters.SprayJsonFormats._
 
@@ -72,7 +74,7 @@ class AkkaHttpInterpret(implicit actorSystem: ActorSystem, mat: Materializer,
   }
 
 
-  private def doRequest(request: HttpRequest): Future[Response[Bytes]] =
+  private def doRequest(request: HttpRequest): Future[Response[String]] =
     for {
       response <- http.singleRequest(request)
       data <- response.entity.toStrict(timeout).map(_.data.utf8String)
@@ -185,10 +187,11 @@ class AkkaHttpInterpret(implicit actorSystem: ActorSystem, mat: Materializer,
             Future.successful(Either.left(ServerDown))
           }
         } else {
-          val stream = serverResponse.entity.dataBytes
-            .map(_.asByteBuffer)
-            .runWith(Sink.asPublisher(true))
-            .toStream[IO]
+          val stream = Observable.fromReactivePublisher(
+            serverResponse.entity.dataBytes
+              .map(_.asByteBuffer)
+              .runWith(Sink.asPublisher(true))
+          )
           Future.successful(Either.right(stream))
         }
       }

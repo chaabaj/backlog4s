@@ -37,7 +37,6 @@ object GraphQLServer {
 
       def parseProject(query: String, vars: JsObject, operation: Option[String]) = {
         QueryParser.parse(query) match {
-
           // query parsed successfully, time to execute it!
           case Success(queryAst) ⇒
             complete(Executor.execute(schemaDefinition.ProjectSchema, queryAst, new BacklogRepository(allApi),

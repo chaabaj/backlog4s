@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
 import backlog4s.datas.{AccessKey, ApiErrors, Credentials, OAuth2Token}
+import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import backlog4s.dsl._
 import cats.effect.IO
@@ -16,9 +17,10 @@ import hammock.hi._
 import backlog4s.formatters.SprayJsonFormats._
 import cats.Monad
 import hammock.Entity.{ByteArrayEntity, StringEntity}
-import fs2.Stream
+import monix.reactive.Observable
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 object HammockInterpreter {
   // hmmm... no way to pass directly a entity to hammock
@@ -32,8 +34,8 @@ object HammockInterpreter {
 }
 
 class HammockInterpreter()(implicit val hammockInterpreter: Interpreter[IO],
-                           exc: ExecutionContext)
-  extends BacklogHttpInterpret[Future] {
+                           override val exc: ExecutionContext)
+  extends BacklogHttpInterpret[Future] with WithFutureCompletion {
 
   implicit val monad = implicitly[Monad[Future]]
 
@@ -108,22 +110,19 @@ class HammockInterpreter()(implicit val hammockInterpreter: Interpreter[IO],
   private def asByteStream(response: Response[Entity]): Response[ByteStream] =
     response.flatMap {
       case ByteArrayEntity(bytes, _) =>
-        Either.right(Stream.eval(IO.pure(ByteBuffer.wrap(bytes))))
-      case StringEntity(content, contentType) =>
-        println(contentType.name)
         Either.right(
-          Stream.eval(
-            IO.pure(
-              ByteBuffer.wrap(content.getBytes(utf8))
-            )
+          Observable.eval(ByteBuffer.wrap(bytes))
+        )
+      case StringEntity(content, contentType) =>
+        Either.right(
+          Observable.eval(
+            ByteBuffer.wrap(content.getBytes(utf8))
           )
         )
     }
 
   private def jsonEntity[Payload](payload: Payload, format: JsonFormat[Payload]): StringEntity =
     StringEntity(payload.toJson(format).compactPrint)
-
-
 
   override def pure[A](a: A): Future[A] = Future.successful(a)
 
