@@ -1,17 +1,21 @@
 package backlog4s.streaming
 
 import backlog4s.dsl.ApiDsl.ApiPrg
-import backlog4s.dsl.BacklogHttpOp
+import backlog4s.dsl.{BacklogHttpInterpret, BacklogHttpOp}
 import backlog4s.dsl.HttpADT.Response
-import cats.effect.{Effect, IO, Sync}
+import cats.effect.Sync
 import fs2.Stream
+import monix.reactive.Observable
+import org.reactivestreams.Subscriber
 
-import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
+
 
 object ApiStream {
 
   import backlog4s.dsl.ApiDsl.HttpOp._
   import backlog4s.dsl.syntax._
+  import StreamingEffect._
 
   type ApiResponse[A] = ApiPrg[Response[Seq[A]]]
   type ApiStream[A] = Stream[ApiPrg, Seq[A]]
@@ -59,6 +63,20 @@ object ApiStream {
       }
     }
   }
+
+  def toObservable[F[_], A](stream: ApiStream[A], interpret: BacklogHttpInterpret[F]): Observable[Seq[A]] =
+    Observable.fromReactivePublisher(
+      (s: Subscriber[_ >: Seq[A]]) => {
+        val prg = stream.map { values =>
+          s.onNext(values)
+          Seq.empty
+        }.compile.drain
+        interpret.onComplete(interpret.run(prg)) {
+          case Success(_) => s.onComplete()
+          case Failure(ex) => s.onError(ex)
+        }
+      }
+    )
 }
 
 object StreamingEffect {
@@ -74,7 +92,7 @@ object StreamingEffect {
 
     override def flatMap[A, B](fa: ApiPrg[A])(f: A => ApiPrg[B]): ApiPrg[B] =
       fa.flatMap(f)
-    
+
     // Delay throwing until its interpretation
     override def raiseError[A](e: Throwable): ApiPrg[A] =
       suspend(throw e)

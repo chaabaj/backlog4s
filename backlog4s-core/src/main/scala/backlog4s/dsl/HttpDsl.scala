@@ -3,7 +3,6 @@ package backlog4s.dsl
 import java.nio.ByteBuffer
 import java.io.File
 
-import cats.effect.IO
 import cats.free.Free
 import cats.{Monad, ~>}
 import backlog4s.datas.ApiErrors
@@ -12,8 +11,10 @@ import backlog4s.dsl.BacklogHttpOp.HttpF
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
 import backlog4s.streaming.ApiStream.ApiStream
 import spray.json.JsonFormat
-import fs2.Stream
+import monix.reactive.Observable
 import backlog4s.streaming.StreamingEffect._
+
+import scala.util.Try
 
 sealed trait HttpError
 case class RequestError(errors: ApiErrors) extends HttpError
@@ -21,9 +22,9 @@ case class InvalidResponse(msg: String) extends HttpError
 case object ServerDown extends HttpError
 
 object HttpADT {
-  type Bytes = String
+  type Bytes = ByteBuffer
   type Response[A] = Either[HttpError, A]
-  type ByteStream = Stream[IO, ByteBuffer]
+  type ByteStream = Observable[Bytes]
 }
 
 sealed trait HttpADT[A]
@@ -86,8 +87,8 @@ object BacklogHttpOp {
     Free.liftF[HttpADT, Response[A]](Upload(query, file, format))
 }
 
-trait BacklogHttpInterpret[F[_]] extends (HttpADT ~> F) {
-  def get[A](query: HttpQuery, format: JsonFormat[A]): F[Response[A]]
+trait BacklogHttpInterpret[F[_]] extends (HttpADT ~> F) with WithCompletion[F] {
+  def get[A](query: HttpQuery, format: JsonFormat [A]): F[Response[A]]
   def create[Payload, A](query: HttpQuery,
                          payload: Payload,
                          format: JsonFormat[A],
