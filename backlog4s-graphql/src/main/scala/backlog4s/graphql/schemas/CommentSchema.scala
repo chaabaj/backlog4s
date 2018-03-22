@@ -4,7 +4,7 @@ import backlog4s.datas._
 import backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
-object CommentSchema extends BacklogSchema[Unit, Comment] {
+object CommentSchema extends BacklogSchema[BacklogRepository, Comment] {
 
   val star: ObjectType[Unit, Star] =
     ObjectType(

@@ -14,7 +14,7 @@ object SpaceSchema extends BacklogSchema[BacklogRepository, Space] {
         Field(
           "spaceKey",
           StringType,
-          resolve = _.value.spaceKey
+          resolve = _.value.spaceKey.value
         ),
         Field(
           "name",
@@ -29,7 +29,7 @@ object SpaceSchema extends BacklogSchema[BacklogRepository, Space] {
         Field(
           "lang",
           StringType,
-          resolve = _.value.lang.getOrElse(Lang.English)
+          resolve = _.value.lang.getOrElse(Lang.English).toString
         ),
         Field(
           "timezone",

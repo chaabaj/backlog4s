@@ -13,12 +13,12 @@ object WikiSchema extends BacklogSchema[BacklogRepository, Wiki] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value
+          resolve = _.value.id.value.toInt
         ),
         Field(
           "projectId",
           IntType,
-          resolve = _.value.projectId.value
+          resolve = _.value.projectId.value.toInt
         ),
         Field(
           "project",

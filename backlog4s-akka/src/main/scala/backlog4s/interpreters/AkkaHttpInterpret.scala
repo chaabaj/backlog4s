@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.util.logging.Logger
 
 import akka.actor.ActorSystem
-import akka.http.javadsl.ClientTransport
+import akka.http.scaladsl.ClientTransport
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.Uri.Query
@@ -27,7 +27,7 @@ import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class AkkaHttpInterpret(optTransport: Option[ClientTransport])
+class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
                         override val exc: ExecutionContext)
   extends BacklogHttpInterpret[Future]

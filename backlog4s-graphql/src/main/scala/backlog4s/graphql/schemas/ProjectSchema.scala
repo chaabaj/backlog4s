@@ -88,7 +88,7 @@ object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
             "projects",
             ListType(schema),
             arguments = Nil,
-            resolve = ctx => ctx.ctx.getProjects()
+            resolve = ctx => ctx.ctx.getProjects
           ),
           Field(
             "issue",

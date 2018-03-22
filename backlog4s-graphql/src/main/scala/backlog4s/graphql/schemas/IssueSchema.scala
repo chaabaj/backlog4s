@@ -4,7 +4,7 @@ import backlog4s.datas._
 import backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
-object IssueSchema extends BacklogSchema[Unit, IssueType] {
+object IssueSchema extends BacklogSchema[BacklogRepository, Issue] {
 
   val issueType: ObjectType[Unit, IssueType] =
     ObjectType(
