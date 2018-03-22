@@ -1,9 +1,9 @@
-package backlog4s.graphql
+package backlog4s.graphql.schemas
 
 import backlog4s.datas._
 import sangria.schema._
 
-object MilestoneSchema {
+object MilestoneSchema extends BacklogSchema[Unit, Milestone]{
 
   val schema: ObjectType[Unit, Milestone] =
     ObjectType(

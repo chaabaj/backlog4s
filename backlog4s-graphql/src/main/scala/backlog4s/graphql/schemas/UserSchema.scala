@@ -1,11 +1,11 @@
-package backlog4s.graphql
+package backlog4s.graphql.schemas
 
 import backlog4s.datas._
 import sangria.schema._
 
-object UserSchema {
+object UserSchema extends BacklogSchema[Unit, User] {
 
-  val userSchema: ObjectType[Unit, User] =
+  val schema: ObjectType[Unit, User] =
     ObjectType(
       "User",
       "Backlog user",

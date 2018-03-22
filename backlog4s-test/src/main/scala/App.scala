@@ -14,13 +14,12 @@ import hammock.jvm._
 object App {
 
   implicit val hammockInterpreter = Interpreter[IO]
-
   import backlog4s.dsl.syntax._
 
   def usingAkka(apiUrl: String, apiKey: String): Unit = {
     implicit val system = ActorSystem("test")
     implicit val mat = ActorMaterializer()
-    implicit val exc = system.dispatcher
+    implicit val scheduler = monix.execution.Scheduler.Implicits.global
 
     val httpInterpret = new AkkaHttpInterpret
     val interpreter = httpInterpret
@@ -36,17 +35,16 @@ object App {
       issues
     }
 
-
     for {
       issues <- issueApi.search().orFail
     } yield issues
 
-    interpreter.runStream(stream).onComplete { result =>
-      result match {
-        case Success(data) => println("Stream processed")
+    ApiStream.toObservable(stream, interpreter)
+      .runAsyncGetFirst
+      .onComplete {
+        case Success(_) => println("Stream consumed")
         case Failure(ex) => ex.printStackTrace()
       }
-    }
   }
 
   def main(args: Array[String]): Unit = {

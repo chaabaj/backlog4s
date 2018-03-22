@@ -1,10 +1,10 @@
-package backlog4s.graphql
+package backlog4s.graphql.schemas
 
 import backlog4s.datas._
 import backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
-object CommentSchema {
+object CommentSchema extends BacklogSchema[Unit, Comment] {
 
   val star: ObjectType[Unit, Star] =
     ObjectType(
@@ -33,7 +33,7 @@ object CommentSchema {
         ),
         Field(
           "presenter",
-          UserSchema.userSchema,
+          UserSchema.schema,
           resolve = _.value.presenter
         ),
         Field(
@@ -66,7 +66,7 @@ object CommentSchema {
         ),
         Field(
           "user",
-          UserSchema.userSchema,
+          UserSchema.schema,
           resolve = _.value.user
         ),
         Field(
@@ -94,7 +94,7 @@ object CommentSchema {
         ),
         Field(
           "createdUser",
-          UserSchema.userSchema,
+          UserSchema.schema,
           resolve = _.value.createdUser
         ),
         Field(

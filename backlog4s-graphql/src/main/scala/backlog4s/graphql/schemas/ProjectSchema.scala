@@ -1,42 +1,17 @@
-package backlog4s.graphql
+package backlog4s.graphql.schemas
 
-import backlog4s.apis.AllApi
 import backlog4s.datas.{Issue, Project}
-import backlog4s.dsl.BacklogHttpInterpret
+import backlog4s.graphql.repositories.BacklogRepository
 import sangria.execution.deferred._
 import sangria.schema._
 
-import scala.concurrent.Future
-import backlog4s.dsl.syntax._
-import backlog4s.graphql.repositories.BacklogRepository
+object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
 
-
-/**
-  * Defines a GraphQL schema for the current project
-  */
-class SchemaDefinition(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
-  /**
-    * Resolves the lists of characters. These resolutions are batched and
-    * cached for the duration of a query.
-    */
-
-  implicit object ProjectHasId extends HasId[Project, Long] {
-    override def id(project: Project): Long = project.id.value
-  }
   implicit object IssueHasId extends HasId[Issue, Long] {
     override def id(issue: Issue): Long = issue.id.value
   }
 
-  val projects = Fetcher(
-    (projectRepo: BacklogRepository, ids: Seq[Long]) =>
-      interp.run(
-        ids.map(projectRepo.getProject).parallel
-      )
-  )
-
-  val issueSchema = new IssueSchema(interp, allApi)
-
-  val ProjectType: ObjectType[BacklogRepository, Project] =
+  val schema: ObjectType[BacklogRepository, Project] =
     ObjectType(
       "Project",
       "Backlog project",
@@ -91,36 +66,37 @@ class SchemaDefinition(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
         ),
         Field(
           "issues",
-          ListType(issueSchema.schema),
-          resolve = ctx => interp.run(ctx.ctx.getIssues(ctx.value.id.value))
+          ListType(IssueSchema.schema),
+          resolve = ctx => ctx.ctx.getIssues(ctx.value.id.value)
         )
       )
     )
 
   val ID = Argument("id", IntType, description = "id of the project")
 
-  val ProjectQuery = ObjectType(
-    "Query", fields[BacklogRepository, Unit](
-      Field(
-        "project",
-        ProjectType,
-        arguments = ID :: Nil,
-        resolve = ctx => interp.run(ctx.ctx.getProject(ctx arg ID))
-      ),
-      Field(
-        "projects",
-        ListType(ProjectType),
-        arguments = Nil,
-        resolve = ctx => interp.run(ctx.ctx.getProjects())
-      ),
-      Field(
-        "issue",
-        issueSchema.schema,
-        arguments = ID :: Nil,
-        resolve = ctx => interp.run(ctx.ctx.getIssue(ctx arg ID))
+  val ProjectQuery =
+    Schema(
+      ObjectType(
+        "Query", fields[BacklogRepository, Unit](
+          Field(
+            "project",
+            schema,
+            arguments = ID :: Nil,
+            resolve = ctx => ctx.ctx.getProject(ctx arg ID)
+          ),
+          Field(
+            "projects",
+            ListType(schema),
+            arguments = Nil,
+            resolve = ctx => ctx.ctx.getProjects()
+          ),
+          Field(
+            "issue",
+            IssueSchema.schema,
+            arguments = ID :: Nil,
+            resolve = ctx => ctx.ctx.getIssue(ctx arg ID)
+          )
+        )
       )
     )
-  )
-
-  val ProjectSchema = Schema(ProjectQuery)
 }

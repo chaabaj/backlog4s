@@ -8,7 +8,9 @@ import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import backlog4s.apis.AllApi
-import backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
+import backlog4s.graphql.repositories.BacklogRepository
+import backlog4s.graphql.schemas.ProjectSchema
+import backlog4s.interpreters.HammockInterpreter
 import cats.effect.IO
 import com.typesafe.config.ConfigFactory
 import hammock.jvm.Interpreter
@@ -24,7 +26,7 @@ object GraphQLServer {
   implicit val hammockInterpreter = Interpreter[IO]
   implicit val system = ActorSystem("sangria-server", ConfigFactory.load())
   implicit val materializer = ActorMaterializer()
-  implicit val exc = system.dispatcher
+  implicit val exc = monix.execution.Scheduler.Implicits.global
   val hammockHttpInterpreter = new HammockInterpreter()
 
   def main(args: Array[String]): Unit = {
@@ -33,16 +35,17 @@ object GraphQLServer {
       val apiKey = args.apply(1)
       val interpreter = hammockHttpInterpreter
       val allApi = AllApi.accessKey(apiUrl, apiKey)
-      val schemaDefinition = new SchemaDefinition(interpreter, allApi)
+      val schemaDefinition = ProjectSchema
+      val repository = new BacklogRepository(interpreter, allApi)
 
       def parseProject(query: String, vars: JsObject, operation: Option[String]) = {
         QueryParser.parse(query) match {
           // query parsed successfully, time to execute it!
           case Success(queryAst) ⇒
-            complete(Executor.execute(schemaDefinition.ProjectSchema, queryAst, new BacklogRepository(allApi),
+            complete(Executor.execute(schemaDefinition.ProjectQuery, queryAst, repository,
               variables = vars,
               operationName = operation,
-              deferredResolver = DeferredResolver.fetchers(schemaDefinition.projects))
+              deferredResolver = DeferredResolver.fetchers(repository.fetchers.projects))
               .map(OK → _)
               .recover {
                 case error: QueryAnalysisError ⇒ BadRequest → error.resolveError
@@ -75,7 +78,7 @@ object GraphQLServer {
               parseProject(query, vars, operation)
             }
           } ~ get {
-            complete(schemaDefinition.ProjectSchema.renderPretty)
+            complete(schemaDefinition.ProjectQuery.renderPretty)
           }
         }
 

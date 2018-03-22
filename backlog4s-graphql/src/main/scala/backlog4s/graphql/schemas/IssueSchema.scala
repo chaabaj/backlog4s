@@ -1,14 +1,10 @@
-package backlog4s.graphql
+package backlog4s.graphql.schemas
 
-import backlog4s.apis.AllApi
 import backlog4s.datas._
-import backlog4s.dsl.BacklogHttpInterpret
 import backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
-import scala.concurrent.Future
-
-class IssueSchema(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
+object IssueSchema extends BacklogSchema[Unit, IssueType] {
 
   val issueType: ObjectType[Unit, IssueType] =
     ObjectType(
@@ -109,7 +105,7 @@ class IssueSchema(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
         ),
         Field(
           "assignee",
-          OptionType(UserSchema.userSchema),
+          OptionType(UserSchema.schema),
           Some("assignee"),
           resolve = _.value.assignee
         ),
@@ -127,7 +123,7 @@ class IssueSchema(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
         ),
         Field(
           "createdUser",
-          UserSchema.userSchema,
+          UserSchema.schema,
           resolve = _.value.createdUser
         ),
         Field(
@@ -137,7 +133,7 @@ class IssueSchema(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
         ),
         Field(
           "updatedUser",
-          OptionType(UserSchema.userSchema),
+          OptionType(UserSchema.schema),
           resolve = _.value.updatedUser
         ),
         Field(
@@ -148,7 +144,7 @@ class IssueSchema(interp: BacklogHttpInterpret[Future], allApi: AllApi) {
         Field(
           "comment",
           ListType(CommentSchema.schema),
-          resolve = ctx => interp.run(ctx.ctx.getComments(ctx.value.id.value))
+          resolve = ctx => ctx.ctx.getComments(ctx.value.id.value)
         )
       )
     )
