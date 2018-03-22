@@ -1,6 +1,7 @@
 package backlog4s.graphql
 
 import backlog4s.datas._
+import backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
 object CommentSchema {

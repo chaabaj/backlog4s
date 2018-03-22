@@ -3,6 +3,7 @@ package backlog4s.graphql
 import backlog4s.apis.AllApi
 import backlog4s.datas._
 import backlog4s.dsl.BacklogHttpInterpret
+import backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
 import scala.concurrent.Future

@@ -8,6 +8,7 @@ import sangria.schema._
 
 import scala.concurrent.Future
 import backlog4s.dsl.syntax._
+import backlog4s.graphql.repositories.BacklogRepository
 
 
 /**
