@@ -10,16 +10,31 @@ import monix.reactive.Observable
 
 import scala.concurrent.Future
 
-class BacklogRepository(interpret : BacklogHttpInterpret[Future], allApi: AllApi)
+class BacklogRepository(interpret : BacklogHttpInterpret[Future], allApi: AllApi, parallelism: Int = 4)
                        (implicit scheduler: Scheduler) {
 
   private val projectApi = allApi.projectApi
   private val issueApi = allApi.issueApi
   private val commentApi = allApi.issueCommentApi
 
-  def getProject(id: Long): Future[Project] =
+  private def getAll[A](ids: Seq[Id[A]], f: Id[A] => ApiPrg[A]): Future[Seq[A]] = {
+    val grouped = ids.grouped(parallelism)
+    Observable.fromIterator(grouped)
+      .mapFuture { chunkIds =>
+        interpret.run(
+          chunkIds.map(f).parallel
+        )
+      }
+      .foldLeftL(IndexedSeq.empty[A]) {
+        case (acc, items) =>
+          acc ++ items
+      }
+      .runAsync
+  }
+
+  def getProject(id: Id[Project]): Future[Project] =
     interpret.run(
-      projectApi.byIdOrKey(IdParam(ProjectT.id(id))).orFail
+      projectApi.byIdOrKey(IdParam(id)).orFail
     )
 
   def getProjects: Future[Seq[Project]] =
@@ -27,42 +42,50 @@ class BacklogRepository(interpret : BacklogHttpInterpret[Future], allApi: AllApi
       projectApi.all().orFail
     )
 
-  def getProjects(ids: Seq[Long]): Future[Seq[Project]] =
-    Observable.fromIterator(ids.toIterator)
-      .mapFuture(getProject)
-      .foldLeftL(IndexedSeq.empty[Project]) {
-        case (acc, project) =>
-          acc :+ project
-      }.runAsync
+  def getProjects(ids: Seq[Id[Project]]): Future[Seq[Project]] =
+    getAll[Project](ids, id => projectApi.byIdOrKey(IdParam(id)).orFail)
 
-  def getIssues(id: Long): Future[Seq[Issue]] =
+  def getIssues(id: Id[Project]): Future[Seq[Issue]] =
     interpret.run(
       issueApi.search(
-        IssueSearch(projectIds = Seq(ProjectT.id(id)))
+        IssueSearch(projectIds = Seq(id))
       ).orFail
     )
 
-  def getIssues(ids: Seq[Long]): Future[Seq[Issue]] =
+  def getIssues(ids: Seq[Id[Project]]): Future[Seq[Issue]] =
     interpret.run(
       issueApi.search(
-        IssueSearch(projectIds = ids.map(ProjectT.id))
+        IssueSearch(projectIds = ids)
       ).orFail
     )
 
-  def getComments(issueId: Long): Future[Seq[Comment]] =
+  def getComments(issueId: Id[Issue]): Future[Seq[Comment]] =
     interpret.run(
-      commentApi.allOf(IdParam(IssueT.id(issueId)), count = 100).orFail
+      commentApi.allOf(IdParam(issueId), count = 100).orFail
     )
 
 
-  def getIssue(id: Long): Future[Issue] =
+  def getIssue(id: Id[Issue]): Future[Issue] =
     interpret.run(
-      issueApi.byIdOrKey(IdParam(IssueT.id(id))).orFail
+      issueApi.byIdOrKey(IdParam(id)).orFail
     )
 
-  def getUser(id: Long): Future[User] =
+  def getUser(id: Id[User]): Future[User] =
     interpret.run(
-      allApi.userApi.byId(UserT.id(id)).orFail
+      allApi.userApi.byId(id).orFail
+    )
+
+  def getWiki(id: Id[Wiki]): Future[Wiki] =
+    interpret.run(
+      allApi.wikiApi.byId(id).orFail
+    )
+
+  def getWikis(ids: Seq[Id[Wiki]]): Future[Seq[Wiki]] =
+    getAll[Wiki](ids, id => allApi.wikiApi.byId(id).orFail)
+
+  def getWikiSummaries(id: Id[Project]): Future[Seq[WikiSummary]] =
+    interpret.run(
+      allApi.wikiApi.allOf(IdParam(id)).orFail
     )
 
   val fetchers = new BacklogFetchers(interpret)

@@ -3,6 +3,10 @@ package backlog4s.datas
 import org.joda.time.DateTime
 
 object WikiT {
+  def id(value: Long): Id[Wiki] = Id(value)
+}
+
+object WikiSummaryT {
   def id(value: Long): Id[WikiSummary] = Id(value)
 }
 

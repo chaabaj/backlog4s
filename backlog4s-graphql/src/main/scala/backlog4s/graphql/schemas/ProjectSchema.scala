@@ -1,6 +1,6 @@
 package backlog4s.graphql.schemas
 
-import backlog4s.datas.{Issue, Project}
+import backlog4s.datas.{Issue, IssueT, Project, ProjectT}
 import backlog4s.graphql.repositories.BacklogRepository
 import sangria.execution.deferred._
 import sangria.schema._
@@ -67,7 +67,12 @@ object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
         Field(
           "issues",
           ListType(IssueSchema.schema),
-          resolve = ctx => ctx.ctx.getIssues(ctx.value.id.value)
+          resolve = ctx => ctx.ctx.getIssues(ctx.value.id)
+        ),
+        Field(
+          "wikis",
+          ListType(WikiSummarySchema.schema),
+          resolve = ctx => ctx.ctx.getWikiSummaries(ctx.value.id)
         )
       )
     )
@@ -82,7 +87,7 @@ object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
             "project",
             schema,
             arguments = ID :: Nil,
-            resolve = ctx => ctx.ctx.getProject(ctx arg ID)
+            resolve = ctx => ctx.ctx.getProject(ProjectT.id(ctx arg ID))
           ),
           Field(
             "projects",
@@ -94,7 +99,7 @@ object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
             "issue",
             IssueSchema.schema,
             arguments = ID :: Nil,
-            resolve = ctx => ctx.ctx.getIssue(ctx arg ID)
+            resolve = ctx => ctx.ctx.getIssue(IssueT.id(ctx arg ID))
           )
         )
       )

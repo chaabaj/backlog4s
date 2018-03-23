@@ -25,6 +25,15 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
+  def byId(id: Id[Wiki]): ApiPrg[Response[Wiki]] =
+    get[Wiki](
+      HttpQuery(
+        path = s"$resource/${id.value}",
+        credentials = credentials,
+        baseUrl = baseUrl
+      )
+    )
+
   def count(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Count]] =
     get[Count](
       HttpQuery(
