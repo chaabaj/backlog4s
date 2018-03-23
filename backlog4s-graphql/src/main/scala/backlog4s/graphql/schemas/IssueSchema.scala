@@ -81,7 +81,7 @@ object IssueSchema extends BacklogSchema[BacklogRepository, Issue] {
         ),
         Field(
           "description",
-          StringType,
+          OptionType(StringType),
           Some("issue description"),
           resolve = _.value.description
         ),

@@ -1,7 +1,6 @@
 package backlog4s.interpreters
 
 import java.io.File
-import java.nio.ByteBuffer
 import java.util.logging.Logger
 
 import akka.actor.ActorSystem
@@ -26,6 +25,9 @@ import monix.reactive.Observable
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.reflect.ClassTag
+import scala.util.Try
+import scala.util.control.NonFatal
 
 class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
                        (implicit actorSystem: ActorSystem, mat: Materializer,
@@ -126,6 +128,21 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
     }
   }
 
+  private def parseJson[A](response: String, format: JsonFormat[A])
+                          (implicit classTag: ClassTag[A]): A = {
+    try {
+      response.parseJson.convertTo[A](format)
+    } catch {
+      case NonFatal(ex) =>
+        logger.severe(s"Failed to parse json error: ${ex.getMessage}")
+        logger.severe(s"Stacktrace:")
+        ex.printStackTrace()
+        logger.severe(s"Got from server $response")
+        logger.severe(s"Expected to format of $classTag")
+        logger.severe(s"This is probably a bug, please contact the maintainer of the library")
+        throw ex
+    }
+  }
 
   override def create[Payload, A](query: HttpQuery,
                                   payload: Payload,

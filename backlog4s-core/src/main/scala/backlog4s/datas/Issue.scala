@@ -15,7 +15,7 @@ case class Issue(
   keyId: Long,
   issueType: IssueType,
   summary: String,
-  description: String,
+  description: Option[String],
   resolution: Option[Resolution],
   priority: Priority,
   status: Status,
