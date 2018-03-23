@@ -88,5 +88,11 @@ class BacklogRepository(interpret : BacklogHttpInterpret[Future], allApi: AllApi
       allApi.wikiApi.allOf(IdParam(id)).orFail
     )
 
+  def getPullRequestSummaries(projectId: Id[Project],
+                              id: Id[GitRepository]): Future[Seq[PullRequestSummary]] =
+    interpret.run(
+      allApi.gitApi.pullRequests(IdParam(projectId), IdParam(id)).orFail
+    )
+
   val fetchers = new BacklogFetchers(interpret)
 }
