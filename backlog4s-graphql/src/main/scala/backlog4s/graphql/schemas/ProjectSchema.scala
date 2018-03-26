@@ -71,32 +71,4 @@ object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
         )
       )
     )
-
-  val ID = Argument("id", IntType, description = "id of the project")
-
-  val ProjectQuery =
-    Schema(
-      ObjectType(
-        "Query", fields[BacklogRepository, Unit](
-          Field(
-            "project",
-            schema,
-            arguments = ID :: Nil,
-            resolve = ctx => ctx.ctx.getProject(ProjectT.id(ctx arg ID))
-          ),
-          Field(
-            "projects",
-            ListType(schema),
-            arguments = Nil,
-            resolve = ctx => ctx.ctx.getProjects
-          ),
-          Field(
-            "issue",
-            IssueSchema.schema,
-            arguments = ID :: Nil,
-            resolve = ctx => ctx.ctx.getIssue(IssueT.id(ctx arg ID))
-          )
-        )
-      )
-    )
 }

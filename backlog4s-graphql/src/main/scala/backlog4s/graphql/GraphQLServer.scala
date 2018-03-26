@@ -8,6 +8,7 @@ import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import backlog4s.apis.AllApi
+import backlog4s.graphql.queries.BacklogQuery
 import backlog4s.graphql.repositories.BacklogRepository
 import backlog4s.graphql.schemas.ProjectSchema
 import backlog4s.interpreters.HammockInterpreter
@@ -35,14 +36,13 @@ object GraphQLServer {
       val apiKey = args.apply(1)
       val interpreter = hammockHttpInterpreter
       val allApi = AllApi.accessKey(apiUrl, apiKey)
-      val schemaDefinition = ProjectSchema
       val repository = new BacklogRepository(interpreter, allApi)
 
       def parseProject(query: String, vars: JsObject, operation: Option[String]) = {
         QueryParser.parse(query) match {
           // query parsed successfully, time to execute it!
           case Success(queryAst) ⇒
-            complete(Executor.execute(schemaDefinition.ProjectQuery, queryAst, repository,
+            complete(Executor.execute(BacklogQuery.Query, queryAst, repository,
               variables = vars,
               operationName = operation,
               deferredResolver = DeferredResolver.fetchers(repository.fetchers.projects))
