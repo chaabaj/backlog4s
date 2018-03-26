@@ -144,7 +144,7 @@ object IssueSchema extends BacklogSchema[BacklogRepository, Issue] {
         Field(
           "comment",
           ListType(CommentSchema.schema),
-          resolve = ctx => ctx.ctx.getComments(ctx.value.id.value)
+          resolve = ctx => ctx.ctx.getComments(ctx.value.id)
         )
       )
     )

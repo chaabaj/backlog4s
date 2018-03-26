@@ -1,15 +1,16 @@
 package backlog4s.graphql.schemas
 
-import backlog4s.datas.PullRequestSummary
+import backlog4s.datas.PullRequest
+import backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
-object PullRequestSummarySchema extends BacklogSchema[Unit, PullRequestSummary] {
+object PullRequestSchema extends BacklogSchema[BacklogRepository, PullRequest] {
 
-  override def schema: ObjectType[Unit, PullRequestSummary] =
+  override def schema: ObjectType[BacklogRepository, PullRequest] =
     ObjectType(
-      "PullRequestSummary",
-      "Pull request summary information",
-      () => fields[Unit, PullRequestSummary](
+      "PullRequest",
+      "Pull request",
+      () => fields[BacklogRepository, PullRequest](
         Field(
           "id",
           IntType,
@@ -62,8 +63,8 @@ object PullRequestSummarySchema extends BacklogSchema[Unit, PullRequestSummary] 
         ),
         Field(
           "issue",
-          OptionType(IntType),
-          resolve = _.value.issue.map(_.id.value.toInt)
+          OptionType(IssueSchema.schema),
+          resolve = _.value.issue
         ),
         Field(
           "baseCommit",
@@ -86,14 +87,14 @@ object PullRequestSummarySchema extends BacklogSchema[Unit, PullRequestSummary] 
           resolve = _.value.mergedAt.map(_.toString())
         ),
         Field(
+          "created",
+          StringType,
+          resolve = _.value.created.toString()
+        ),
+        Field(
           "createdUser",
           UserSchema.schema,
           resolve = _.value.createdUser
-        ),
-        Field(
-          "created",
-          OptionType(StringType),
-          resolve = _.value.created.toString
         ),
         Field(
           "updatedUser",
@@ -102,10 +103,28 @@ object PullRequestSummarySchema extends BacklogSchema[Unit, PullRequestSummary] 
         ),
         Field(
           "updated",
-          OptionType(StringType),
-          resolve = _.value.updated.map(_.toString())
+          StringType,
+          resolve = _.value.updated.toString
+        ),
+        Field(
+          "attachments",
+          ListType(AttachmentSchema.schema),
+          resolve = _.value.attachments
+        ),
+        Field(
+          "stars",
+          ListType(StarSchema.schema),
+          resolve = _.value.stars
+        ),
+        Field(
+          "comments",
+          ListType(CommentSchema.schema),
+          resolve = ctx => ctx.ctx.getComments(
+            ctx.value.projectId,
+            ctx.value.repositoryId,
+            ctx.value.number
+          )
         )
       )
     )
-
 }

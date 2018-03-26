@@ -64,6 +64,17 @@ class BacklogRepository(interpret : BacklogHttpInterpret[Future], allApi: AllApi
       commentApi.allOf(IdParam(issueId), count = 100).orFail
     )
 
+  def getComments(projectId: Id[Project],
+                  repositoryId: Id[GitRepository],
+                  pullRequestNumber: Long): Future[Seq[Comment]] =
+    interpret.run(
+      allApi.pullRequestCommentApi.comments(
+        IdParam(projectId),
+        IdParam(repositoryId),
+        pullRequestNumber
+      ).orFail
+    )
+
 
   def getIssue(id: Id[Issue]): Future[Issue] =
     interpret.run(

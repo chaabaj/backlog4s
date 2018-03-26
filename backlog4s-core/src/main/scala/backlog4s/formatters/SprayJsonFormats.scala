@@ -193,6 +193,7 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val idActivityFormat = new IdFormat[Activity]
   implicit val activityFormat = jsonFormat7(Activity)
 
+  implicit val idPullRequest = new IdFormat[PullRequest]
   implicit val idWikiTagFormat = new IdFormat[WikiTag]
   implicit val wikiTagFormat = jsonFormat2(WikiTag)
   implicit val idWikiFormat = new IdFormat[Wiki]
@@ -201,7 +202,7 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val addWikiFormFormat = jsonFormat4(AddWikiForm)
   implicit val updateWikiFormFormat = jsonFormat3(UpdateWikiForm)
   implicit val wikiHistoryFormat = jsonFormat6(WikiHistory)
-  implicit val starFormFormat = jsonFormat3(StarForm)
+  implicit val starFormFormat = jsonFormat5(StarForm)
 
   implicit val idGitRepository = new IdFormat[GitRepository]
   implicit val gitRepository = jsonFormat13(GitRepository)
@@ -210,7 +211,6 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val idPrStatus = new IdFormat[PullRequestStatus]
   implicit val prStatusFormat = jsonFormat2(PullRequestStatus)
   implicit val prIssue = jsonFormat1(PullRequestIssue)
-  implicit val idPullRequest = new IdFormat[PullRequest]
   implicit val prSummaryFormat = jsonFormat19(PullRequestSummary)
   implicit val prFormat = jsonFormat21(PullRequest)
   implicit val addPrFormat = jsonFormat8(AddPullRequestForm)
