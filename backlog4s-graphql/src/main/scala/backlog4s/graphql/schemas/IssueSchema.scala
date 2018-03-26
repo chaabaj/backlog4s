@@ -142,9 +142,24 @@ object IssueSchema extends BacklogSchema[BacklogRepository, Issue] {
           resolve = _.value.updated.toString
         ),
         Field(
-          "comment",
+          "comments",
           ListType(CommentSchema.schema),
           resolve = ctx => ctx.ctx.getComments(ctx.value.id)
+        ),
+        Field(
+          "attachments",
+          ListType(AttachmentSchema.schema),
+          resolve = _.value.attachments
+        ),
+        Field(
+          "sharedFiles",
+          ListType(SharedFileSchema.schema),
+          resolve = _.value.sharedFiles
+        ),
+        Field(
+          "stars",
+          ListType(StarSchema.schema),
+          resolve = _.value.stars
         )
       )
     )

@@ -2,14 +2,9 @@ package backlog4s.graphql.schemas
 
 import backlog4s.datas.{Issue, IssueT, Project, ProjectT}
 import backlog4s.graphql.repositories.BacklogRepository
-import sangria.execution.deferred._
 import sangria.schema._
 
 object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
-
-  implicit object IssueHasId extends HasId[Issue, Long] {
-    override def id(issue: Issue): Long = issue.id.value
-  }
 
   val schema: ObjectType[BacklogRepository, Project] =
     ObjectType(
