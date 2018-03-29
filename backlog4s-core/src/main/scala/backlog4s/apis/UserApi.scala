@@ -15,7 +15,7 @@ class UserApi(override val baseUrl: String,
 
 
   // stream[A](() => ApiPrg[Response[Seq[A]]): Stream[IO, Seq[A]]
-  def all(offset: Int = 0, limit: Int = 100): ApiPrg[Response[Seq[User]]] =
+  lazy val all: ApiPrg[Response[Seq[User]]] =
     get[Seq[User]](
       HttpQuery(
         path = resource,
