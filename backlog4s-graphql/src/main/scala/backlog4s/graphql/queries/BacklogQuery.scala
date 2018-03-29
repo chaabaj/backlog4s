@@ -10,7 +10,7 @@ object BacklogQuery {
 
   val ID = Argument("id", IntType, description = "id of the project")
 
-  val Query =
+  val queries =
     Schema(
       ObjectType(
         "Query", fields[BacklogRepository, Unit](

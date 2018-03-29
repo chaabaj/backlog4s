@@ -11,7 +11,7 @@ import backlog4s.apis.AllApi
 import backlog4s.graphql.queries.BacklogQuery
 import backlog4s.graphql.repositories.BacklogRepository
 import backlog4s.graphql.schemas.ProjectSchema
-import backlog4s.interpreters.HammockInterpreter
+import backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
 import cats.effect.IO
 import com.typesafe.config.ConfigFactory
 import hammock.jvm.Interpreter
@@ -24,17 +24,16 @@ import spray.json._
 import scala.util.{Failure, Success}
 
 object GraphQLServer {
-  implicit val hammockInterpreter = Interpreter[IO]
   implicit val system = ActorSystem("sangria-server", ConfigFactory.load())
   implicit val materializer = ActorMaterializer()
   implicit val exc = monix.execution.Scheduler.Implicits.global
-  val hammockHttpInterpreter = new HammockInterpreter()
+  val httpInterpreter = new AkkaHttpInterpret()
 
   def main(args: Array[String]): Unit = {
     if (args.length > 1) {
       val apiUrl = args.apply(0)
       val apiKey = args.apply(1)
-      val interpreter = hammockHttpInterpreter
+      val interpreter = httpInterpreter
       val allApi = AllApi.accessKey(apiUrl, apiKey)
       val repository = new BacklogRepository(interpreter, allApi)
 
@@ -42,7 +41,7 @@ object GraphQLServer {
         QueryParser.parse(query) match {
           // query parsed successfully, time to execute it!
           case Success(queryAst) ⇒
-            complete(Executor.execute(BacklogQuery.Query, queryAst, repository,
+            complete(Executor.execute(BacklogQuery.queries, queryAst, repository,
               variables = vars,
               operationName = operation,
               deferredResolver = DeferredResolver.fetchers(repository.fetchers.projects))
@@ -78,7 +77,7 @@ object GraphQLServer {
               parseProject(query, vars, operation)
             }
           } ~ get {
-            complete(schemaDefinition.ProjectQuery.renderPretty)
+            complete(BacklogQuery.queries.renderPretty)
           }
         }
 
