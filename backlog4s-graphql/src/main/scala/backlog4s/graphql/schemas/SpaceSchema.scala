@@ -24,7 +24,7 @@ object SpaceSchema extends BacklogSchema[BacklogRepository, Space] {
         Field(
           "owner",
           UserSchema.schema,
-          resolve = ctx => ctx.ctx.getUser(ctx.value.ownerId.value)
+          resolve = ctx => ctx.ctx.getUser(ctx.value.ownerId)
         ),
         Field(
           "lang",
