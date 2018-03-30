@@ -3,7 +3,7 @@ name := "backlog4s"
 scalaVersion := "2.12.3"
 
 lazy val commonSettings = Seq(
-  version := "0.5.0",
+  version := "0.5.1",
   scalaVersion := "2.12.3"
 )
 
