@@ -1,6 +1,6 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
-import com.github.backlog4s.datas.Lang.Lang
+import com.github.chaabaj.backlog4s.datas.Lang.Lang
 import java.time.ZoneId
 
 import org.joda.time.{DateTime, LocalTime}

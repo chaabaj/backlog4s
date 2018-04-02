@@ -1,17 +1,17 @@
-package com.github.backlog4s.apis
+package com.github.chaabaj.backlog4s.apis
 
-import com.github.backlog4s.datas.Order.Order
-import com.github.backlog4s.datas._
-import com.github.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.backlog4s.dsl.HttpADT.Response
-import com.github.backlog4s.dsl.{HttpQuery, QueryParam}
-import com.github.backlog4s.formatters.SprayJsonFormats._
+import com.github.chaabaj.backlog4s.datas.Order.Order
+import com.github.chaabaj.backlog4s.datas._
+import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
+import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
+import com.github.chaabaj.backlog4s.dsl.{HttpQuery, QueryParam}
+import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
 class GroupApi(override val baseUrl: String,
                override val credentials: Credentials) extends Api {
   private val resource = "groups"
 
-  import com.github.backlog4s.dsl.ApiDsl.HttpOp._
+  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
 
   def all(offset: Int = 0,
           limit: Int = 100,

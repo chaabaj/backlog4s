@@ -1,7 +1,7 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
-import com.github.backlog4s.datas.Order.Order
-import com.github.backlog4s.datas.WatchingSort.WatchingSort
+import com.github.chaabaj.backlog4s.datas.Order.Order
+import com.github.chaabaj.backlog4s.datas.WatchingSort.WatchingSort
 import org.joda.time.DateTime
 
 object WatchingT {

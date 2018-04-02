@@ -1,8 +1,8 @@
-package com.github.backlog4s.dsl
+package com.github.chaabaj.backlog4s.dsl
 
-import com.github.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.backlog4s.dsl.HttpADT.Response
-import com.github.backlog4s.exceptions.BacklogApiException
+import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
+import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
+import com.github.chaabaj.backlog4s.exceptions.BacklogApiException
 
 object syntax {
 

@@ -1,4 +1,4 @@
-package com.github.backlog4s.graphql
+package com.github.chaabaj.backlog4s.graphql
 
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.headers.HttpOriginRange

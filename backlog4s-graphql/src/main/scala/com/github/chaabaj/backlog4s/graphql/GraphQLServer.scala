@@ -1,4 +1,4 @@
-package com.github.backlog4s.graphql
+package com.github.chaabaj.backlog4s.graphql
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -7,13 +7,14 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import com.github.backlog4s.apis.AllApi
-import com.github.backlog4s.graphql.queries.BacklogQuery
-import com.github.backlog4s.graphql.repositories.BacklogRepository
-import com.github.backlog4s.graphql.repositories.BacklogResolvers.IssueResolver
-import com.github.backlog4s.graphql.schemas.ProjectSchema
-import com.github.backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
+import com.github.chaabaj.backlog4s.apis.AllApi
+import com.github.chaabaj.backlog4s.graphql.queries.BacklogQuery
+import com.github.chaabaj.backlog4s.graphql.repositories.BacklogResolvers.IssueResolver
+import com.github.chaabaj.backlog4s.graphql.schemas.ProjectSchema
+import com.github.chaabaj.backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
 import cats.effect.IO
+import com.github.chaabaj.backlog4s.graphql.queries.BacklogQuery
+import com.github.chaabaj.backlog4s.graphql.repositories.BacklogRepository
 import com.typesafe.config.ConfigFactory
 import hammock.jvm.Interpreter
 import sangria.execution.deferred.DeferredResolver

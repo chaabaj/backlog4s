@@ -1,6 +1,6 @@
-package com.github.backlog4s.graphql.schemas
+package com.github.chaabaj.backlog4s.graphql.schemas
 
-import com.github.backlog4s.datas.WikiSummary
+import com.github.chaabaj.backlog4s.datas.WikiSummary
 import sangria.schema._
 
 object WikiSummarySchema extends BacklogSchema[Unit, WikiSummary] {

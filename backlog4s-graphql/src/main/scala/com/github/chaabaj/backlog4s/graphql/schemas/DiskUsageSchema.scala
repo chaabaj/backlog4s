@@ -1,7 +1,8 @@
-package com.github.backlog4s.graphql.schemas
+package com.github.chaabaj.backlog4s.graphql.schemas
 
-import com.github.backlog4s.datas.{ProjectDiskUsage, SpaceDiskUsage}
-import com.github.backlog4s.graphql.repositories.BacklogRepository
+import com.github.chaabaj.backlog4s.datas.{ProjectDiskUsage, SpaceDiskUsage}
+import com.github.chaabaj.backlog4s.graphql.repositories.BacklogRepository
+import com.github.chaabaj.backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
 object DiskUsageSchema extends BacklogSchema[Unit, SpaceDiskUsage] {

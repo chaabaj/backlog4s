@@ -1,8 +1,8 @@
-package com.github.backlog4s.formatters
+package com.github.chaabaj.backlog4s.formatters
 
 import java.time.ZoneId
 
-import com.github.backlog4s.datas._
+import com.github.chaabaj.backlog4s.datas._
 import org.joda.time.{DateTime, LocalTime}
 import org.joda.time.format.ISODateTimeFormat
 import spray.json._

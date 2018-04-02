@@ -1,6 +1,6 @@
-package com.github.backlog4s.apis
+package com.github.chaabaj.backlog4s.apis
 
-import com.github.backlog4s.datas.Credentials
+import com.github.chaabaj.backlog4s.datas.Credentials
 
 class AllApi(override val baseUrl: String,
              override val credentials: Credentials) extends Api {

@@ -1,17 +1,17 @@
-package com.github.backlog4s.apis
+package com.github.chaabaj.backlog4s.apis
 
-import com.github.backlog4s.datas.NoContent.NoContent
-import com.github.backlog4s.datas.Order.Order
-import com.github.backlog4s.datas._
-import com.github.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.backlog4s.dsl.HttpADT.Response
-import com.github.backlog4s.dsl.{HttpQuery, QueryParam}
+import com.github.chaabaj.backlog4s.datas.NoContent.NoContent
+import com.github.chaabaj.backlog4s.datas.Order.Order
+import com.github.chaabaj.backlog4s.datas._
+import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
+import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
+import com.github.chaabaj.backlog4s.dsl.{HttpQuery, QueryParam}
 import org.joda.time.DateTime
-import com.github.backlog4s.formatters.SprayJsonFormats._
+import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
 class StarApi(override val baseUrl: String,
               override val credentials: Credentials) extends Api {
-  import com.github.backlog4s.dsl.ApiDsl.HttpOp._
+  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
 
   def user(id: Id[User],
            minId: Option[Id[Star]] = None,

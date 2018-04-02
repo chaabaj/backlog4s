@@ -1,7 +1,7 @@
-package com.github.backlog4s.graphql.schemas
+package com.github.chaabaj.backlog4s.graphql.schemas
 
-import com.github.backlog4s.datas.PullRequest
-import com.github.backlog4s.graphql.repositories.BacklogRepository
+import com.github.chaabaj.backlog4s.datas.PullRequest
+import com.github.chaabaj.backlog4s.graphql.repositories.BacklogRepository
 import sangria.schema._
 
 object PullRequestSchema extends BacklogSchema[BacklogRepository, PullRequest] {

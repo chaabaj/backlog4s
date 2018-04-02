@@ -1,6 +1,6 @@
-package com.github.backlog4s.apis
+package com.github.chaabaj.backlog4s.apis
 
-import com.github.backlog4s.datas.{AccessKey, Credentials, OAuth2Token}
+import com.github.chaabaj.backlog4s.datas.{AccessKey, Credentials, OAuth2Token}
 
 trait Api {
   def credentials: Credentials

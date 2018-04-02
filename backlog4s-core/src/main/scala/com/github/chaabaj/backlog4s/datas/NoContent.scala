@@ -1,4 +1,4 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
 object NoContent {
   // Used for No content response from the API

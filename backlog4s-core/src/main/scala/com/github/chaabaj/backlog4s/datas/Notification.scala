@@ -1,4 +1,4 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
 case class Notification(
   id: Id[Notification],

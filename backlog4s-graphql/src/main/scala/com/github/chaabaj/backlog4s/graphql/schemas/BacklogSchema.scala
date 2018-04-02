@@ -1,4 +1,4 @@
-package com.github.backlog4s.graphql.schemas
+package com.github.chaabaj.backlog4s.graphql.schemas
 
 import sangria.schema.ObjectType
 

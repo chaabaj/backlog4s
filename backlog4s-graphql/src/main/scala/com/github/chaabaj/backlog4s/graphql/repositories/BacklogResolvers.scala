@@ -1,6 +1,6 @@
-package com.github.backlog4s.graphql.repositories
+package com.github.chaabaj.backlog4s.graphql.repositories
 
-import com.github.backlog4s.datas.{Id, Issue, Project}
+import com.github.chaabaj.backlog4s.datas.{Id, Issue, Project}
 import sangria.execution.deferred.{Deferred, DeferredResolver}
 
 import scala.concurrent.{ExecutionContext, Future}

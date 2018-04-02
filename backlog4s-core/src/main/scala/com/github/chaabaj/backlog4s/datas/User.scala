@@ -1,7 +1,7 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
-import com.github.backlog4s.datas.Lang.Lang
-import com.github.backlog4s.datas.Role.Role
+import com.github.chaabaj.backlog4s.datas.Lang.Lang
+import com.github.chaabaj.backlog4s.datas.Role.Role
 
 
 object Role extends Enumeration {

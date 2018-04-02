@@ -1,6 +1,6 @@
-package com.github.backlog4s.graphql.schemas
+package com.github.chaabaj.backlog4s.graphql.schemas
 
-import com.github.backlog4s.datas.SharedFile
+import com.github.chaabaj.backlog4s.datas.SharedFile
 import sangria.schema._
 
 object SharedFileSchema extends BacklogSchema[Unit, SharedFile] {

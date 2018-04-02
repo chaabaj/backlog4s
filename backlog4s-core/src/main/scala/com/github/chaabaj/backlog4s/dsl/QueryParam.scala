@@ -1,7 +1,7 @@
-package com.github.backlog4s.dsl
+package com.github.chaabaj.backlog4s.dsl
 
-import com.github.backlog4s.datas.{Id, IdOrKeyParam}
-import com.github.backlog4s.formatters.SprayJsonFormats.DateTimeFormat
+import com.github.chaabaj.backlog4s.datas.{Id, IdOrKeyParam}
+import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats.DateTimeFormat
 import org.joda.time.DateTime
 
 sealed trait QueryParam {

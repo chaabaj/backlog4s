@@ -1,8 +1,8 @@
-package com.github.backlog4s.streaming
+package com.github.chaabaj.backlog4s.streaming
 
-import com.github.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.backlog4s.dsl.{BacklogHttpInterpret, BacklogHttpOp}
-import com.github.backlog4s.dsl.HttpADT.Response
+import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpInterpret, BacklogHttpOp}
+import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
 import cats.effect.Sync
 import fs2.Stream
 import monix.reactive.Observable
@@ -13,8 +13,8 @@ import scala.util.{Failure, Success}
 
 object ApiStream {
 
-  import com.github.backlog4s.dsl.ApiDsl.HttpOp._
-  import com.github.backlog4s.dsl.syntax._
+  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+  import com.github.chaabaj.backlog4s.dsl.syntax._
   import StreamingEffect._
 
   type ApiResponse[A] = ApiPrg[Response[Seq[A]]]

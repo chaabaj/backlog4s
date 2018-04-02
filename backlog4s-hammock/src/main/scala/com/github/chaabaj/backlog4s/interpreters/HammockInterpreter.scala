@@ -1,20 +1,20 @@
-package com.github.backlog4s.interpreters
+package com.github.chaabaj.backlog4s.interpreters
 
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
-import com.github.backlog4s.datas.{AccessKey, ApiErrors, Credentials, OAuth2Token}
-import com.github.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.backlog4s.dsl._
+import com.github.chaabaj.backlog4s.datas.{AccessKey, ApiErrors, Credentials, OAuth2Token}
+import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
+import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
+import com.github.chaabaj.backlog4s.dsl._
 import cats.effect.IO
 import hammock.jvm.Interpreter
 import hammock._
 import cats.implicits._
 import spray.json._
 import hammock.hi._
-import com.github.backlog4s.formatters.SprayJsonFormats._
+import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 import cats.Monad
 import hammock.Entity.{ByteArrayEntity, StringEntity}
 import monix.reactive.Observable

@@ -1,4 +1,4 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
 sealed trait Credentials
 case class AccessKey(key: String) extends Credentials

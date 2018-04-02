@@ -1,9 +1,10 @@
-package com.github.backlog4s.graphql.queries
+package com.github.chaabaj.backlog4s.graphql.queries
 
-import com.github.backlog4s.datas.{IssueT, ProjectT}
-import com.github.backlog4s.graphql.repositories.BacklogRepository
-import com.github.backlog4s.graphql.schemas.IssueSchema
-import com.github.backlog4s.graphql.schemas.ProjectSchema.schema
+import com.github.chaabaj.backlog4s.datas.{IssueT, ProjectT}
+import com.github.chaabaj.backlog4s.graphql.schemas.IssueSchema
+import com.github.chaabaj.backlog4s.graphql.schemas.ProjectSchema.schema
+import com.github.chaabaj.backlog4s.graphql.repositories.BacklogRepository
+import com.github.chaabaj.backlog4s.graphql.schemas.IssueSchema
 import sangria.schema.{Argument, Field, IntType, ListType, ObjectType, Schema, fields}
 
 object BacklogQuery {

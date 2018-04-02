@@ -1,18 +1,18 @@
-package com.github.backlog4s.dsl
+package com.github.chaabaj.backlog4s.dsl
 
 import java.nio.ByteBuffer
 import java.io.File
 
 import cats.free.Free
 import cats.{Monad, ~>}
-import com.github.backlog4s.datas.ApiErrors
-import com.github.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.backlog4s.dsl.BacklogHttpOp.HttpF
-import com.github.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.backlog4s.streaming.ApiStream.ApiStream
+import com.github.chaabaj.backlog4s.datas.ApiErrors
+import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpOp.HttpF
+import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
+import com.github.chaabaj.backlog4s.streaming.ApiStream.ApiStream
 import spray.json.JsonFormat
 import monix.reactive.Observable
-import com.github.backlog4s.streaming.StreamingEffect._
+import com.github.chaabaj.backlog4s.streaming.StreamingEffect._
 
 import scala.util.Try
 

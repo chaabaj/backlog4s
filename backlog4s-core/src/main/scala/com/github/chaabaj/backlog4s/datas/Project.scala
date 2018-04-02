@@ -1,4 +1,4 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
 object ProjectT {
   def id(value: Long): Id[Project] = Id(value)

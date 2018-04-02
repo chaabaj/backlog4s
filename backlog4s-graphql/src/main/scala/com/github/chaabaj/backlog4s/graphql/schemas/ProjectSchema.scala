@@ -1,8 +1,8 @@
-package com.github.backlog4s.graphql.schemas
+package com.github.chaabaj.backlog4s.graphql.schemas
 
-import com.github.backlog4s.datas.Project
-import com.github.backlog4s.graphql.repositories.BacklogRepository
-import com.github.backlog4s.graphql.repositories.BacklogResolvers.DeferredIssues
+import com.github.chaabaj.backlog4s.datas.Project
+import com.github.chaabaj.backlog4s.graphql.repositories.BacklogRepository
+import com.github.chaabaj.backlog4s.graphql.repositories.BacklogResolvers.DeferredIssues
 import sangria.schema._
 
 object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {

@@ -1,4 +1,4 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
 object CategoryT {
   def id(value: Long): Id[Category] = Id(value)

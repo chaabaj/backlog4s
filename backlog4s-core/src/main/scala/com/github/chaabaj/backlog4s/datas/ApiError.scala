@@ -1,6 +1,6 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
-import com.github.backlog4s.datas.ApiErrorCode.ApiErrorCode
+import com.github.chaabaj.backlog4s.datas.ApiErrorCode.ApiErrorCode
 
 /**
   * See backlog error api documentation

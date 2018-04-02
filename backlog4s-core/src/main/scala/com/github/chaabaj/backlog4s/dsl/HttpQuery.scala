@@ -1,6 +1,6 @@
-package com.github.backlog4s.dsl
+package com.github.chaabaj.backlog4s.dsl
 
-import com.github.backlog4s.datas.{Credentials, Id}
+import com.github.chaabaj.backlog4s.datas.{Credentials, Id}
 
 /**
   * Basic http query representation

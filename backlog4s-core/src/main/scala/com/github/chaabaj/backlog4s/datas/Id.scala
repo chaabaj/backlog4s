@@ -1,4 +1,4 @@
-package com.github.backlog4s.datas
+package com.github.chaabaj.backlog4s.datas
 
 case class Id[A](value: Long) extends AnyVal
 case class Key[A](value: String) extends AnyVal

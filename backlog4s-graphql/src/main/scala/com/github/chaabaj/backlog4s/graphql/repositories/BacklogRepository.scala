@@ -1,10 +1,10 @@
-package com.github.backlog4s.graphql.repositories
+package com.github.chaabaj.backlog4s.graphql.repositories
 
-import com.github.backlog4s.apis.AllApi
-import com.github.backlog4s.datas._
-import com.github.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.backlog4s.dsl.BacklogHttpInterpret
-import com.github.backlog4s.dsl.syntax._
+import com.github.chaabaj.backlog4s.apis.AllApi
+import com.github.chaabaj.backlog4s.datas._
+import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpInterpret
+import com.github.chaabaj.backlog4s.dsl.syntax._
 import monix.execution.Scheduler
 import monix.reactive.{Observable, OverflowStrategy}
 

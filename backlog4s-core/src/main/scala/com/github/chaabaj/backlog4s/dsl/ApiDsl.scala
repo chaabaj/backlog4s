@@ -1,4 +1,4 @@
-package com.github.backlog4s.dsl
+package com.github.chaabaj.backlog4s.dsl
 
 import cats.effect.Sync
 import cats.free.Free

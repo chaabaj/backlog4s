@@ -1,4 +1,4 @@
-package com.github.backlog4s.interpreters
+package com.github.chaabaj.backlog4s.interpreters
 
 import java.io.File
 import java.util.logging.Logger
@@ -13,10 +13,10 @@ import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import akka.http.scaladsl.settings.{ClientConnectionSettings, ConnectionPoolSettings}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Sink, Source}
-import com.github.backlog4s.datas.{AccessKey, ApiErrors, OAuth2Token}
-import com.github.backlog4s.dsl.BacklogHttpOp.HttpF
-import com.github.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.backlog4s.dsl._
+import com.github.chaabaj.backlog4s.datas.{AccessKey, ApiErrors, OAuth2Token}
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpOp.HttpF
+import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
+import com.github.chaabaj.backlog4s.dsl._
 import spray.json._
 import cats.Monad
 import cats.implicits._
@@ -37,7 +37,7 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
 
   val logger: Logger = Logger.getLogger("Akka http")
 
-  import com.github.backlog4s.formatters.SprayJsonFormats._
+  import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
   implicit val monad = implicitly[Monad[Future]]
 

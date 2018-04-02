@@ -1,4 +1,4 @@
-package com.github.backlog4s.dsl
+package com.github.chaabaj.backlog4s.dsl
 
 
 import scala.concurrent.{ExecutionContext, Future}
