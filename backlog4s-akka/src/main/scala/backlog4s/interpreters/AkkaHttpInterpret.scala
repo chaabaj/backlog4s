@@ -58,18 +58,20 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
   private def createRequest(method: HttpMethod, query: HttpQuery): HttpRequest = {
     query.credentials match {
       case AccessKey(key) =>
-        val uri = Uri(query.baseUrl + query.path).withQuery(Query(query.params + ("apiKey" -> key)))
+        val uri = Uri(query.baseUrl + query.path).withQuery(Query(
+          QueryParam.encodeAll(query.params) + ("apiKey" -> key))
+        )
         logger.info(s"Create HTTP request method: ${method.value} and uri: $uri")
         HttpRequest(
           method = method,
           uri = uri
         ).withHeaders(reqHeaders)
       case OAuth2Token(token) =>
-        val uri = Uri(query.baseUrl + query.path).withQuery(Query(query.params))
+        val uri = Uri(query.baseUrl + query.path).withQuery(Query(QueryParam.encodeAll(query.params)))
         logger.info(s"Create HTTP request method: ${method.value} and uri: $uri")
         HttpRequest(
           method = method,
-          uri = Uri(query.baseUrl + query.path).withQuery(Query(query.params))
+          uri = Uri(query.baseUrl + query.path).withQuery(Query(QueryParam.encodeAll(query.params)))
         ).withHeaders(
           reqHeaders :+
             headers.Authorization(OAuth2BearerToken(token))

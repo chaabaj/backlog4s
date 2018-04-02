@@ -6,8 +6,7 @@ import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
-import backlog4s.dsl.HttpQuery
-import backlog4s.utils.QueryParameter
+import backlog4s.dsl.{HttpQuery, QueryParam}
 import backlog4s.formatters.SprayJsonFormats._
 
 class NotificationApi(override val baseUrl: String,
@@ -20,16 +19,17 @@ class NotificationApi(override val baseUrl: String,
           maxId: Option[Id[Notification]] = None,
           count: Long = 20,
           order: Order = Order.Desc): ApiPrg[Response[Seq[Notification]]] = {
-    val params = Map(
-      "minId" -> minId.map(_.value.toString).getOrElse(""),
-      "maxId" -> maxId.map(_.value.toString).getOrElse(""),
-      "count" -> count.toString,
-      "order" -> order.toString
+    val params = Seq(
+      QueryParam.option("minId", minId),
+      QueryParam.option("maxId", maxId),
+      QueryParam("count", count.toString),
+      QueryParam("order", order.toString)
     )
+
     get[Seq[Notification]](
       HttpQuery(
         resource,
-        QueryParameter.removeEmptyValue(params),
+        params,
         credentials,
         baseUrl
       )
@@ -38,14 +38,14 @@ class NotificationApi(override val baseUrl: String,
 
   def count(resourceAlreadyRead: Option[Boolean] = None,
             alreadyRead: Option[Boolean] = None): ApiPrg[Response[Count]] = {
-    val params = Map(
-      "resourceAlreadyRead" -> resourceAlreadyRead.map(_.toString).getOrElse(""),
-      "alreadyRead" -> alreadyRead.map(_.toString).getOrElse("")
+    val params = Seq(
+      QueryParam.option("resourceAlreadyRead", resourceAlreadyRead),
+      QueryParam.option("alreadyRead", alreadyRead)
     )
     get[Count](
       HttpQuery(
         s"$resource/count",
-        QueryParameter.removeEmptyValue(params),
+        params,
         credentials,
         baseUrl
       )

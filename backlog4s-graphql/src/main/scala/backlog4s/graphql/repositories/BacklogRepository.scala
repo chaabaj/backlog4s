@@ -6,11 +6,13 @@ import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.BacklogHttpInterpret
 import backlog4s.dsl.syntax._
 import monix.execution.Scheduler
-import monix.reactive.Observable
+import monix.reactive.{Observable, OverflowStrategy}
 
 import scala.concurrent.Future
 
-class BacklogRepository(interpret : BacklogHttpInterpret[Future], allApi: AllApi, parallelism: Int = 4)
+class BacklogRepository(interpret : BacklogHttpInterpret[Future],
+                        allApi: AllApi,
+                        parallelism: Int = 4)
                        (implicit scheduler: Scheduler) {
 
   private val projectApi = allApi.projectApi

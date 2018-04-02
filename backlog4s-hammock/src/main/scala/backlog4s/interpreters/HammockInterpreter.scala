@@ -52,7 +52,7 @@ class HammockInterpreter()(implicit val hammockInterpreter: Interpreter[IO],
                                body: Option[Entity] = None,
                                opts: Opts = Opts.empty) = {
     val uri = Uri.unsafeParse(query.baseUrl + query.path)
-      .copy(query = query.params)
+      .copy(query = QueryParam.encodeAll(query.params))
 
     val contentType = body.map {
       case _: StringEntity => header("Content-Type" -> "application/json")

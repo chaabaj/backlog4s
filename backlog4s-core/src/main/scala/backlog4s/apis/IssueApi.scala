@@ -4,9 +4,8 @@ import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
-import backlog4s.dsl.HttpQuery
+import backlog4s.dsl.{QueryParam, HttpQuery}
 import backlog4s.formatters.SprayJsonFormats._
-import backlog4s.utils.QueryParameter
 import cats.data.NonEmptyList
 
 class IssueApi(override val baseUrl: String,
@@ -15,53 +14,42 @@ class IssueApi(override val baseUrl: String,
 
   val resource = "issues"
 
-  private def searchParams(issueSearch: IssueSearch): Map[String, String] = {
-    val params = Map(
-      "projectId" -> issueSearch.assigneeIds.mkString(","),
-      "issueTypeId" -> issueSearch.issueTypeIds.mkString(","),
-      "categoryId" -> issueSearch.categoryIds.mkString(","),
-      "milestoneId" -> issueSearch.milestoneIds.mkString(","),
-      "statusId" -> issueSearch.statusIds.mkString(","),
-      "priorityId" -> issueSearch.priorityIds.mkString(","),
-      "assigneeId" -> issueSearch.assigneeIds.mkString(","),
-      "createdUserId" -> issueSearch.createdUserIds.mkString(","),
-      "resolutionId" -> issueSearch.resolutionId.mkString(","),
-      "attachment" -> issueSearch.attachment.map(_.toString).getOrElse(""),
-      "sharedFile" -> issueSearch.sharedFile.map(_.toString).getOrElse(""),
-      "sort" -> issueSearch.sort.map(_.toString).getOrElse(""),
-      "order" -> issueSearch.order.toString,
-      "count" -> issueSearch.count.toString,
-      "offset" -> issueSearch.offset.toString,
-      "createdSince" -> issueSearch.createdSince
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "createdUntil" -> issueSearch.createdUntil
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "updatedSince" -> issueSearch.updatedSince
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "updatedUntil" -> issueSearch.updatedUntil
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "startDateSince" -> issueSearch.startDateSince
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "startDateUntil" -> issueSearch.startDateUntil
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "dueDateSince" -> issueSearch.dueDateSince
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "dueDateUntil" -> issueSearch.dueDateUntil
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "id" -> issueSearch.ids.mkString(","),
-      "parentIssueId" -> issueSearch.parentIssueIds.mkString(","),
-      "keyword" -> issueSearch.keyword.getOrElse("")
-    )
+  private def formatIdListParameter[A](name: String, ids: Seq[Id[A]]): String = {
+    ids.zipWithIndex.map {
+      case (id, index) =>
+        s"$name[$index]=${id.value}"
+    }.mkString("&")
+  }
 
-    QueryParameter.removeEmptyValue(params)
+  private def searchParams(issueSearch: IssueSearch): Seq[QueryParam] = {
+    val queryParams = Seq(
+      QueryParam("projectId", issueSearch.projectIds),
+      QueryParam("issueTypeId", issueSearch.issueTypeIds),
+      QueryParam("categoryId", issueSearch.categoryIds),
+      QueryParam("milestoneId", issueSearch.milestoneIds),
+      QueryParam("statusId", issueSearch.statusIds),
+      QueryParam("priorityId", issueSearch.priorityIds),
+      QueryParam("assigneeId", issueSearch.assigneeIds),
+      QueryParam("createdUserId", issueSearch.createdUserIds),
+      QueryParam("resolutionId", issueSearch.resolutionIds),
+      QueryParam.option("attachment", issueSearch.attachment),
+      QueryParam.option("sharedFile", issueSearch.sharedFile),
+      QueryParam.option("sort", issueSearch.sort.map(_.toString)),
+      QueryParam("order", issueSearch.order.toString),
+      QueryParam("count", issueSearch.count),
+      QueryParam.option("createdSince", issueSearch.createdSince),
+      QueryParam.option("createdUntil", issueSearch.createdUntil),
+      QueryParam.option("updatedSince", issueSearch.updatedSince),
+      QueryParam.option("updatedUntil", issueSearch.updatedUntil),
+      QueryParam.option("startDateSince", issueSearch.startDateSince),
+      QueryParam.option("startDateUntil", issueSearch.startDateUntil),
+      QueryParam.option("dueDateSince", issueSearch.dueDateSince),
+      QueryParam.option("dueDateUntil", issueSearch.dueDateUntil),
+      QueryParam("id", issueSearch.ids),
+      QueryParam("parentIssueId", issueSearch.parentIssueIds),
+      QueryParam.option("keyword", issueSearch.keyword)
+    )
+    queryParams
   }
 
   def search(issueSearch: IssueSearch = IssueSearch()): ApiPrg[Response[Seq[Issue]]] =
@@ -91,9 +79,9 @@ class IssueApi(override val baseUrl: String,
         path = "users/myself/recentlyViewedIssues",
         credentials = credentials,
         baseUrl = baseUrl,
-        params = Map(
-          "offset" -> offset.toString,
-          "count" -> count.toString
+        params = Seq(
+          QueryParam("offset", offset),
+          QueryParam("count", count)
         )
       )
     )

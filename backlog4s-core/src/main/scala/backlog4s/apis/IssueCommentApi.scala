@@ -5,9 +5,8 @@ import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
-import backlog4s.dsl.HttpQuery
+import backlog4s.dsl.{HttpQuery, QueryParam}
 import backlog4s.formatters.SprayJsonFormats._
-import backlog4s.utils.QueryParameter
 
 class IssueCommentApi(override val baseUrl: String,
                       override val credentials: Credentials) extends Api {
@@ -21,17 +20,17 @@ class IssueCommentApi(override val baseUrl: String,
             maxId: Option[Id[Comment]] = None,
             count: Long = 20,
             order: Order = Order.Desc): ApiPrg[Response[Seq[Comment]]] = {
-    val params = Map(
-      "minId" -> minId.map(_.value.toString).getOrElse(""),
-      "maxId" -> maxId.map(_.value.toString).getOrElse(""),
-      "count" -> count.toString,
-      "order" -> order.toString
+    val params = Seq(
+      QueryParam.option("minId", minId),
+      QueryParam.option("maxId", maxId),
+      QueryParam("count", count.toString),
+      QueryParam("order", order.toString)
     )
 
     get[Seq[Comment]](
       HttpQuery(
         resource(issueIdOrKey),
-        QueryParameter.removeEmptyValue(params),
+        params,
         credentials,
         baseUrl
       )
