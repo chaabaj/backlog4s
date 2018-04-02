@@ -4,7 +4,7 @@ import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
-import backlog4s.dsl.HttpQuery
+import backlog4s.dsl.{HttpQuery, QueryParam}
 import backlog4s.formatters.SprayJsonFormats._
 
 class GroupApi(override val baseUrl: String,
@@ -19,10 +19,10 @@ class GroupApi(override val baseUrl: String,
     get[Seq[Group]](
       HttpQuery(
         s"$resource",
-        Map(
-          "offset" -> offset.toString,
-          "count" -> limit.toString,
-          "order" -> order.toString
+        Seq(
+          QueryParam("offset", offset),
+          QueryParam("count", limit),
+          QueryParam("order", order.toString)
         ),
         credentials,
         baseUrl = baseUrl

@@ -1,7 +1,8 @@
 package backlog4s.graphql.schemas
 
-import backlog4s.datas.{Issue, IssueT, Project, ProjectT}
+import backlog4s.datas.Project
 import backlog4s.graphql.repositories.BacklogRepository
+import backlog4s.graphql.repositories.BacklogResolvers.DeferredIssues
 import sangria.schema._
 
 object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
@@ -62,7 +63,7 @@ object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
         Field(
           "issues",
           ListType(IssueSchema.schema),
-          resolve = ctx => ctx.ctx.getIssues(ctx.value.id)
+          resolve = ctx => DeferredIssues(ctx.value.id)
         ),
         Field(
           "wikis",

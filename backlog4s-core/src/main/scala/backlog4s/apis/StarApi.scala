@@ -5,10 +5,9 @@ import backlog4s.datas.Order.Order
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
-import backlog4s.dsl.HttpQuery
+import backlog4s.dsl.{HttpQuery, QueryParam}
 import org.joda.time.DateTime
 import backlog4s.formatters.SprayJsonFormats._
-import backlog4s.utils.QueryParameter
 
 class StarApi(override val baseUrl: String,
               override val credentials: Credentials) extends Api {
@@ -19,17 +18,17 @@ class StarApi(override val baseUrl: String,
            maxId: Option[Id[Star]] = None,
            count: Long = 20,
            order: Order = Order.Desc): ApiPrg[Response[Seq[Star]]] = {
-    val params = Map(
-      "minId" -> minId.map(_.value.toString).getOrElse(""),
-      "maxId" -> maxId.map(_.value.toString).getOrElse(""),
-      "count" -> count.toString,
-      "order" -> order.toString
+    val params = Seq(
+      QueryParam.option("minId", minId),
+      QueryParam.option("maxId", maxId),
+      QueryParam("count", count),
+      QueryParam("order", order.toString)
     )
 
     get[Seq[Star]](
       HttpQuery(
         s"users/${id.value}/stars",
-        QueryParameter.removeEmptyValue(params),
+        params,
         credentials,
         baseUrl
       )
@@ -39,19 +38,15 @@ class StarApi(override val baseUrl: String,
   def count(id: Id[User],
             since: Option[DateTime] = None,
             until: Option[DateTime] = None): ApiPrg[Response[Count]] = {
-    val params = Map(
-      "since" -> since
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse(""),
-      "until" -> until
-        .map(_.toString(DateTimeFormat.formatter))
-        .getOrElse("")
+    val params = Seq(
+      QueryParam.option("since", since),
+      QueryParam.option("until", until)
     )
 
     get[Count](
       HttpQuery(
         s"users/${id.value}/stars/count",
-        QueryParameter.removeEmptyValue(params),
+        params,
         credentials,
         baseUrl
       )

@@ -10,6 +10,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import backlog4s.apis.AllApi
 import backlog4s.graphql.queries.BacklogQuery
 import backlog4s.graphql.repositories.BacklogRepository
+import backlog4s.graphql.repositories.BacklogResolvers.IssueResolver
 import backlog4s.graphql.schemas.ProjectSchema
 import backlog4s.interpreters.{AkkaHttpInterpret, HammockInterpreter}
 import cats.effect.IO
@@ -44,7 +45,10 @@ object GraphQLServer {
             complete(Executor.execute(BacklogQuery.queries, queryAst, repository,
               variables = vars,
               operationName = operation,
-              deferredResolver = DeferredResolver.fetchers(repository.fetchers.projects))
+              deferredResolver = DeferredResolver.fetchersWithFallback(
+                IssueResolver(),
+                repository.fetchers.projects
+              ))
               .map(OK → _)
               .recover {
                 case error: QueryAnalysisError ⇒ BadRequest → error.resolveError

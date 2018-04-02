@@ -5,8 +5,7 @@ import backlog4s.datas.NoContent.NoContent
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.Response
-import backlog4s.dsl.HttpQuery
-import backlog4s.utils.QueryParameter
+import backlog4s.dsl.{HttpQuery, QueryParam}
 import backlog4s.formatters.SprayJsonFormats._
 
 
@@ -18,21 +17,19 @@ class WatchingApi(override val baseUrl: String,
 
   def search(userId: Id[User],
              searchParams: WatchingSearch = WatchingSearch()): ApiPrg[Response[Seq[Watching]]] = {
-    val params = Map(
-      "order" -> searchParams.order.toString,
-      "sort" -> searchParams.sort.toString,
-      "count" -> searchParams.count.toString,
-      "offset" -> searchParams.offset.toString,
-      "resourceAlreadyRead" -> searchParams.resourceAlreadyRead
-        .map(_.toString)
-        .getOrElse(""),
-      "issueId" -> searchParams.issueId.map(_.mkString(",")).getOrElse("")
+    val params = Seq(
+      QueryParam("order", searchParams.order.toString),
+      QueryParam("sort", searchParams.sort.toString),
+      QueryParam("count", searchParams.count),
+      QueryParam("offset", searchParams.offset),
+      QueryParam.option("resourceAlreadyRead", searchParams.resourceAlreadyRead),
+      QueryParam.option("issueId", searchParams.issueId)
     )
 
     get[Seq[Watching]](
       HttpQuery(
         s"users/${userId.value}/$resource",
-        QueryParameter.removeEmptyValue(params),
+        params,
         credentials,
         baseUrl
       )
@@ -42,11 +39,9 @@ class WatchingApi(override val baseUrl: String,
   def count(userId: Id[User],
             resourceAlreadyRead: Option[Boolean] = None,
             alreadyRead: Option[Boolean] = None): ApiPrg[Response[Count]] = {
-    val params = Map(
-      "resourceAlreadyRead" -> resourceAlreadyRead
-        .map(_.toString)
-        .getOrElse(""),
-      "alreadyRead" -> alreadyRead.map(_.toString).getOrElse("")
+    val params = Seq(
+      QueryParam.option("resourceAlreadyRead", resourceAlreadyRead),
+      QueryParam.option("alreadyRead", alreadyRead)
     )
 
     get[Count](

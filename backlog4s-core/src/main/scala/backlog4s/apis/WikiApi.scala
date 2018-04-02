@@ -3,7 +3,7 @@ package backlog4s.apis
 import backlog4s.datas._
 import backlog4s.dsl.ApiDsl.ApiPrg
 import backlog4s.dsl.HttpADT.{ByteStream, Response}
-import backlog4s.dsl.HttpQuery
+import backlog4s.dsl.{HttpQuery, QueryParam}
 import cats.data.NonEmptyList
 import backlog4s.formatters.SprayJsonFormats._
 
@@ -17,9 +17,7 @@ class WikiApi(override val baseUrl: String,
     get[Seq[WikiSummary]](
       HttpQuery(
         resource,
-        Map(
-          "projectIdOrKey" -> projectIdOrKey.toString
-        ),
+        QueryParam.single("projectIdOrKey", projectIdOrKey),
         credentials,
         baseUrl
       )
@@ -38,9 +36,7 @@ class WikiApi(override val baseUrl: String,
     get[Count](
       HttpQuery(
         s"$resource/count",
-        Map(
-          "projectIdOrKey" -> projectIdOrKey.toString
-        ),
+        QueryParam.single("projectIdOrKey", projectIdOrKey),
         credentials,
         baseUrl
       )
@@ -50,9 +46,7 @@ class WikiApi(override val baseUrl: String,
     get[Seq[WikiTag]](
       HttpQuery(
         s"$resource/tags",
-        Map(
-          "projectIdOrKey" -> projectIdOrKey.toString
-        ),
+        QueryParam.single("projectIdOrKey", projectIdOrKey),
         credentials,
         baseUrl
       )
@@ -148,9 +142,7 @@ class WikiApi(override val baseUrl: String,
     delete(
       HttpQuery(
         s"$resource/${id.value}",
-        Map(
-          "mailNotify" -> mailNotify.toString
-        ),
+        QueryParam.single("mailNotifiy", mailNotify),
         credentials,
         baseUrl
       )
