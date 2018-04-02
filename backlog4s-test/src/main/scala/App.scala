@@ -2,10 +2,10 @@
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import backlog4s.apis._
-import backlog4s.datas._
-import backlog4s.interpreters.AkkaHttpInterpret
-import backlog4s.streaming.ApiStream
+import com.github.chaabaj.backlog4s.apis._
+import com.github.chaabaj.backlog4s.datas._
+import com.github.chaabaj.backlog4s.interpreters.AkkaHttpInterpret
+import com.github.chaabaj.backlog4s.streaming.ApiStream
 import cats.effect.IO
 
 import scala.util.{Failure, Success}
@@ -14,7 +14,7 @@ import hammock.jvm._
 object App {
 
   implicit val hammockInterpreter = Interpreter[IO]
-  import backlog4s.dsl.syntax._
+  import com.github.chaabaj.backlog4s.dsl.syntax._
 
   def usingAkka(apiUrl: String, apiKey: String): Unit = {
     implicit val system = ActorSystem("test")

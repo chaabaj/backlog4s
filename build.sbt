@@ -3,7 +3,7 @@ name := "backlog4s"
 scalaVersion := "2.12.3"
 
 lazy val commonSettings = Seq(
-  version := "0.5.1",
+  version := "0.7.0",
   scalaVersion := "2.12.3"
 )
 
@@ -25,3 +25,7 @@ lazy val backlog4sTest = (project in file("backlog4s-test"))
 lazy val backlog4sGraphQl = (project in file("backlog4s-graphql"))
   .settings(commonSettings)
   .dependsOn(core, akka, backlog4sTest)
+
+publishTo := Some("Backlog4s Sonartype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
+
+credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
