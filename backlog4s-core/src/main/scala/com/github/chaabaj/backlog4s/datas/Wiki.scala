@@ -3,11 +3,11 @@ package com.github.chaabaj.backlog4s.datas
 import org.joda.time.DateTime
 
 object WikiT {
-  def id(value: Long): Id[Wiki] = Id(value)
+  def id(value: Int): Id[Wiki] = Id(value)
 }
 
 object WikiSummaryT {
-  def id(value: Long): Id[WikiSummary] = Id(value)
+  def id(value: Int): Id[WikiSummary] = Id(value)
 }
 
 case class WikiSummary(

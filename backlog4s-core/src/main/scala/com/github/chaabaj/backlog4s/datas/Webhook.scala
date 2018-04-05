@@ -4,7 +4,7 @@ import com.github.chaabaj.backlog4s.datas.ActivityType.ActivityType
 import org.joda.time.DateTime
 
 object WebhookT {
-  def id(value: Long): Id[Webhook] = Id(value)
+  def id(value: Int): Id[Webhook] = Id(value)
 }
 
 case class Webhook(

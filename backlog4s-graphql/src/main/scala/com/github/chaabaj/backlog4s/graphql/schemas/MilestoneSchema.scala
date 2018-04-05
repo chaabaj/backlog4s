@@ -14,13 +14,13 @@ object MilestoneSchema extends BacklogSchema[Unit, Milestone]{
           "id",
           IntType,
           Some("id"),
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "projectId",
           IntType,
           Some("projectId"),
-          resolve = _.value.projectId.value.toInt
+          resolve = _.value.projectId.value
         ),
         Field(
           "name",
@@ -50,7 +50,7 @@ object MilestoneSchema extends BacklogSchema[Unit, Milestone]{
         Field(
           "displayOrder",
           IntType,
-          resolve = _.value.displayOrder.toInt
+          resolve = _.value.displayOrder
         )
       )
     )

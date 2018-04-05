@@ -14,22 +14,22 @@ object PullRequestSchema extends BacklogSchema[BacklogRepository, PullRequest] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "projectId",
           IntType,
-          resolve = _.value.projectId.value.toInt
+          resolve = _.value.projectId.value
         ),
         Field(
           "repositoryId",
           IntType,
-          resolve = _.value.repositoryId.value.toInt
+          resolve = _.value.repositoryId.value
         ),
         Field(
           "number",
           IntType,
-          resolve = _.value.number.toInt
+          resolve = _.value.number
         ),
         Field(
           "summary",

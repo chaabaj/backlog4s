@@ -5,7 +5,7 @@ case class IssueType(
   projectId: Id[Project],
   name: String,
   color: RGBColor,
-  displayOrder: Long
+  displayOrder: Int
 )
 
 case class UpdateIssueTypeForm(

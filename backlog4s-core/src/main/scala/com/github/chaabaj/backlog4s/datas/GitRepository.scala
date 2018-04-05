@@ -3,7 +3,7 @@ package com.github.chaabaj.backlog4s.datas
 import org.joda.time.DateTime
 
 object GitRepositoryT {
-  def id(value: Long): Id[GitRepository] = Id(value)
+  def id(value: Int): Id[GitRepository] = Id(value)
 }
 
 case class GitRepository(

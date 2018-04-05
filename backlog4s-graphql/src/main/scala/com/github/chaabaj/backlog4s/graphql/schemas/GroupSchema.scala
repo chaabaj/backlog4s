@@ -14,7 +14,7 @@ object GroupSchema extends BacklogSchema[Unit, Group] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "name",
