@@ -1,7 +1,6 @@
 package com.github.chaabaj.backlog4s.interpreters
 
 import java.io.File
-import java.util.logging.Logger
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.ClientTransport
@@ -21,12 +20,12 @@ import spray.json._
 import cats.Monad
 import cats.implicits._
 import monix.reactive.Observable
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
-import scala.util.Try
 import scala.util.control.NonFatal
 
 class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
@@ -35,7 +34,7 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
   extends BacklogHttpInterpret[Future]
     with WithFutureCompletion {
 
-  val logger: Logger = Logger.getLogger("Akka http")
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
@@ -136,12 +135,12 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
       response.parseJson.convertTo[A](format)
     } catch {
       case NonFatal(ex) =>
-        logger.severe(s"Failed to parse json error: ${ex.getMessage}")
-        logger.severe(s"Stacktrace:")
+        logger.error(s"Failed to parse json error: ${ex.getMessage}")
+        logger.error(s"Stacktrace:")
         ex.printStackTrace()
-        logger.severe(s"Got from server $response")
-        logger.severe(s"Expected to format of $classTag")
-        logger.severe(s"This is probably a bug, please contact the maintainer of the library")
+        logger.error(s"Got from server $response")
+        logger.error(s"Expected to format of $classTag")
+        logger.error(s"This is probably a bug, please contact the maintainer of the library")
         throw ex
     }
   }
