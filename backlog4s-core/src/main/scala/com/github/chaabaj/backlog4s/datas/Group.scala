@@ -4,7 +4,7 @@ import com.github.chaabaj.backlog4s.datas.Order.Order
 import org.joda.time.DateTime
 
 object GroupT {
-  def id(value: Long): Id[Group] = Id(value)
+  def id(value: Int): Id[Group] = Id(value)
 }
 
 case class Group(

@@ -13,7 +13,7 @@ object StarSchema extends BacklogSchema[Unit, Star] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "comment",

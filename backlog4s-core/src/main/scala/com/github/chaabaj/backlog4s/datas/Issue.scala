@@ -5,7 +5,7 @@ import com.github.chaabaj.backlog4s.datas.Order.Order
 import org.joda.time.DateTime
 
 object IssueT {
-  def id(value: Long): Id[Issue] = Id(value)
+  def id(value: Int): Id[Issue] = Id(value)
   def key(value: String): Key[Issue] = Key(value)
 }
 
@@ -76,7 +76,7 @@ case class IssueSearch(
                         sharedFile: Option[Boolean] = None,
                         sort: Option[IssueSearchBy] = None,
                         order: Order = Order.Desc,
-                        count: Long = 100,
+                        count: Int = 100,
                         createdSince: Option[DateTime] = None,
                         createdUntil: Option[DateTime] = None,
                         updatedSince: Option[DateTime] = None,

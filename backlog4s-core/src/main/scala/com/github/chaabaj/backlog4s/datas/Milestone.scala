@@ -14,7 +14,7 @@ case class Milestone(
   startDate: Option[DateTime],
   releaseDueDate: Option[DateTime],
   archived: Boolean,
-  displayOrder: Long
+  displayOrder: Int
 )
 
 case class AddMilestoneForm(

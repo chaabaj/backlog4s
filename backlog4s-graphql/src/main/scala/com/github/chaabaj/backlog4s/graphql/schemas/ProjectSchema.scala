@@ -16,7 +16,7 @@ object ProjectSchema extends BacklogSchema[BacklogRepository, Project] {
           "id",
           IntType,
           Some("Project id"),
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "projectKey",

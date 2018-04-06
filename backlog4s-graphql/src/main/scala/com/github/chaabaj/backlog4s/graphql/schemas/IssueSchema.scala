@@ -15,13 +15,13 @@ object IssueSchema extends BacklogSchema[BacklogRepository, Issue] {
           "id",
           IntType,
           Some("issue type id"),
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "projectId",
           IntType,
           Some("Project id"),
-          resolve = _.value.projectId.value.toInt
+          resolve = _.value.projectId.value
         ),
         Field(
           "name",
@@ -39,7 +39,7 @@ object IssueSchema extends BacklogSchema[BacklogRepository, Issue] {
           "displayOrder",
           IntType,
           Some("Display order"),
-          resolve = _.value.displayOrder.toInt
+          resolve = _.value.displayOrder
         )
       )
     )
@@ -53,13 +53,13 @@ object IssueSchema extends BacklogSchema[BacklogRepository, Issue] {
           "id",
           IntType,
           Some("Issue id"),
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "projectId",
           IntType,
           Some("Project id"),
-          resolve = _.value.projectId.value.toInt
+          resolve = _.value.projectId.value
         ),
         Field(
           "keyId",

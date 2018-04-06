@@ -69,7 +69,7 @@ object SprayJsonFormats extends DefaultJsonProtocol {
 
   class IdFormat[A]() extends RootJsonFormat[Id[A]] {
     override def read(json: JsValue): Id[A] = json match {
-      case JsNumber(idVal) => Id(idVal.toLong)
+      case JsNumber(idVal) => Id(idVal.toInt)
       case _ =>
         throw DeserializationException(s"Expected a js number got ${json.prettyPrint}")
     }
@@ -89,7 +89,7 @@ object SprayJsonFormats extends DefaultJsonProtocol {
 
   class IdOrKeyFormat[A]() extends RootJsonFormat[IdOrKeyParam[A]] {
     override def read(json: JsValue): IdOrKeyParam[A] = json match {
-      case JsNumber(idVal) => IdParam[A](Id[A](idVal.toLong))
+      case JsNumber(idVal) => IdParam[A](Id[A](idVal.toInt))
       case JsString(keyVal) => KeyParam[A](Key[A](keyVal))
       case _ => deserializationError(s"Expected a string or a number for IdOrKeyParam got ${json.prettyPrint}")
     }

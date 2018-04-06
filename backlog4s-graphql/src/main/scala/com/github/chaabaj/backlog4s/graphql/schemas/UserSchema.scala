@@ -12,7 +12,7 @@ object UserSchema extends BacklogSchema[Unit, User] {
       () => fields[Unit, User](
         Field(
           "id",
-          LongType,
+          IntType,
           Some("user id"),
           resolve = _.value.id.value
         ),

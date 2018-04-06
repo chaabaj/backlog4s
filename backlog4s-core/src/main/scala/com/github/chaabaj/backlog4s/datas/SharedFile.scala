@@ -7,7 +7,7 @@ case class SharedFile(
   `type`: String,
   dir: String,
   name: String,
-  size: Long,
+  size: Int,
   createdUser: User,
   created: DateTime,
   updatedUser: Option[User],
