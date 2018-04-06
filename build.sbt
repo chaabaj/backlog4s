@@ -8,29 +8,32 @@ lazy val commonScalacOptions = Seq(
 
 lazy val commonSettings = Seq(
   version := "0.7.0-SNAPSHOT",
-  scalaVersion := "2.12.3",
+  organization := "com.github.chaabaj",
+  scalaVersion := "2.12.4",
   scalacOptions := commonScalacOptions
 )
 
 lazy val noPublishSettings = Seq(
   publish := {},
   publishLocal := {},
-  publishArtifact := false
+  publishArtifact := false,
+  skip in publish := true
 )
 
-organization in ThisBuild := "com.github.chaabaj"
+isSnapshot := version.value endsWith "SNAPSHOT"
 
 lazy val publishPackages = Seq(
   useGpg := true,
   publishMavenStyle := true,
   publishArtifact in Test := false,
   publishTo := {
+    val realm = "Sonatype Nexus Repository Manager"
     val staging = "https://oss.sonatype.org/content/repositories/snapshots"
     val release = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
     if (isSnapshot.value)
-      Some("Sonatype Nexus Repository Manager" at staging)
+      Some(realm at staging)
     else
-      Some("Sonatype Nexus Repository Manager" at release)
+      Some(realm at release)
   },
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
   homepage := Some(url("https://github.com/chaabaj")),
@@ -40,14 +43,26 @@ lazy val publishPackages = Seq(
 
 lazy val backlog4sCore = (project in file("backlog4s-core"))
   .settings(commonSettings)
+  .settings(
+    name := "backlog4s-core"
+  )
+  .settings(publishPackages)
 
 lazy val backlog4sAkka = (project in file("backlog4s-akka"))
   .settings(commonSettings)
+  .settings(
+    name := "backlog4s-akka"
+  )
   .dependsOn(backlog4sCore)
+  .settings(publishPackages)
 
 lazy val backlog4sHammock = (project in file("backlog4s-hammock"))
   .settings(commonSettings)
+  .settings(
+    name := "backlog4s-hammock"
+  )
   .dependsOn(backlog4sCore)
+  .settings(publishPackages)
 
 lazy val backlog4sTest = (project in file("backlog4s-test"))
   .settings(commonSettings)
@@ -56,6 +71,10 @@ lazy val backlog4sTest = (project in file("backlog4s-test"))
 
 lazy val backlog4sGraphQl = (project in file("backlog4s-graphql"))
   .settings(commonSettings)
+  .settings(
+    name := "backlog4s-graphql"
+  )
+  .settings(publishPackages)
   .dependsOn(backlog4sCore, backlog4sAkka, backlog4sTest)
 
 lazy val backlog4s = (project in file("."))
@@ -65,6 +84,5 @@ lazy val backlog4s = (project in file("."))
     backlog4sCore,
     backlog4sAkka,
     backlog4sHammock,
-    backlog4sGraphQl,
-    backlog4sTest
+    backlog4sGraphQl
   )
