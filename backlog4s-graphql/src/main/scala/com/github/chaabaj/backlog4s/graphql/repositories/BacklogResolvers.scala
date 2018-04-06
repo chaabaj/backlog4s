@@ -1,6 +1,6 @@
 package com.github.chaabaj.backlog4s.graphql.repositories
 
-import com.github.chaabaj.backlog4s.datas.{Id, Issue, Project}
+import com.github.chaabaj.backlog4s.datas.{Id, Issue, IssueSearch, Project}
 import sangria.execution.deferred.{Deferred, DeferredResolver}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -19,7 +19,8 @@ object BacklogResolvers {
       val projectIds = deferred.map {
         case (DeferredIssues(id)) => id
       }
-      val request = ctx.getIssues(projectIds)
+
+      val request = ctx.getIssues(IssueSearch(projectIds = projectIds))
       projectIds.map { id =>
         request.map { issues =>
           distributeIssues(id, issues.toIndexedSeq)

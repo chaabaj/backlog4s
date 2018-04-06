@@ -1,7 +1,7 @@
 package com.github.chaabaj.backlog4s.datas
 
 object ProjectT {
-  def id(value: Long): Id[Project] = Id(value)
+  def id(value: Int): Id[Project] = Id(value)
   def key(value: String): Key[Project] = Key(value)
 }
 

@@ -12,3 +12,7 @@ case class UpdateIssueTypeForm(
   name: Option[String] = None,
   color: Option[RGBColor] = None
 )
+
+object IssueTypeT {
+  def id(value: Int): Id[IssueType] = Id(value)
+}

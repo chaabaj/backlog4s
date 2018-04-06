@@ -47,18 +47,9 @@ class BacklogRepository(interpret : BacklogHttpInterpret[Future],
   def getProjects(ids: Seq[Id[Project]]): Future[Seq[Project]] =
     getAll[Project](ids, id => projectApi.byIdOrKey(IdParam(id)).orFail)
 
-  def getIssues(id: Id[Project]): Future[Seq[Issue]] =
+  def getIssues(issueSearch: IssueSearch): Future[Seq[Issue]] =
     interpret.run(
-      issueApi.search(
-        IssueSearch(projectIds = Seq(id))
-      ).orFail
-    )
-
-  def getIssues(ids: Seq[Id[Project]]): Future[Seq[Issue]] =
-    interpret.run(
-      issueApi.search(
-        IssueSearch(projectIds = ids)
-      ).orFail
+      issueApi.search(issueSearch).orFail
     )
 
   def getComments(issueId: Id[Issue]): Future[Seq[Comment]] =
