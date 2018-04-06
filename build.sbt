@@ -7,7 +7,7 @@ lazy val commonScalacOptions = Seq(
 )
 
 lazy val commonSettings = Seq(
-  version := "0.7.0-SNAPSHOT",
+  version := "0.7.0",
   organization := "com.github.chaabaj",
   scalaVersion := "2.12.4",
   scalacOptions := commonScalacOptions
