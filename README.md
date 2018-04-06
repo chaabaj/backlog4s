@@ -3,25 +3,33 @@
 
 ## Goals
 
-1. [ ] Support All Backlog Api (Testing)
+1. [x] Support All public Backlog Api
 2. [x] Modular can use any http library if user want to switch.
        For now by default we use akka-http.
        Later we will provide support for others libraries
-3. [ ] Data aggregation
 4. [x] Streaming support
 5. [ ] Setup webhook
-6. [ ] OAuth2 support
+6. [x] OAuth2 support
 
 ## Optional Goals and interesting experiment
 
 1. [ ] Scalajs support
-2. [ ] Proxy server
-3. [ ] GraphQL server
+3. [ ] GraphQL server (In progress)
 4. [ ] Usage of auto code generation for protocol by analyse json files at compile-time or using cli tools
 
 ## Installation
 
-Not published yet on maven use this git repository
+### Core
+
+```
+  "com.github.chaabaj" %% "backlog4s-core" % "0.7.0-SNAPSHOT"
+```
+
+### Using Akka to execute the requests
+
+```
+  "com.github.chaabaj" %% "backlog4s-akka" % "0.7.0-SNAPSHOT"
+```
 
 ## Simple API usage
 
