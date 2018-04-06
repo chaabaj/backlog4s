@@ -13,7 +13,7 @@ object WikiSummarySchema extends BacklogSchema[Unit, WikiSummary] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "name",
@@ -23,7 +23,7 @@ object WikiSummarySchema extends BacklogSchema[Unit, WikiSummary] {
         Field(
           "projectId",
           IntType,
-          resolve = _.value.projectId.value.toInt
+          resolve = _.value.projectId.value
         ),
         Field(
           "tags",

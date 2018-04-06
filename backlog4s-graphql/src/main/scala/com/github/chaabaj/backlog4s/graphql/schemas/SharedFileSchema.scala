@@ -13,7 +13,7 @@ object SharedFileSchema extends BacklogSchema[Unit, SharedFile] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "type",
@@ -33,7 +33,7 @@ object SharedFileSchema extends BacklogSchema[Unit, SharedFile] {
         Field(
           "size",
           IntType,
-          resolve = _.value.size.toInt
+          resolve = _.value.size
         ),
         Field(
           "createdUser",

@@ -14,7 +14,7 @@ object CommentSchema extends BacklogSchema[BacklogRepository, Comment] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "comment",
@@ -52,7 +52,7 @@ object CommentSchema extends BacklogSchema[BacklogRepository, Comment] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "alreadyRead",
@@ -85,7 +85,7 @@ object CommentSchema extends BacklogSchema[BacklogRepository, Comment] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "content",

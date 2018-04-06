@@ -3,7 +3,7 @@ package com.github.chaabaj.backlog4s.datas
 import org.joda.time.DateTime
 
 object MilestoneT {
-  def id(value: Long): Id[Milestone] = Id(value)
+  def id(value: Int): Id[Milestone] = Id(value)
 }
 
 case class Milestone(
@@ -14,7 +14,7 @@ case class Milestone(
   startDate: Option[DateTime],
   releaseDueDate: Option[DateTime],
   archived: Boolean,
-  displayOrder: Long
+  displayOrder: Int
 )
 
 case class AddMilestoneForm(

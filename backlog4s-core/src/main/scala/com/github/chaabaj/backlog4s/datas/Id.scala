@@ -1,6 +1,6 @@
 package com.github.chaabaj.backlog4s.datas
 
-case class Id[A](value: Long) extends AnyVal
+case class Id[A](value: Int) extends AnyVal
 case class Key[A](value: String) extends AnyVal
 
 sealed trait IdOrKeyParam[A] {

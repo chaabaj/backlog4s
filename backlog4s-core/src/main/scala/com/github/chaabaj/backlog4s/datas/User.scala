@@ -47,6 +47,6 @@ case class UpdateUserForm(
 )
 
 object UserT {
-  def id(value: Long): Id[User] = Id(value)
+  def id(value: Int): Id[User] = Id(value)
   val myself: Id[User] = Id(0)
 }

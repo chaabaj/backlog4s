@@ -13,7 +13,7 @@ object AttachmentSchema extends BacklogSchema[Unit, Attachment] {
         Field(
           "id",
           IntType,
-          resolve = _.value.id.value.toInt
+          resolve = _.value.id.value
         ),
         Field(
           "name",

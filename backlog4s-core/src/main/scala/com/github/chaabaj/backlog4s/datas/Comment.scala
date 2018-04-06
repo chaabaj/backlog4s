@@ -3,7 +3,7 @@ package com.github.chaabaj.backlog4s.datas
 import org.joda.time.DateTime
 
 object CommentT {
-  def id(value: Long): Id[Comment] = Id(value)
+  def id(value: Int): Id[Comment] = Id(value)
 }
 
 case class Comment(

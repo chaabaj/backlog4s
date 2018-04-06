@@ -5,7 +5,7 @@ import com.github.chaabaj.backlog4s.datas.WatchingSort.WatchingSort
 import org.joda.time.DateTime
 
 object WatchingT {
-  def id(value: Long): Id[Watching] = Id(value)
+  def id(value: Int): Id[Watching] = Id(value)
 }
 
 case class Watching(

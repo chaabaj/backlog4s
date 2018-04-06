@@ -16,11 +16,11 @@ class BacklogFetchers(interpret: BacklogHttpInterpret[Future]) {
 
   val projects = Fetcher(
     (repository: BacklogRepository, ids: Seq[Long]) =>
-      repository.getProjects(ids.map(ProjectT.id))
+      repository.getProjects(ids.map(id => ProjectT.id(id.toInt)))
   )
 
   val wikis = Fetcher(
     (repository: BacklogRepository, ids: Seq[Long]) =>
-      repository.getWikis(ids.map(WikiT.id))
+      repository.getWikis(ids.map(id => WikiT.id(id.toInt)))
   )
 }
