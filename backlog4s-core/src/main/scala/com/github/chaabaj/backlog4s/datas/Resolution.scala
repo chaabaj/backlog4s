@@ -4,3 +4,7 @@ case class Resolution(
   id: Id[Resolution],
   name: String
 )
+
+object ResolutionT {
+  def id(value: Int): Id[Resolution] = Id(value)
+}
