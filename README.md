@@ -19,6 +19,14 @@
 
 ## Installation
 
+### Add sonatype resolver
+
+```scala
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("snapshots")
+)
+```
+
 ### Core
 
 ```scala
