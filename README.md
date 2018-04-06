@@ -21,14 +21,14 @@
 
 ### Core
 
-```
-  "com.github.chaabaj" %% "backlog4s-core" % "0.7.0-SNAPSHOT"
+```scala
+libraryDependencies += "com.github.chaabaj" %% "backlog4s-core" % "0.7.0-SNAPSHOT"
 ```
 
 ### Using Akka to execute the requests
 
-```
-  "com.github.chaabaj" %% "backlog4s-akka" % "0.7.0-SNAPSHOT"
+```scala
+libraryDependencies += "com.github.chaabaj" %% "backlog4s-akka" % "0.7.0-SNAPSHOT"
 ```
 
 ## Simple API usage
