@@ -1,7 +1,7 @@
 package com.github.chaabaj.backlog4s.datas
 
 object CategoryT {
-  def id(value: Long): Id[Category] = Id(value)
+  def id(value: Int): Id[Category] = Id(value)
 }
 
 case class Category(

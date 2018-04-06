@@ -1,18 +1,44 @@
 package com.github.chaabaj.backlog4s.graphql.queries
 
-import com.github.chaabaj.backlog4s.datas.{IssueSearch, IssueT, IssueTypeT, ProjectT}
+import com.github.chaabaj.backlog4s.datas._
 import com.github.chaabaj.backlog4s.graphql.schemas.ProjectSchema.schema
 import com.github.chaabaj.backlog4s.graphql.repositories.BacklogRepository
 import com.github.chaabaj.backlog4s.graphql.schemas.IssueSchema
+import sangria.marshalling.ToInput
+import sangria.marshalling.ToInput.ScalarToInput
 import sangria.schema.{Argument, Field, IntType, ListInputType, ListType, ObjectType, Schema, StringType, fields}
 
 object BacklogQuery {
 
+  implicit val listIntInput = new ScalarToInput[Seq[Int]]
+
   val ID = Argument("id", IntType)
   val Offset = Argument.createWithDefault("offset", IntType, None, 0)
   val Count = Argument.createWithDefault("count", IntType, None, 100)
-  val projectIds = Argument("projectIds", ListInputType(IntType))
-  val issueTypeIds = Argument("issueTypeIds", ListInputType(IntType), "id of the issue type")
+  val ProjectIds = Argument.createWithDefault(
+    "projectIds",
+    ListInputType(IntType),
+    Some("list of project id"),
+    Seq.empty[Int]
+  )
+  val IssueTypeIds = Argument.createWithDefault(
+    "issueTypeIds",
+    ListInputType(IntType),
+    Some("list of issue type id"),
+    Seq.empty[Int]
+  )
+  val CategoryIds = Argument.createWithDefault(
+    "categoryIds",
+    ListInputType(IntType),
+    Some("list of category id"),
+    Seq.empty[Int]
+  )
+  val MilestoneIds = Argument.createWithDefault(
+    "milestoneIds",
+    ListInputType(IntType),
+    Some("list of milestone id"),
+    Seq.empty[Int]
+  )
 
   val queries =
     Schema(
@@ -44,12 +70,18 @@ object BacklogQuery {
               IssueSearch(
                 offset = ctx arg Offset,
                 count = ctx arg Count,
-                projectIds = (ctx arg projectIds)
+                projectIds = (ctx arg ProjectIds)
                   .map(_.asInstanceOf[Int])
                   .map(ProjectT.id),
-                issueTypeIds = (ctx arg issueTypeIds)
+                issueTypeIds = (ctx arg IssueTypeIds)
                   .map(_.asInstanceOf[Int])
-                  .map(IssueTypeT.id)
+                  .map(IssueTypeT.id),
+                categoryIds = (ctx arg CategoryIds)
+                  .map(_.asInstanceOf[Int])
+                  .map(CategoryT.id),
+                milestoneIds = (ctx arg MilestoneIds)
+                    .map(_.asInstanceOf[Int])
+                  .map(MilestoneT.id)
               )
             )
           )
