@@ -35,16 +35,22 @@ object App {
       issues
     }
 
-    for {
+    val prg = for {
       issues <- issueApi.search().orFail
     } yield issues
 
-    ApiStream.toObservable(stream, interpreter)
-      .runAsyncGetFirst
+    interpreter.run(prg).map { res =>
+      println(res)
+      interpreter.terminate()
+    }.flatMap(_ => system.terminate())
       .onComplete {
-        case Success(_) => println("Stream consumed")
-        case Failure(ex) => ex.printStackTrace()
-      }
+        case Success(_) =>
+          println("Terminated")
+        case Failure(ex) =>
+          ex.printStackTrace()
+    }
+
+
   }
 
   def main(args: Array[String]): Unit = {
