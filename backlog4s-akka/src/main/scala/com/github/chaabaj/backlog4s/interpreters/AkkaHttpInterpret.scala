@@ -54,6 +54,13 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
     headers.`Accept-Charset`(HttpCharsets.`UTF-8`)
   )
 
+  /**
+    * shutdown all connection pools
+    * @return
+    */
+  def terminate(): Future[Unit] =
+    http.shutdownAllConnectionPools()
+
   private def createRequest(method: HttpMethod, query: HttpQuery): HttpRequest = {
     query.credentials match {
       case AccessKey(key) =>
@@ -206,7 +213,7 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
             uri = newUri,
             headers = reqHeaders
           )
-          if (count < maxRedirCount) followRedirect(newReq, count + 1) else Http().singleRequest(newReq)
+          if (count < maxRedirCount) followRedirect(newReq, count + 1) else http.singleRequest(newReq)
         }.getOrElse(throw new RuntimeException(s"location not found on 302 for ${req.uri}"))
         case _ => Future(resp)
       }
