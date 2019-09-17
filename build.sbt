@@ -1,7 +1,5 @@
 name := "backlog4s"
 
-scalaVersion := "2.12.3"
-
 lazy val commonScalacOptions = Seq(
   "-deprecation"
 )
