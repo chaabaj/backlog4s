@@ -48,7 +48,7 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
 
   private val http = Http()
   private val timeout = 10.seconds
-  private val maxRedirCount = 20
+  private val maxRedirectCount = 20
   private val reqHeaders: Seq[HttpHeader] = Seq(
     headers.`User-Agent`("backlog4s"),
     headers.`Accept-Charset`(HttpCharsets.`UTF-8`)
@@ -213,7 +213,7 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
             uri = newUri,
             headers = reqHeaders
           )
-          if (count < maxRedirCount) followRedirect(newReq, count + 1) else http.singleRequest(newReq)
+          if (count < maxRedirectCount) followRedirect(newReq, count + 1) else http.singleRequest(newReq)
         }.getOrElse(throw new RuntimeException(s"location not found on 302 for ${req.uri}"))
         case _ => Future(resp)
       }
