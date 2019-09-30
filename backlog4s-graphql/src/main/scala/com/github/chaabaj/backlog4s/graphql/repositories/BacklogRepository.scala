@@ -6,7 +6,7 @@ import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
 import com.github.chaabaj.backlog4s.dsl.BacklogHttpInterpret
 import com.github.chaabaj.backlog4s.dsl.syntax._
 import monix.execution.Scheduler
-import monix.reactive.{Observable, OverflowStrategy}
+import monix.reactive.Observable
 
 import scala.concurrent.Future
 
@@ -21,8 +21,8 @@ class BacklogRepository(interpret : BacklogHttpInterpret[Future],
 
   private def getAll[A](ids: Seq[Id[A]], f: Id[A] => ApiPrg[A]): Future[Seq[A]] = {
     val grouped = ids.grouped(parallelism)
-    Observable.fromIterator(grouped)
-      .mapFuture { chunkIds =>
+    Observable.fromIteratorUnsafe(grouped)
+      .mapEvalF { chunkIds =>
         interpret.run(
           chunkIds.map(f).parallel
         )
@@ -31,7 +31,7 @@ class BacklogRepository(interpret : BacklogHttpInterpret[Future],
         case (acc, items) =>
           acc ++ items
       }
-      .runAsync
+      .runToFuture
   }
 
   def getProject(id: Id[Project]): Future[Project] =
