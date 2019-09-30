@@ -3,7 +3,7 @@ package com.github.chaabaj.backlog4s.streaming
 import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
 import com.github.chaabaj.backlog4s.dsl.{BacklogHttpInterpret, BacklogHttpOp}
 import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import cats.effect.Sync
+import cats.effect.{ExitCase, Sync}
 import fs2.Stream
 import monix.reactive.Observable
 import org.reactivestreams.Subscriber
@@ -107,5 +107,7 @@ object StreamingEffect {
     // For IO monad it's perfectly normal but for Free monad this type signature isn't enough
     // To make it simple i don't know how to implement this without evaluate fa
     override def handleErrorWith[A](fa: ApiPrg[A])(f: Throwable => ApiPrg[A]): ApiPrg[A] = fa
+
+    override def bracketCase[A, B](acquire: ApiPrg[A])(use: A => ApiPrg[B])(release: (A, ExitCase[Throwable]) => ApiPrg[Unit]): ApiPrg[B] = ???
   }
 }
