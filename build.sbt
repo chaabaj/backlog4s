@@ -6,7 +6,7 @@ lazy val supportedScalaVersions = List(scala213, scala212)
 
 ThisBuild / organization := "com.github.chaabaj"
 ThisBuild / version      := "0.7.1"
-ThisBuild / scalaVersion := scala213
+ThisBuild / scalaVersion := scala212
 
 lazy val commonScalacOptions = Seq(
   "-deprecation"
@@ -68,13 +68,12 @@ lazy val backlog4sAkka = (project in file("backlog4s-akka"))
 lazy val backlog4sHammock = (project in file("backlog4s-hammock"))
   .settings(commonSettings)
   .settings(
-    name := "backlog4s-hammock"
+    name := "backlog4s-hammock",
+    // hammock-core doesn't support Scala 2.13
+    // crossScalaVersions := supportedScalaVersions
+    publishPackages
   )
   .dependsOn(backlog4sCore)
-  .settings(
-    publishPackages,
-    crossScalaVersions := supportedScalaVersions
-  )
 
 lazy val backlog4sTest = (project in file("backlog4s-test"))
   .settings(
