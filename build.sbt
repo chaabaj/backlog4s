@@ -47,11 +47,9 @@ lazy val publishPackages = Seq(
 lazy val backlog4sCore = (project in file("backlog4s-core"))
   .settings(commonSettings)
   .settings(
-    name := "backlog4s-core"
-  )
-  .settings(
-    publishPackages,
-    crossScalaVersions := supportedScalaVersions
+    name := "backlog4s-core",
+    crossScalaVersions := supportedScalaVersions,
+    publishPackages
   )
 
 lazy val backlog4sAkka = (project in file("backlog4s-akka"))
@@ -87,16 +85,16 @@ lazy val backlog4sGraphQl = (project in file("backlog4s-graphql"))
   .settings(commonSettings)
   .settings(
     name := "backlog4s-graphql",
-    publishPackages,
-    crossScalaVersions := supportedScalaVersions
+    crossScalaVersions := supportedScalaVersions,
+    publishPackages
   )
   .dependsOn(backlog4sCore, backlog4sAkka, backlog4sTest)
 
 lazy val backlog4s = (project in file("."))
   .settings(
     moduleName := "root",
-    noPublishSettings,
-    crossScalaVersions := Nil
+    crossScalaVersions := Nil,
+    noPublishSettings
   )
   .aggregate(
     backlog4sCore,
