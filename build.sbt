@@ -1,13 +1,18 @@
 name := "backlog4s"
 
+lazy val scala212 = "2.12.10"
+lazy val scala213 = "2.13.1"
+lazy val supportedScalaVersions = List(scala213, scala212)
+
+ThisBuild / organization := "com.github.chaabaj"
+ThisBuild / version      := "0.7.1"
+ThisBuild / scalaVersion := scala213
+
 lazy val commonScalacOptions = Seq(
   "-deprecation"
 )
 
 lazy val commonSettings = Seq(
-  version := "0.7.1",
-  organization := "com.github.chaabaj",
-  scalaVersion := "2.12.10",
   scalacOptions := commonScalacOptions
 )
 
@@ -44,7 +49,10 @@ lazy val backlog4sCore = (project in file("backlog4s-core"))
   .settings(
     name := "backlog4s-core"
   )
-  .settings(publishPackages)
+  .settings(
+    publishPackages,
+    crossScalaVersions := supportedScalaVersions
+  )
 
 lazy val backlog4sAkka = (project in file("backlog4s-akka"))
   .settings(commonSettings)
@@ -52,7 +60,10 @@ lazy val backlog4sAkka = (project in file("backlog4s-akka"))
     name := "backlog4s-akka"
   )
   .dependsOn(backlog4sCore)
-  .settings(publishPackages)
+  .settings(
+    publishPackages,
+    crossScalaVersions := supportedScalaVersions
+  )
 
 lazy val backlog4sHammock = (project in file("backlog4s-hammock"))
   .settings(commonSettings)
@@ -60,24 +71,34 @@ lazy val backlog4sHammock = (project in file("backlog4s-hammock"))
     name := "backlog4s-hammock"
   )
   .dependsOn(backlog4sCore)
-  .settings(publishPackages)
+  .settings(
+    publishPackages,
+    crossScalaVersions := supportedScalaVersions
+  )
 
 lazy val backlog4sTest = (project in file("backlog4s-test"))
-  .settings(commonSettings)
-  .settings(noPublishSettings)
+  .settings(
+    commonSettings,
+    noPublishSettings,
+    crossScalaVersions := supportedScalaVersions
+  )
   .dependsOn(backlog4sCore, backlog4sAkka, backlog4sHammock)
 
 lazy val backlog4sGraphQl = (project in file("backlog4s-graphql"))
   .settings(commonSettings)
   .settings(
-    name := "backlog4s-graphql"
+    name := "backlog4s-graphql",
+    publishPackages,
+    crossScalaVersions := supportedScalaVersions
   )
-  .settings(publishPackages)
   .dependsOn(backlog4sCore, backlog4sAkka, backlog4sTest)
 
 lazy val backlog4s = (project in file("."))
-  .settings(moduleName := "root")
-  .settings(noPublishSettings)
+  .settings(
+    moduleName := "root",
+    noPublishSettings,
+    crossScalaVersions := Nil
+  )
   .aggregate(
     backlog4sCore,
     backlog4sAkka,
