@@ -1,21 +1,17 @@
 package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.chaabaj.backlog4s.dsl.HttpQuery
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.{ByteStream, Response}
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class GitApi(override val baseUrl: String,
-             override val credentials: Credentials) extends Api {
-
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class GitApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
     s"projects/$projectIdOrKey/git/repositories"
 
-  def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[GitRepository]]] =
-    get[Seq[GitRepository]](
+  def allOf(projectIdOrKey: IdOrKeyParam[Project]): F[Response[Seq[GitRepository]]] =
+    BacklogHttpDsl.get[Seq[GitRepository]](
       HttpQuery(
         path = resource(projectIdOrKey),
         credentials = credentials,
@@ -24,8 +20,8 @@ class GitApi(override val baseUrl: String,
     )
 
   def byIdOrName(projectIdOrKey: IdOrKeyParam[Project],
-                 repoIdOrName: IdOrKeyParam[GitRepository]): ApiPrg[Response[GitRepository]] =
-    get[GitRepository](
+                 repoIdOrName: IdOrKeyParam[GitRepository]): F[Response[GitRepository]] =
+    BacklogHttpDsl.get[GitRepository](
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName",
         credentials = credentials,
@@ -34,8 +30,8 @@ class GitApi(override val baseUrl: String,
     )
 
   def pullRequests(projectIdOrKey: IdOrKeyParam[Project],
-                   repoIdOrName: IdOrKeyParam[GitRepository]): ApiPrg[Response[Seq[PullRequestSummary]]] =
-    get[Seq[PullRequestSummary]](
+                   repoIdOrName: IdOrKeyParam[GitRepository]): F[Response[Seq[PullRequestSummary]]] =
+    BacklogHttpDsl.get[Seq[PullRequestSummary]](
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests",
         credentials = credentials,
@@ -44,8 +40,8 @@ class GitApi(override val baseUrl: String,
     )
 
   def countPullRequests(projectIdOrKey: IdOrKeyParam[Project],
-                        repoIdOrName: IdOrKeyParam[GitRepository]): ApiPrg[Response[Count]] =
-    get[Count](
+                        repoIdOrName: IdOrKeyParam[GitRepository]): F[Response[Count]] =
+    BacklogHttpDsl.get[Count](
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/count",
         credentials = credentials,
@@ -55,8 +51,8 @@ class GitApi(override val baseUrl: String,
 
   def pullRequest(projectIdOrKey: IdOrKeyParam[Project],
                   repoIdOrName: IdOrKeyParam[GitRepository],
-                  pullRequestNumber: Long): ApiPrg[Response[PullRequest]] =
-    get[PullRequest](
+                  pullRequestNumber: Long): F[Response[PullRequest]] =
+    BacklogHttpDsl.get[PullRequest](
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber",
         credentials = credentials,
@@ -66,8 +62,8 @@ class GitApi(override val baseUrl: String,
 
   def createPullRequest(projectIdOrKey: IdOrKeyParam[Project],
                         repoIdOrName: IdOrKeyParam[GitRepository],
-                        form: AddPullRequestForm): ApiPrg[Response[PullRequest]] =
-    post[AddPullRequestForm, PullRequest](
+                        form: AddPullRequestForm): F[Response[PullRequest]] =
+    BacklogHttpDsl.post[AddPullRequestForm, PullRequest](
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests",
         credentials = credentials,
@@ -79,8 +75,8 @@ class GitApi(override val baseUrl: String,
   def updatePullRequest(projectIdOrKey: IdOrKeyParam[Project],
                         repoIdOrName: IdOrKeyParam[GitRepository],
                         pullRequestNumber: Long,
-                        form: UpdatePullRequestForm): ApiPrg[Response[PullRequest]] =
-    put[UpdatePullRequestForm, PullRequest](
+                        form: UpdatePullRequestForm): F[Response[PullRequest]] =
+    BacklogHttpDsl.put[UpdatePullRequestForm, PullRequest](
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber",
         credentials = credentials,
@@ -91,8 +87,8 @@ class GitApi(override val baseUrl: String,
 
   def attachments(projectIdOrKey: IdOrKeyParam[Project],
                   repoIdOrName: IdOrKeyParam[GitRepository],
-                  pullRequestNumber: Long): ApiPrg[Response[Seq[Attachment]]] =
-    get[Seq[Attachment]](
+                  pullRequestNumber: Long): F[Response[Seq[Attachment]]] =
+    BacklogHttpDsl.get[Seq[Attachment]](
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments",
         credentials = credentials,
@@ -103,8 +99,8 @@ class GitApi(override val baseUrl: String,
   def downloadAttachment(projectIdOrKey: IdOrKeyParam[Project],
                          repoIdOrName: IdOrKeyParam[GitRepository],
                          pullRequestNumber: Long,
-                         attachmentId: Id[Attachment]): ApiPrg[Response[ByteStream]] =
-    download(
+                         attachmentId: Id[Attachment]): F[Response[ByteStream]] =
+    BacklogHttpDsl.download(
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments/${attachmentId.value}",
         credentials = credentials,
@@ -115,8 +111,8 @@ class GitApi(override val baseUrl: String,
   def removeAttachment(projectIdOrKey: IdOrKeyParam[Project],
                        repoIdOrName: IdOrKeyParam[GitRepository],
                        pullRequestNumber: Long,
-                       attachmentId: Id[Attachment]): ApiPrg[Response[Unit]] =
-    delete(
+                       attachmentId: Id[Attachment]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/$repoIdOrName/pullRequests/$pullRequestNumber/attachments/${attachmentId.value}",
         credentials = credentials,
@@ -124,9 +120,4 @@ class GitApi(override val baseUrl: String,
       )
     )
 
-}
-
-object GitApi extends ApiContext[GitApi] {
-  override def apply(baseUrl: String, credentials: Credentials): GitApi =
-    new GitApi(baseUrl, credentials)
 }

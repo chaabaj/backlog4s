@@ -3,20 +3,17 @@ package com.github.chaabaj.backlog4s.apis
 import com.github.chaabaj.backlog4s.datas.CustomForm.CustomForm
 import com.github.chaabaj.backlog4s.datas.NoContent.NoContent
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import com.github.chaabaj.backlog4s.dsl.{HttpQuery, QueryParam}
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.Response
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery, QueryParam}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
 
-class WatchingApi(override val baseUrl: String,
-                  override val credentials: Credentials) extends Api {
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class WatchingApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   val resource = "watchings"
 
   def search(userId: Id[User],
-             searchParams: WatchingSearch = WatchingSearch()): ApiPrg[Response[Seq[Watching]]] = {
+             searchParams: WatchingSearch = WatchingSearch()): F[Response[Seq[Watching]]] = {
     val params = Seq(
       QueryParam("order", searchParams.order.toString),
       QueryParam("sort", searchParams.sort.toString),
@@ -26,7 +23,7 @@ class WatchingApi(override val baseUrl: String,
       QueryParam.option("issueId", searchParams.issueId)
     )
 
-    get[Seq[Watching]](
+    BacklogHttpDsl.get[Seq[Watching]](
       HttpQuery(
         s"users/${userId.value}/$resource",
         params,
@@ -38,13 +35,13 @@ class WatchingApi(override val baseUrl: String,
 
   def count(userId: Id[User],
             resourceAlreadyRead: Option[Boolean] = None,
-            alreadyRead: Option[Boolean] = None): ApiPrg[Response[Count]] = {
+            alreadyRead: Option[Boolean] = None): F[Response[Count]] = {
     val params = Seq(
       QueryParam.option("resourceAlreadyRead", resourceAlreadyRead),
       QueryParam.option("alreadyRead", alreadyRead)
     )
 
-    get[Count](
+    BacklogHttpDsl.get[Count](
       HttpQuery(
         path = s"users/${userId.value}/$resource/count",
         params,
@@ -54,8 +51,8 @@ class WatchingApi(override val baseUrl: String,
     )
   }
 
-  def byId(id: Id[Watching]): ApiPrg[Response[Watching]] =
-    get[Watching](
+  def byId(id: Id[Watching]): F[Response[Watching]] =
+    BacklogHttpDsl.get[Watching](
       HttpQuery(
         path = s"$resource/${id.value}",
         credentials = credentials,
@@ -63,8 +60,8 @@ class WatchingApi(override val baseUrl: String,
       )
     )
 
-  def add(form: AddWatchingForm): ApiPrg[Response[Watching]] =
-    post[AddWatchingForm, Watching](
+  def add(form: AddWatchingForm): F[Response[Watching]] =
+    BacklogHttpDsl.post[AddWatchingForm, Watching](
       HttpQuery(
         path = resource,
         credentials = credentials,
@@ -73,8 +70,8 @@ class WatchingApi(override val baseUrl: String,
       form
     )
 
-  def update(id: Id[Watching], note: String): ApiPrg[Response[Watching]] =
-    put[CustomForm, Watching](
+  def update(id: Id[Watching], note: String): F[Response[Watching]] =
+    BacklogHttpDsl.put[CustomForm, Watching](
       HttpQuery(
         path = s"$resource/${id.value}",
         credentials = credentials,
@@ -85,8 +82,8 @@ class WatchingApi(override val baseUrl: String,
       )
     )
 
-  def remove(id: Id[Watching]): ApiPrg[Response[Unit]] =
-    delete(
+  def remove(id: Id[Watching]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/${id.value}",
         credentials = credentials,
@@ -94,8 +91,8 @@ class WatchingApi(override val baseUrl: String,
       )
     )
 
-  def markAsRead(id: Id[Watching]): ApiPrg[Response[NoContent]] =
-    post[CustomForm, NoContent](
+  def markAsRead(id: Id[Watching]): F[Response[NoContent]] =
+    BacklogHttpDsl.post[CustomForm, NoContent](
       HttpQuery(
         path = s"$resource/${id.value}/markAsRead",
         credentials = credentials,
@@ -103,9 +100,4 @@ class WatchingApi(override val baseUrl: String,
       ),
       Map()
     )
-}
-
-object WatchingApi extends ApiContext[WatchingApi] {
-  override def apply(baseUrl: String, credentials: Credentials): WatchingApi =
-    new WatchingApi(baseUrl, credentials)
 }

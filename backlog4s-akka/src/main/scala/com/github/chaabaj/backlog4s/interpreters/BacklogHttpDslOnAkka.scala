@@ -13,12 +13,12 @@ import akka.http.scaladsl.settings.{ClientConnectionSettings, ConnectionPoolSett
 import akka.stream.Materializer
 import akka.stream.scaladsl.{FileIO, Sink, Source}
 import com.github.chaabaj.backlog4s.datas.{AccessKey, ApiErrors, OAuth2Token}
-import com.github.chaabaj.backlog4s.dsl.BacklogHttpOp.HttpF
-import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
 import com.github.chaabaj.backlog4s.dsl._
 import spray.json._
 import cats.Monad
 import cats.implicits._
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.{ByteStream, Response}
+import monix.eval.Task
 import monix.reactive.Observable
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -28,17 +28,13 @@ import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
-class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
-                       (implicit actorSystem: ActorSystem, mat: Materializer,
-                        override val exc: ExecutionContext)
-  extends BacklogHttpInterpret[Future]
-    with WithFutureCompletion {
+
+class BacklogHttpDslOnAkka(optTransport: Option[ClientTransport] = None)
+                          (implicit actorSystem: ActorSystem, mat: Materializer, exc: ExecutionContext) extends BacklogHttpDsl[Task] {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
-
-  implicit val monad = implicitly[Monad[Future]]
 
   val settings = optTransport.map { transport =>
     ConnectionPoolSettings(actorSystem).withConnectionSettings(
@@ -58,8 +54,9 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
     * shutdown all connection pools
     * @return
     */
-  def terminate(): Future[Unit] =
-    http.shutdownAllConnectionPools()
+  def terminate(): Task[Unit] =
+    Task.deferFuture(http.shutdownAllConnectionPools())
+
 
   private def createRequest(method: HttpMethod, query: HttpQuery): HttpRequest = {
     query.credentials match {
@@ -85,9 +82,8 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
     }
   }
 
-
   private def createRequest[Payload](method: HttpMethod, query: HttpQuery,
-                                     payload: Payload, format: JsonFormat[Payload]): Future[HttpRequest] = {
+                                     payload: Payload, format: JsonFormat[Payload]): Task[HttpRequest] = {
     logger.info(s"Prepare request with payload $payload")
     val formData = FormData(
       payload.toJson(format).asJsObject.fields.map {
@@ -96,17 +92,18 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
       }
     )
 
-    Marshal(formData).to[RequestEntity].map { entity =>
-      createRequest(method, query).withEntity(entity)
-    }
+    Task.deferFuture(
+      Marshal(formData).to[RequestEntity].map { entity =>
+        createRequest(method, query).withEntity(entity)
+      }
+    )
   }
 
-
-  private def doRequest(request: HttpRequest): Future[Response[String]] = {
+  private def doRequest(request: HttpRequest): Task[Response[String]] = {
     logger.info(s"Execute request $request")
     for {
-      response <- http.singleRequest(request, settings = settings)
-      data <- response.entity.toStrict(timeout).map(_.data.utf8String)
+      response <- Task.deferFuture(http.singleRequest(request, settings = settings))
+      data <- Task.deferFuture(response.entity.toStrict(timeout).map(_.data.utf8String))
       result = {
         val status = response.status.intValue()
         logger.info(s"Received response with status: $status")
@@ -122,18 +119,6 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
         }
       }
     } yield result
-  }
-
-
-  override def pure[A](a: A): Future[A] = Future.successful(a)
-
-  override def parallel[A](prgs: scala.Seq[HttpF[A]]): Future[scala.Seq[A]] = {
-    logger.info("Running request in parallel")
-    Future.sequence(
-      prgs.map(_.foldMap(this))
-    ).map { result =>
-      result
-    }
   }
 
   private def parseJson[A](response: String, format: JsonFormat[A])
@@ -152,10 +137,26 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
     }
   }
 
-  override def create[Payload, A](query: HttpQuery,
-                                  payload: Payload,
-                                  format: JsonFormat[A],
-                                  payloadFormat: JsonFormat[Payload]): Future[Response[A]] =
+  private def followRedirect(req: HttpRequest, count: Int = 0): Task[HttpResponse] = {
+    logger.info(s"Following redirection $req")
+    Task.deferFuture(http.singleRequest(req, settings = settings)).flatMap { resp =>
+      resp.status match {
+        case StatusCodes.Found | StatusCodes.SeeOther => resp.header[headers.Location].map { loc =>
+          resp.entity.discardBytes()
+          val locUri = loc.uri
+          val newUri = locUri
+          val newReq = req.copy(
+            uri = newUri,
+            headers = reqHeaders
+          )
+          if (count < maxRedirectCount) followRedirect(newReq, count + 1) else Task.deferFuture(http.singleRequest(newReq))
+        }.getOrElse(throw new RuntimeException(s"location not found on 302 for ${req.uri}"))
+        case _ => Task(resp)
+      }
+    }
+  }
+
+  override def post[Payload, A](query: HttpQuery, payload: Payload)(implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): Task[Response[A]] =
     for {
       request <- createRequest(HttpMethods.POST, query, payload, payloadFormat)
       serverResponse <- doRequest(request)
@@ -174,53 +175,27 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
     } yield response
 
 
-  override def get[A](query: HttpQuery, format: JsonFormat[A]): Future[Response[A]] =
+  override def get[A](query: HttpQuery)(implicit format: JsonFormat[A]): Task[Response[A]] =
     for {
       serverResponse <- doRequest(createRequest(HttpMethods.GET, query))
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 
-  override def update[Payload, A](query: HttpQuery,
-                                  payload: Payload,
-                                  format: JsonFormat[A],
-                                  payloadFormat: JsonFormat[Payload]): Future[Response[A]] =
+
+  override def delete(query: HttpQuery): Task[Response[Unit]] =
+    for {
+      serverResponse <- doRequest(createRequest(HttpMethods.DELETE, query))
+      response = serverResponse.map(_ => ())
+    } yield response
+
+  override def put[Payload, A](query: HttpQuery, payload: Payload)(implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): Task[Response[A]] =
     for {
       request <- createRequest(HttpMethods.PUT, query, payload, payloadFormat)
       serverResponse <- doRequest(request)
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
 
-  override def delete(query: HttpQuery): Future[Response[Unit]] =
-    for {
-      serverResponse <- doRequest(createRequest(HttpMethods.DELETE, query))
-      response = serverResponse.map(_ => ())
-    } yield response
-
-  // Follow redirection in case of download files
-  // Files can be stored in cloud service
-  // So we need to manually follow redirection
-  // Akka http is too low level to do this automatically
-  // We protect from infinite redirection using count
-  private def followRedirect(req: HttpRequest, count: Int = 0): Future[HttpResponse] = {
-    logger.info(s"Following redirection $req")
-    http.singleRequest(req, settings = settings).flatMap { resp =>
-      resp.status match {
-        case StatusCodes.Found | StatusCodes.SeeOther => resp.header[headers.Location].map { loc =>
-          resp.entity.discardBytes()
-          val locUri = loc.uri
-          val newUri = locUri
-          val newReq = req.copy(
-            uri = newUri,
-            headers = reqHeaders
-          )
-          if (count < maxRedirectCount) followRedirect(newReq, count + 1) else http.singleRequest(newReq)
-        }.getOrElse(throw new RuntimeException(s"location not found on 302 for ${req.uri}"))
-        case _ => Future(resp)
-      }
-    }
-  }
-
-  override def download(query: HttpQuery): Future[Response[ByteStream]] = {
+  override def download(query: HttpQuery): Task[Response[ByteStream]] = {
     logger.info(s"Downloading $query")
     val request = createRequest(HttpMethods.GET, query)
     for {
@@ -229,13 +204,12 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
         val status = serverResponse.status.intValue()
         if (serverResponse.status.isFailure()) {
           if (status >= 400 && status < 500)
-            serverResponse
-              .entity.toStrict(timeout)
+            Task.deferFuture(serverResponse.entity.toStrict(timeout))
               .map(_.data.utf8String)
               .map(data => Either.left(RequestError(data.parseJson.convertTo[ApiErrors])))
           else {
             serverResponse.entity.discardBytes()
-            Future.successful(Either.left(ServerDown))
+            Task(Either.left(ServerDown))
           }
         } else {
           logger.info("Received data stream from server")
@@ -244,15 +218,13 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
               .map(_.asByteBuffer)
               .runWith(Sink.asPublisher(true))
           )
-          Future.successful(Either.right(stream))
+          Task(Either.right(stream))
         }
       }
     } yield response
   }
 
-  override def upload[A](query: HttpQuery,
-                         file: File,
-                         format: JsonFormat[A]): Future[Response[A]] = {
+  override def upload[A](query: HttpQuery, file: File)(implicit format: JsonFormat[A]): Task[Response[A]] = {
     logger.info(s"Uploading ${file.getName} to $query")
     val formData = Multipart.FormData(
       Source.single(
@@ -266,12 +238,12 @@ class AkkaHttpInterpret(optTransport: Option[ClientTransport] = None)
         )
       )
     )
-
     for {
-      entity <- Marshal(formData).to[RequestEntity]
+      entity <- Task.deferFuture(Marshal(formData).to[RequestEntity])
       request = createRequest(HttpMethods.POST, query).withEntity(entity)
       serverResponse <- doRequest(request)
       response = serverResponse.map(_.parseJson.convertTo[A](format))
     } yield response
   }
+
 }
