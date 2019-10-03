@@ -1,25 +1,12 @@
 package com.github.chaabaj.backlog4s.streaming
 
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.{BacklogHttpInterpret, BacklogHttpOp}
-import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import cats.effect.{ExitCase, Sync}
-import fs2.Stream
+import cats.Functor
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.Response
+import com.github.chaabaj.backlog4s.exceptions.BacklogApiException
 import monix.reactive.Observable
-import org.reactivestreams.Subscriber
-
-import scala.util.{Failure, Success}
-
+import org.reactivestreams.{Publisher, Subscriber}
 
 object ApiStream {
-
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
-  import com.github.chaabaj.backlog4s.dsl.syntax._
-  import StreamingEffect._
-
-  type ApiResponse[A] = ApiPrg[Response[Seq[A]]]
-  type ApiStream[A] = Stream[ApiPrg, Seq[A]]
-
   /**
     * Build a stream that fetch some data from start to limit by each step
     * This function covers only streaming over paginate api
@@ -32,82 +19,29 @@ object ApiStream {
     * @tparam A type of the data to get
     * @return
     */
-  def sequential[A](limit: Int, start: Int = 0, step: Int = 100)(f: (Int, Int) => ApiResponse[A]): ApiStream[A] = {
-    Stream.unfoldEval[ApiPrg, Int, Seq[A]](start) { index =>
-      if (index >= limit)
-        pure[Option[(Seq[A], Int)]](None)
-      else {
-        var end = index + step
-        if (end > limit)
-          end = limit - index
-        f(index, index + step).orFail.map { result =>
-          if (result.isEmpty) None
-          else Some((result, index + step))
+
+  def publisher[F[_], A](limit: Int, start: Int = 0, step: Int = 100)(f: (Int, Int) => F[Response[Seq[A]]])(implicit Functor: Functor[F]): Publisher[Seq[A]] = {
+    s: Subscriber[_ >: Seq[A]] => {
+        def run(idx: Int): Unit = {
+          if (idx >= limit)
+            s.onComplete()
+          else {
+            var end = idx + step
+            if (end > limit)
+              end = limit
+            Functor.map(f(idx, end)) {
+              case Right(data) =>
+                s.onNext(data)
+                run(end)
+              case Left(error) =>
+                s.onError(BacklogApiException(error))
+            }
+          }
         }
+        run(start)
       }
-    }
   }
 
-  def parallel[A](limit: Int, parallelism: Int, start: Int = 0, step: Int = 100)
-                 (f: (Int, Int) => ApiResponse[A]): ApiStream[A] = {
-    Stream.unfoldEval[ApiPrg, Int, Seq[A]](start) { index =>
-      if (index >= limit)
-        pure[Option[(Seq[A], Int)]](None)
-      else {
-        val end = index + parallelism * step
-        val prgs = Seq.range(index, end, step).map(index => f(index, step).orFail)
-        prgs.parallel.map { result =>
-          if (result.exists(_.isEmpty)) None
-          else Some((result.flatten, end))
-        }
-      }
-    }
-  }
-
-  def toObservable[F[_], A](stream: ApiStream[A], interpret: BacklogHttpInterpret[F]): Observable[Seq[A]] =
-    Observable.fromReactivePublisher(
-      (s: Subscriber[_ >: Seq[A]]) => {
-        val prg = stream.map { values =>
-          s.onNext(values)
-          Seq.empty
-        }.compile.drain
-        interpret.onComplete(interpret.run(prg)) {
-          case Success(_) => s.onComplete()
-          case Failure(ex) => s.onError(ex)
-        }
-      }
-    )
-}
-
-object StreamingEffect {
-  implicit object ApiPrgSync extends Sync[ApiPrg] {
-    override def suspend[A](thunk: => ApiPrg[A]): ApiPrg[A] =
-      thunk
-
-    override def tailRecM[A, B](a: A)(f: A => ApiPrg[Either[A, B]]): ApiPrg[B] =
-      f(a) flatMap {
-        case Left(a) => tailRecM(a)(f)
-        case Right(b) => pure(b)
-      }
-
-    override def flatMap[A, B](fa: ApiPrg[A])(f: A => ApiPrg[B]): ApiPrg[B] =
-      fa.flatMap(f)
-
-    // Delay throwing until its interpretation
-    override def raiseError[A](e: Throwable): ApiPrg[A] =
-      suspend(throw e)
-
-    override def pure[A](x: A): ApiPrg[A] =
-      BacklogHttpOp.pure(x)
-
-    // If an exception is gonna to happen it's during the interpretation not here
-    // They are maybe some way to implement here if i had ApiPrg[Throwable \/ A] but here
-    // We don't know if fa during it's interpretation would fails
-    // So don't call this method and expect this behavior it's not gonna to work
-    // For IO monad it's perfectly normal but for Free monad this type signature isn't enough
-    // To make it simple i don't know how to implement this without evaluate fa
-    override def handleErrorWith[A](fa: ApiPrg[A])(f: Throwable => ApiPrg[A]): ApiPrg[A] = fa
-
-    override def bracketCase[A, B](acquire: ApiPrg[A])(use: A => ApiPrg[B])(release: (A, ExitCase[Throwable]) => ApiPrg[Unit]): ApiPrg[B] = ???
-  }
+  def stream[F[_], A](limit: Int, start: Int = 0, step: Int = 100)(f: (Int, Int) => F[Response[Seq[A]]])(implicit Functor: Functor[F]): Observable[Seq[A]] =
+    Observable.fromReactivePublisher(publisher(limit, start, step)(f))
 }

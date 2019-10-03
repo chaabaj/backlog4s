@@ -3,14 +3,12 @@ package com.github.chaabaj.backlog4s.apis
 import com.github.chaabaj.backlog4s.datas.CustomForm.CustomForm
 import com.github.chaabaj.backlog4s.datas.Order.Order
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import com.github.chaabaj.backlog4s.dsl.{HttpQuery, QueryParam}
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.Response
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery, QueryParam}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class IssueCommentApi(override val baseUrl: String,
-                      override val credentials: Credentials) extends Api {
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class IssueCommentApi[F[_]](baseUrl: String,
+                      credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   def resource(issueIdOrKey: IdOrKeyParam[Issue]): String =
     s"issues/$issueIdOrKey/comments"
@@ -19,7 +17,7 @@ class IssueCommentApi(override val baseUrl: String,
             minId: Option[Id[Comment]] = None,
             maxId: Option[Id[Comment]] = None,
             count: Long = 20,
-            order: Order = Order.Desc): ApiPrg[Response[Seq[Comment]]] = {
+            order: Order = Order.Desc): F[Response[Seq[Comment]]] = {
     val params = Seq(
       QueryParam.option("minId", minId),
       QueryParam.option("maxId", maxId),
@@ -27,7 +25,7 @@ class IssueCommentApi(override val baseUrl: String,
       QueryParam("order", order.toString)
     )
 
-    get[Seq[Comment]](
+    BacklogHttpDsl.get[Seq[Comment]](
       HttpQuery(
         resource(issueIdOrKey),
         params,
@@ -37,8 +35,8 @@ class IssueCommentApi(override val baseUrl: String,
     )
   }
 
-  def count(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Count]] =
-    get[Count](
+  def count(issueIdOrKey: IdOrKeyParam[Issue]): F[Response[Count]] =
+    BacklogHttpDsl.get[Count](
       HttpQuery(
         path = s"${resource(issueIdOrKey)}/count)",
         credentials = credentials,
@@ -46,8 +44,8 @@ class IssueCommentApi(override val baseUrl: String,
       )
     )
 
-  def getById(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): ApiPrg[Response[Comment]] =
-    get[Comment](
+  def getById(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): F[Response[Comment]] =
+    BacklogHttpDsl.get[Comment](
       HttpQuery(
         path = s"${resource(issueIdOrKey)}/${id.value}",
         credentials = credentials,
@@ -55,8 +53,8 @@ class IssueCommentApi(override val baseUrl: String,
       )
     )
 
-  def add(issueIdOrKey: IdOrKeyParam[Issue], form: AddCommentForm): ApiPrg[Response[Comment]] =
-    post[AddCommentForm, Comment](
+  def add(issueIdOrKey: IdOrKeyParam[Issue], form: AddCommentForm): F[Response[Comment]] =
+    BacklogHttpDsl.post[AddCommentForm, Comment](
       HttpQuery(
         path = resource(issueIdOrKey),
         credentials = credentials,
@@ -67,8 +65,8 @@ class IssueCommentApi(override val baseUrl: String,
 
   def update(issueIdOrKey: IdOrKeyParam[Issue],
              id: Id[Comment],
-             newContent: String): ApiPrg[Response[Comment]] =
-    put[CustomForm, Comment](
+             newContent: String): F[Response[Comment]] =
+    BacklogHttpDsl.put[CustomForm, Comment](
       HttpQuery(
         path = s"${resource(issueIdOrKey)}/${id.value}",
         credentials = credentials,
@@ -79,8 +77,8 @@ class IssueCommentApi(override val baseUrl: String,
       )
     )
 
-  def notifications(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): ApiPrg[Response[Seq[Notification]]] =
-    get[Seq[Notification]](
+  def notifications(issueIdOrKey: IdOrKeyParam[Issue], id: Id[Comment]): F[Response[Seq[Notification]]] =
+    BacklogHttpDsl.get[Seq[Notification]](
       HttpQuery(
         path = s"${resource(issueIdOrKey)}/${id.value}/notifications",
         credentials = credentials,
@@ -90,8 +88,8 @@ class IssueCommentApi(override val baseUrl: String,
 
   def addNotification(issueIdOrKey: IdOrKeyParam[Issue],
                       id: Id[Comment],
-                      form: AddNotificationForm): ApiPrg[Response[Comment]] =
-    post[AddNotificationForm, Comment](
+                      form: AddNotificationForm): F[Response[Comment]] =
+    BacklogHttpDsl.post[AddNotificationForm, Comment](
       HttpQuery(
         path = s"${resource(issueIdOrKey)}/${id.value}/notifications",
         credentials = credentials,
@@ -99,9 +97,4 @@ class IssueCommentApi(override val baseUrl: String,
       ),
       form
     )
-}
-
-object IssueCommentApi extends ApiContext[IssueCommentApi] {
-  override def apply(baseUrl: String, credentials: Credentials): IssueCommentApi =
-    new IssueCommentApi(baseUrl, credentials)
 }

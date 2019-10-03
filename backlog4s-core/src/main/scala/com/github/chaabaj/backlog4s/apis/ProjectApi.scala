@@ -3,20 +3,17 @@ package com.github.chaabaj.backlog4s.apis
 import com.github.chaabaj.backlog4s.datas.CustomForm.CustomForm
 import com.github.chaabaj.backlog4s.datas.Order.Order
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.chaabaj.backlog4s.dsl.{HttpQuery, QueryParam}
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.{ByteStream, Response}
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery, QueryParam}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class ProjectApi(override val baseUrl: String,
-                 override val credentials: Credentials) extends Api {
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class ProjectApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   private val resource = "projects"
 
   def all(offset: Int = 0, count: Int = 100,
           archived: Option[Boolean] = None,
-          all: Boolean = false): ApiPrg[Response[Seq[Project]]] = {
+          all: Boolean = false): F[Response[Seq[Project]]] = {
     val params = Seq(
       QueryParam("offset", offset),
       QueryParam("count", count),
@@ -24,11 +21,11 @@ class ProjectApi(override val baseUrl: String,
       QueryParam("all", all)
     )
 
-    get[Seq[Project]](HttpQuery(resource, params, credentials, baseUrl))
+    BacklogHttpDsl.get[Seq[Project]](HttpQuery(resource, params, credentials, baseUrl))
   }
 
-  def byIdOrKey(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Project]] =
-    get[Project](
+  def byIdOrKey(idOrKey: IdOrKeyParam[Project]): F[Response[Project]] =
+    BacklogHttpDsl.get[Project](
       HttpQuery(
         path = s"$resource/$idOrKey",
         credentials = credentials,
@@ -36,8 +33,8 @@ class ProjectApi(override val baseUrl: String,
       )
     )
 
-  def admins(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
-    get[Seq[User]](
+  def admins(idOrKey: IdOrKeyParam[Project]): F[Response[Seq[User]]] =
+    BacklogHttpDsl.get[Seq[User]](
       HttpQuery(
         path = s"$resource/$idOrKey/administrators",
         credentials = credentials,
@@ -45,8 +42,8 @@ class ProjectApi(override val baseUrl: String,
       )
     )
 
-  def users(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[User]]] =
-    get[Seq[User]](
+  def users(idOrKey: IdOrKeyParam[Project]): F[Response[Seq[User]]] =
+    BacklogHttpDsl.get[Seq[User]](
       HttpQuery(
         path = s"$resource/$idOrKey/users",
         credentials = credentials,
@@ -54,8 +51,8 @@ class ProjectApi(override val baseUrl: String,
       )
     )
 
-  def icon(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[ByteStream]] =
-    download(
+  def icon(idOrKey: IdOrKeyParam[Project]): F[Response[ByteStream]] =
+    BacklogHttpDsl.download(
       HttpQuery(
         path = s"$resource/$idOrKey/image",
         credentials = credentials,
@@ -63,8 +60,8 @@ class ProjectApi(override val baseUrl: String,
       )
     )
 
-  def recentlyViewed(order: Order = Order.Desc): ApiPrg[Response[Seq[Project]]] =
-    get[Seq[Project]](
+  def recentlyViewed(order: Order = Order.Desc): F[Response[Seq[Project]]] =
+    BacklogHttpDsl.get[Seq[Project]](
       HttpQuery(
         path = "users/myself/recentlyViewedProjects",
         credentials = credentials,
@@ -72,14 +69,14 @@ class ProjectApi(override val baseUrl: String,
       )
     )
 
-  def create(addProjectForm: AddProjectForm): ApiPrg[Response[Project]] =
-    post[AddProjectForm, Project](
+  def create(addProjectForm: AddProjectForm): F[Response[Project]] =
+    BacklogHttpDsl.post[AddProjectForm, Project](
       HttpQuery(path = resource, credentials = credentials, baseUrl = baseUrl),
       addProjectForm
     )
 
-  def addAdmin(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
-    post[CustomForm, User](
+  def addAdmin(idOrKey: IdOrKeyParam[Project], userId: Id[User]): F[Response[User]] =
+    BacklogHttpDsl.post[CustomForm, User](
       HttpQuery(
         path = s"$resource/$idOrKey/administrators",
         credentials = credentials,
@@ -90,16 +87,16 @@ class ProjectApi(override val baseUrl: String,
       )
     )
 
-  def removeAdmin(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
-    delete(HttpQuery(
+  def removeAdmin(idOrKey: IdOrKeyParam[Project], userId: Id[User]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(HttpQuery(
       path = s"$resource/$idOrKey/administrators",
       params = QueryParam.single("userId", userId),
       credentials = credentials,
       baseUrl = baseUrl
     ))
 
-  def addUser(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[User]] =
-    post[CustomForm, User](
+  def addUser(idOrKey: IdOrKeyParam[Project], userId: Id[User]): F[Response[User]] =
+    BacklogHttpDsl.post[CustomForm, User](
       HttpQuery(
         path = s"$resource/$idOrKey/users",
         credentials = credentials,
@@ -110,8 +107,8 @@ class ProjectApi(override val baseUrl: String,
       )
     )
 
-  def removeUser(idOrKey: IdOrKeyParam[Project], userId: Id[User]): ApiPrg[Response[Unit]] =
-    delete(
+  def removeUser(idOrKey: IdOrKeyParam[Project], userId: Id[User]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/$idOrKey/users",
         params = QueryParam.single("userId", userId),
@@ -120,8 +117,8 @@ class ProjectApi(override val baseUrl: String,
       )
     )
 
-  def update(idOrKey: IdOrKeyParam[Project], form: UpdateProjectForm): ApiPrg[Response[Project]] =
-    put[UpdateProjectForm, Project](
+  def update(idOrKey: IdOrKeyParam[Project], form: UpdateProjectForm): F[Response[Project]] =
+    BacklogHttpDsl.put[UpdateProjectForm, Project](
       HttpQuery(
         path = s"$resource/$idOrKey",
         credentials = credentials,
@@ -130,17 +127,12 @@ class ProjectApi(override val baseUrl: String,
       form
     )
 
-  def remove(idOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Unit]] =
-    delete(
+  def remove(idOrKey: IdOrKeyParam[Project]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/$idOrKey",
         credentials = credentials,
         baseUrl = baseUrl
       )
     )
-}
-
-object ProjectApi extends ApiContext[ProjectApi] {
-  override def apply(baseUrl: String, credentials: Credentials): ProjectApi =
-    new ProjectApi(baseUrl, credentials)
 }

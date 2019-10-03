@@ -1,19 +1,16 @@
 package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas.{Credentials, Space, SpaceDiskUsage, SpaceNotification}
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.chaabaj.backlog4s.dsl.HttpQuery
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.{ByteStream, Response}
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class SpaceApi(override val baseUrl: String,
-               override val credentials: Credentials) extends Api {
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class SpaceApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   val resource = "space"
 
-  def current: ApiPrg[Response[Space]] =
-    get[Space](
+  def current: F[Response[Space]] =
+    BacklogHttpDsl.get[Space](
       HttpQuery(
         path = s"$resource",
         credentials = credentials,
@@ -21,8 +18,8 @@ class SpaceApi(override val baseUrl: String,
       )
     )
 
-  def logo: ApiPrg[Response[ByteStream]] =
-    download(
+  def logo: F[Response[ByteStream]] =
+    BacklogHttpDsl.download(
       HttpQuery(
         path = s"$resource/image",
         credentials = credentials,
@@ -30,8 +27,8 @@ class SpaceApi(override val baseUrl: String,
       )
     )
 
-  def notification: ApiPrg[Response[SpaceNotification]] =
-    get[SpaceNotification](
+  def notification: F[Response[SpaceNotification]] =
+    BacklogHttpDsl.get[SpaceNotification](
       HttpQuery(
         path = s"$resource/notification",
         credentials = credentials,
@@ -39,17 +36,12 @@ class SpaceApi(override val baseUrl: String,
       )
     )
 
-  def diskUsage: ApiPrg[Response[SpaceDiskUsage]] =
-    get[SpaceDiskUsage](
+  def diskUsage: F[Response[SpaceDiskUsage]] =
+    BacklogHttpDsl.get[SpaceDiskUsage](
       HttpQuery(
         path = s"$resource/diskUsage",
         credentials = credentials,
         baseUrl = baseUrl
       )
     )
-}
-
-object SpaceApi extends ApiContext[SpaceApi] {
-  override def apply(baseUrl: String, credentials: Credentials): SpaceApi =
-    new SpaceApi(baseUrl, credentials)
 }

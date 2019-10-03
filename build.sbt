@@ -5,7 +5,7 @@ lazy val scala213 = "2.13.1"
 lazy val supportedScalaVersions = List(scala213, scala212)
 
 ThisBuild / organization := "com.github.chaabaj"
-ThisBuild / version      := "0.7.1"
+ThisBuild / version      := "0.8.0"
 ThisBuild / scalaVersion := scala212
 
 lazy val commonScalacOptions = Seq(
