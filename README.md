@@ -14,8 +14,8 @@
 ## Optional Goals and interesting experiment
 
 1. [ ] Scalajs support
-3. [ ] GraphQL server (In progress)
-4. [ ] Usage of auto code generation for protocol by analyse json files at compile-time or using cli tools
+2. [ ] ~~GraphQL server~~
+3. [ ] ~~Usage of auto code generation for protocol by analyse json files at compile-time or using cli tools~~
 
 ## Installation
 
