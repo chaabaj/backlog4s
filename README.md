@@ -30,13 +30,13 @@ resolvers ++= Seq(
 ### Core
 
 ```scala
-libraryDependencies += "com.github.chaabaj" %% "backlog4s-core" % "0.7.1-SNAPSHOT"
+libraryDependencies += "com.github.chaabaj" %% "backlog4s-core" % "0.8.1-SNAPSHOT"
 ```
 
 ### Using Akka to execute the requests
 
 ```scala
-libraryDependencies += "com.github.chaabaj" %% "backlog4s-akka" % "0.7.1-SNAPSHOT"
+libraryDependencies += "com.github.chaabaj" %% "backlog4s-akka" % "0.8.1-SNAPSHOT"
 ```
 
 ## Simple API usage
