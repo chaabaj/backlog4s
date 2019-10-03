@@ -15,7 +15,6 @@ import akka.stream.scaladsl.{FileIO, Sink, Source}
 import com.github.chaabaj.backlog4s.datas.{AccessKey, ApiErrors, OAuth2Token}
 import com.github.chaabaj.backlog4s.dsl._
 import spray.json._
-import cats.Monad
 import cats.implicits._
 import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.{ByteStream, Response}
 import monix.eval.Task
@@ -23,7 +22,7 @@ import monix.reactive.Observable
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.immutable.Seq
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal

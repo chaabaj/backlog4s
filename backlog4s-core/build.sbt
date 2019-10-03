@@ -1,7 +1,7 @@
 name := "backlog4s-core"
 
 val catsVersion = "1.6.0"
-val monixVersion = "3.0.0-RC1"
+val monixVersion = "3.0.0"
 
 libraryDependencies ++= Seq(
   "io.spray"      %% "spray-json"     % "1.3.3",
