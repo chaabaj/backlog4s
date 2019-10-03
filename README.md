@@ -44,42 +44,53 @@ libraryDependencies += "com.github.chaabaj" %% "backlog4s-akka" % "0.7.1-SNAPSHO
 Look at backlog4s-test contain a program sample
 
 ```scala
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import backlog4s.apis._
-import backlog4s.datas._
-import backlog4s.interpreters.AkkaHttpInterpret
+import com.github.chaabaj.backlog4s.datas._
+import com.github.chaabaj.backlog4s.streaming.ApiStream
+import com.github.chaabaj.backlog4s.apis.AllApi
+import com.github.chaabaj.backlog4s.interpreters.BacklogHttpDslOnAkka
+
 import scala.util.{Failure, Success}
-import backlog4s.dsl.syntax._
+import com.github.chaabaj.backlog4s.dsl.syntax._
 
 object App {
-  def main(args: Array[String]): Unit = {
-      implicit val system = ActorSystem("test")
-      implicit val mat = ActorMaterializer()
-      implicit val exc = system.dispatcher
-  
-      if (args.length > 1) {
-        val apiUrl = args.apply(0)
-        val apiKey = args.apply(1)
-        val httpInterpret = new AkkaHttpInterpret
-        val interpreter = httpInterpret
-        val allApi = AllApi.accessKey(baseUrl, ApiKey.accessKey)
-          
-        import allApi._
-            
-        // build a description of what we want to get
-        val prg = for {
-          projects <- projectApi.all().orFail
-          issues <- issueApi.search(IssueSearch(projectIds = projects.map(_.id)))
-        } yield issues
-        
-        // Evaluate the program 
-        // This is here where the request will be sent to the backlog API
-        interpreter.run(prg).onComplete {
-          case Success(result) => println(result)
-          case Failure(ex) => ex.printStackTrace()      
-        }
+
+  def usingAkka(apiUrl: String, apiKey: String): Unit = {
+    implicit val system = ActorSystem("test")
+    implicit val mat = ActorMaterializer()
+    implicit val scheduler = monix.execution.Scheduler.Implicits.global
+
+    val akkaHttpDsl = new BacklogHttpDslOnAkka()
+    val allApi = new AllApi(apiUrl, AccessKey(apiKey))(akkaHttpDsl)
+    import allApi._
+
+    val task = for {
+      projects <- projectApi.all().handleError
+      issues <- issueApi.search(IssueSearch(projectIds = projects.map(_.id))).handleError
+    } yield issues
+
+    task.value.runToFuture.onComplete { response =>
+      response match {
+        case Success(data) =>
+          println(data)
+        case Failure(ex) =>
+          ex.printStackTrace()
       }
+      akkaHttpDsl.terminate()
+      system.terminate()
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
+    if (args.length > 1) {
+      val apiUrl = args.apply(0)
+      val apiKey = args.apply(1)
+      usingAkka(apiUrl, apiKey)
+    } else {
+      println("Missing argument api url and api key")
+    }
   }
 }
 
@@ -90,92 +101,53 @@ object App {
 ```scala
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import backlog4s.apis._
-import backlog4s.datas._
-import backlog4s.interpreters.AkkaHttpInterpret
+import com.github.chaabaj.backlog4s.datas._
+import com.github.chaabaj.backlog4s.streaming.ApiStream
+import com.github.chaabaj.backlog4s.apis.AllApi
+import com.github.chaabaj.backlog4s.interpreters.BacklogHttpDslOnAkka
+
 import scala.util.{Failure, Success}
-import backlog4s.streaming.ApiStream
-import backlog4s.dsl.syntax._
+import com.github.chaabaj.backlog4s.dsl.syntax._
 
 object App {
-  def main(args: Array[String]): Unit = {
-      implicit val system = ActorSystem("test")
-      implicit val mat = ActorMaterializer()
-      implicit val exc = system.dispatcher
-  
-      if (args.length > 1) {
-        val apiUrl = args.apply(0)
-        val apiKey = args.apply(1)
-        val httpInterpret = new AkkaHttpInterpret
-        val interpreter = httpInterpret
-        val allApi = AllApi.accessKey(baseUrl, ApiKey.accessKey)
-          
-        import allApi._
-        
-        // Building the stream for issues
-        val stream = ApiStream.sequential(10000)(
-           (index, count) => issueApi.search(IssueSearch(offset = index, count = count))
-        ).map { issues =>
-           println(issues.map(_.summary).mkString("\n"))
-           println()
-           issues
-        }
-        
-        // Evaluate the stream
-        // This is here where the request will be sent to the backlog API
-        interpreter.runStream(stream).onComplete {
-          case Success(result) => println(result)
-          case Failure(ex) => ex.printStackTrace()      
-        }
+
+  def usingAkka(apiUrl: String, apiKey: String): Unit = {
+    implicit val system = ActorSystem("test")
+    implicit val mat = ActorMaterializer()
+    implicit val scheduler = monix.execution.Scheduler.Implicits.global
+
+    val akkaHttpDsl = new BacklogHttpDslOnAkka()
+    val allApi = new AllApi(apiUrl, AccessKey(apiKey))(akkaHttpDsl)
+    import allApi._
+
+    val stream = ApiStream.stream(10000, 4)(
+      (index, count) => issueApi.search(IssueSearch(offset = index, count = count))
+    ).map { issues =>
+      println(issues.map(_.summary).mkString("\n"))
+      println()
+      issues
+    }
+
+    stream.foreach(println).onComplete { response =>
+      response match {
+        case Success(_) =>
+          println("Done")
+        case Failure(ex) =>
+          ex.printStackTrace()
       }
+      akkaHttpDsl.terminate()
+      system.terminate()
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
+    if (args.length > 1) {
+      val apiUrl = args.apply(0)
+      val apiKey = args.apply(1)
+      usingAkka(apiUrl, apiKey)
+    } else {
+      println("Missing argument api url and api key")
+    }
   }
 }
 ```
-
-## Parallelize requests
-
-```scala
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import backlog4s.apis._
-import backlog4s.datas._
-import backlog4s.interpreters.AkkaHttpInterpret
-import scala.util.{Failure, Success}
-import backlog4s.dsl.syntax._
-
-object App {
-  def main(args: Array[String]): Unit = {
-      implicit val system = ActorSystem("test")
-      implicit val mat = ActorMaterializer()
-      implicit val exc = system.dispatcher
-  
-      if (args.length > 1) {
-        val apiUrl = args.apply(0)
-        val apiKey = args.apply(1)
-        val httpInterpret = new AkkaHttpInterpret
-        val interpreter = httpInterpret
-        val allApi = AllApi.accessKey(baseUrl, ApiKey.accessKey)
-          
-        import allApi._
-            
-        // build a description of what we want to get
-        val prg = for {
-          projects <- projectApi.all().orFail
-          issuesWithStatuses <- Seq(
-            issueApi.search(IssueSearch(projectIds = projects.map(_.id))).orFail
-            statusApi.all.orFail
-          ).parallel
-          
-        } yield issuesWithStatuses
-        
-        // Evaluate the program 
-        // This is here where the request will be sent to the backlog API
-        interpreter.run(prg).onComplete {
-          case Success(result) => println(result)
-          case Failure(ex) => ex.printStackTrace()      
-        }
-      }
-  }
-}
-```
-

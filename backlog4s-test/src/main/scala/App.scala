@@ -4,16 +4,13 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.github.chaabaj.backlog4s.datas._
 import com.github.chaabaj.backlog4s.streaming.ApiStream
-import cats.effect.IO
 import com.github.chaabaj.backlog4s.apis.AllApi
 import com.github.chaabaj.backlog4s.interpreters.BacklogHttpDslOnAkka
 
 import scala.util.{Failure, Success}
-import hammock.jvm._
+import com.github.chaabaj.backlog4s.dsl.syntax._
 
 object App {
-
-  implicit val hammockInterpreter = Interpreter[IO]
 
   def usingAkka(apiUrl: String, apiKey: String): Unit = {
     implicit val system = ActorSystem("test")
@@ -32,11 +29,12 @@ object App {
       issues
     }
 
-    val prg = for {
-      issues <- issueApi.search()
+    val task = for {
+      projects <- projectApi.all().handleError
+      issues <- issueApi.search(IssueSearch(projectIds = projects.map(_.id))).handleError
     } yield issues
 
-    prg.runToFuture.onComplete { response =>
+    task.value.runToFuture.onComplete { response =>
       response match {
         case Success(data) =>
           println(data)
