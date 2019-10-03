@@ -1,22 +1,18 @@
 package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.chaabaj.backlog4s.dsl.HttpQuery
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.{ByteStream, Response}
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class UserApi(override val baseUrl: String,
-              override val credentials: Credentials) extends Api {
-
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class UserApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   private val resource = "users"
 
 
   // stream[A](() => ApiPrg[Response[Seq[A]]): Stream[IO, Seq[A]]
-  lazy val all: ApiPrg[Response[Seq[User]]] =
-    get[Seq[User]](
+  lazy val all: F[Response[Seq[User]]] =
+    BacklogHttpDsl.get[Seq[User]](
       HttpQuery(
         path = resource,
         credentials = credentials,
@@ -24,21 +20,21 @@ class UserApi(override val baseUrl: String,
       )
     )
 
-  def byId(id: Id[User]): ApiPrg[Response[User]] = {
+  def byId(id: Id[User]): F[Response[User]] = {
     val query = HttpQuery(
       path = s"$resource/myself",
       credentials = credentials,
       baseUrl = baseUrl
     )
     if (id == UserT.myself)
-      get[User](query)
+      BacklogHttpDsl.get[User](query)
     else
-      get[User](query.copy(path = s"$resource/${id.value}"))
+      BacklogHttpDsl.get[User](query.copy(path = s"$resource/${id.value}"))
   }
 
 
-  def create(form: AddUserForm): ApiPrg[Response[User]] =
-    post[AddUserForm, User](
+  def create(form: AddUserForm): F[Response[User]] =
+    BacklogHttpDsl.post[AddUserForm, User](
       HttpQuery(
         path = resource,
         credentials = credentials,
@@ -47,8 +43,8 @@ class UserApi(override val baseUrl: String,
       form
     )
 
-  def update(id: Id[User], form: UpdateUserForm): ApiPrg[Response[User]] =
-    put[UpdateUserForm, User](
+  def update(id: Id[User], form: UpdateUserForm): F[Response[User]] =
+    BacklogHttpDsl.put[UpdateUserForm, User](
       HttpQuery(
         path = s"$resource/${id.value}",
         credentials = credentials,
@@ -57,8 +53,8 @@ class UserApi(override val baseUrl: String,
       form
     )
 
-  def remove(id: Id[User]): ApiPrg[Response[Unit]] =
-    delete(
+  def remove(id: Id[User]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/${id.value}",
         credentials = credentials,
@@ -66,17 +62,12 @@ class UserApi(override val baseUrl: String,
       )
     )
 
-  def downloadIcon(id: Id[User]): ApiPrg[Response[ByteStream]] =
-    download(
+  def downloadIcon(id: Id[User]): F[Response[ByteStream]] =
+    BacklogHttpDsl.download(
       HttpQuery(
         path = s"$resource/${id.value}/icon",
         credentials = credentials,
         baseUrl = baseUrl
       )
     )
-}
-
-object UserApi extends ApiContext[UserApi] {
-  override def apply(baseUrl: String, credentials: Credentials): UserApi =
-    new UserApi(baseUrl, credentials)
 }

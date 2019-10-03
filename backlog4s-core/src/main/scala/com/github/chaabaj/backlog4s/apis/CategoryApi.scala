@@ -2,20 +2,16 @@ package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas.CustomForm.CustomForm
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import com.github.chaabaj.backlog4s.dsl.HttpQuery
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.Response
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class CategoryApi(override val baseUrl: String,
-                  override val credentials: Credentials) extends Api {
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
-
+class CategoryApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
     s"projects/$projectIdOrKey/categories"
 
-  def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Category]]] =
-    get[Seq[Category]](
+  def allOf(projectIdOrKey: IdOrKeyParam[Project]): F[Response[Seq[Category]]] =
+    BacklogHttpDsl.get[Seq[Category]](
       HttpQuery(
         path = resource(projectIdOrKey),
         credentials = credentials,
@@ -23,8 +19,8 @@ class CategoryApi(override val baseUrl: String,
       )
     )
 
-  def add(projectIdOrKey: IdOrKeyParam[Project], name: String): ApiPrg[Response[Category]] =
-    post[CustomForm, Category](
+  def add(projectIdOrKey: IdOrKeyParam[Project], name: String): F[Response[Category]] =
+    BacklogHttpDsl.post[CustomForm, Category](
       HttpQuery(
         path = resource(projectIdOrKey),
         credentials = credentials,
@@ -37,8 +33,8 @@ class CategoryApi(override val baseUrl: String,
 
   def update(projectIdOrKey: IdOrKeyParam[Project],
              id: Id[Category],
-             newName: String): ApiPrg[Response[Category]] =
-    put[CustomForm, Category](
+             newName: String): F[Response[Category]] =
+    BacklogHttpDsl.put[CustomForm, Category](
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/${id.value}",
         credentials = credentials,
@@ -50,17 +46,12 @@ class CategoryApi(override val baseUrl: String,
     )
 
   def remove(projectIdOrKey: IdOrKeyParam[Project],
-             id: Id[Category]): ApiPrg[Response[Unit]] =
-    delete(
+             id: Id[Category]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/${id.value}",
         credentials = credentials,
         baseUrl = baseUrl
       )
     )
-}
-
-object CategoryApi extends ApiContext[CategoryApi] {
-  override def apply(baseUrl: String, credentials: Credentials): CategoryApi =
-    new CategoryApi(baseUrl, credentials)
 }

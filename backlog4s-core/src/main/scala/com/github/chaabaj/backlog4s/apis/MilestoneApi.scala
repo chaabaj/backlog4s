@@ -1,21 +1,18 @@
 package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import com.github.chaabaj.backlog4s.dsl.HttpQuery
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.Response
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class MilestoneApi(override val baseUrl: String,
-                   override val credentials: Credentials) extends Api{
+class MilestoneApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
 
   def resource(projectIdOrKey: IdOrKeyParam[Project]): String =
     s"projects/$projectIdOrKey/versions"
 
-  def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[Milestone]]] =
-    get[Seq[Milestone]](
+  def allOf(projectIdOrKey: IdOrKeyParam[Project]): F[Response[Seq[Milestone]]] =
+    BacklogHttpDsl.get[Seq[Milestone]](
       HttpQuery(
         path = resource(projectIdOrKey),
         credentials = credentials,
@@ -24,8 +21,8 @@ class MilestoneApi(override val baseUrl: String,
     )
 
   def add(projectIdOrKey: IdOrKeyParam[Project],
-          form: AddMilestoneForm): ApiPrg[Response[Milestone]] =
-    post[AddMilestoneForm, Milestone](
+          form: AddMilestoneForm): F[Response[Milestone]] =
+    BacklogHttpDsl.post[AddMilestoneForm, Milestone](
       HttpQuery(
         path = resource(projectIdOrKey),
         credentials = credentials,
@@ -36,8 +33,8 @@ class MilestoneApi(override val baseUrl: String,
 
   def update(projectIdOrKey: IdOrKeyParam[Project],
              id: Id[Milestone],
-             form: UpdateMilestoneForm): ApiPrg[Response[Milestone]] =
-    put[UpdateMilestoneForm, Milestone](
+             form: UpdateMilestoneForm): F[Response[Milestone]] =
+    BacklogHttpDsl.put[UpdateMilestoneForm, Milestone](
       HttpQuery(
         path = resource(projectIdOrKey),
         credentials = credentials,
@@ -46,17 +43,12 @@ class MilestoneApi(override val baseUrl: String,
       form
     )
 
-  def remove(projectIdOrKey: IdOrKeyParam[Project], id: Id[Milestone]): ApiPrg[Response[Unit]] =
-    delete(
+  def remove(projectIdOrKey: IdOrKeyParam[Project], id: Id[Milestone]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/${id.value}",
         credentials = credentials,
         baseUrl = baseUrl
       )
     )
-}
-
-object MilestoneApi extends ApiContext[MilestoneApi] {
-  override def apply(baseUrl: String, credentials: Credentials): MilestoneApi =
-    new MilestoneApi(baseUrl, credentials)
 }

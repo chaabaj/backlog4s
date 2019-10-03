@@ -2,15 +2,11 @@ package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas.CustomForm.CustomForm
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import com.github.chaabaj.backlog4s.dsl.HttpQuery
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.Response
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class PullRequestCommentApi(override val baseUrl: String,
-                            override val credentials: Credentials) extends Api {
-
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class PullRequestCommentApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   def resource(projectIdOrKey: IdOrKeyParam[Project],
                repoIdOrName: IdOrKeyParam[GitRepository],
@@ -19,8 +15,8 @@ class PullRequestCommentApi(override val baseUrl: String,
 
   def comments(projectIdOrKey: IdOrKeyParam[Project],
                repoIdOrName: IdOrKeyParam[GitRepository],
-               pullRequestNumber: Long): ApiPrg[Response[Seq[Comment]]] =
-    get[Seq[Comment]](
+               pullRequestNumber: Long): F[Response[Seq[Comment]]] =
+    BacklogHttpDsl.get[Seq[Comment]](
       HttpQuery(
         path = resource(projectIdOrKey, repoIdOrName, pullRequestNumber),
         credentials = credentials,
@@ -30,8 +26,8 @@ class PullRequestCommentApi(override val baseUrl: String,
 
   def count(projectIdOrKey: IdOrKeyParam[Project],
             repoIdOrName: IdOrKeyParam[GitRepository],
-            pullRequestNumber: Long): ApiPrg[Response[Count]] =
-    get[Count](
+            pullRequestNumber: Long): F[Response[Count]] =
+    BacklogHttpDsl.get[Count](
       HttpQuery(
         path = s"${resource(projectIdOrKey, repoIdOrName, pullRequestNumber)}/count",
         credentials = credentials,
@@ -42,8 +38,8 @@ class PullRequestCommentApi(override val baseUrl: String,
   def postComment(projectIdOrKey: IdOrKeyParam[Project],
                   repoIdOrName: IdOrKeyParam[GitRepository],
                   pullRequestNumber: Long,
-                  form: AddCommentForm): ApiPrg[Response[Comment]] =
-    post[AddCommentForm, Comment](
+                  form: AddCommentForm): F[Response[Comment]] =
+    BacklogHttpDsl.post[AddCommentForm, Comment](
       HttpQuery(
         path = resource(projectIdOrKey, repoIdOrName, pullRequestNumber),
         credentials = credentials,
@@ -56,8 +52,8 @@ class PullRequestCommentApi(override val baseUrl: String,
                   repoIdOrName: IdOrKeyParam[GitRepository],
                   pullRequestNumber: Long,
                   commentId: Id[Comment],
-                  newContent: String): ApiPrg[Response[Comment]] =
-    put[CustomForm, Comment](
+                  newContent: String): F[Response[Comment]] =
+    BacklogHttpDsl.put[CustomForm, Comment](
       HttpQuery(
         path = s"${resource(projectIdOrKey, repoIdOrName, pullRequestNumber)}/${commentId.value}",
         credentials = credentials,
@@ -67,9 +63,4 @@ class PullRequestCommentApi(override val baseUrl: String,
         "content" -> newContent
       )
     )
-}
-
-object PullRequestCommentApi extends ApiContext[PullRequestCommentApi] {
-  override def apply(baseUrl: String, credentials: Credentials): PullRequestCommentApi =
-    new PullRequestCommentApi(baseUrl, credentials)
 }

@@ -2,21 +2,17 @@ package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas.Order.Order
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import com.github.chaabaj.backlog4s.dsl.{HttpQuery, QueryParam}
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.Response
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery, QueryParam}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class GroupApi(override val baseUrl: String,
-               override val credentials: Credentials) extends Api {
+class GroupApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
   private val resource = "groups"
-
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
 
   def all(offset: Int = 0,
           limit: Int = 100,
-          order: Order = Order.Desc): ApiPrg[Response[Seq[Group]]] =
-    get[Seq[Group]](
+          order: Order = Order.Desc): F[Response[Seq[Group]]] =
+    BacklogHttpDsl.get[Seq[Group]](
       HttpQuery(
         s"$resource",
         Seq(
@@ -29,8 +25,8 @@ class GroupApi(override val baseUrl: String,
       )
     )
 
-  def byId(id: Id[Group]): ApiPrg[Response[Group]] =
-    get[Group](
+  def byId(id: Id[Group]): F[Response[Group]] =
+    BacklogHttpDsl.get[Group](
       HttpQuery(
         path = s"$resource/${id.value}",
         credentials = credentials,
@@ -38,8 +34,8 @@ class GroupApi(override val baseUrl: String,
       )
     )
 
-  def create(addGroupForm: AddGroupForm): ApiPrg[Response[Group]] =
-    post[AddGroupForm, Group](
+  def create(addGroupForm: AddGroupForm): F[Response[Group]] =
+    BacklogHttpDsl.post[AddGroupForm, Group](
       HttpQuery(
         path = resource,
         credentials = credentials,
@@ -48,8 +44,8 @@ class GroupApi(override val baseUrl: String,
       addGroupForm
     )
 
-  def update(updateGroupForm: UpdateGroupForm): ApiPrg[Response[Group]] =
-    put[UpdateGroupForm, Group](
+  def update(updateGroupForm: UpdateGroupForm): F[Response[Group]] =
+    BacklogHttpDsl.put[UpdateGroupForm, Group](
       HttpQuery(
         path = resource,
         credentials = credentials,
@@ -58,16 +54,11 @@ class GroupApi(override val baseUrl: String,
       updateGroupForm
     )
 
-  def remove(id: Id[Group]): ApiPrg[Response[Unit]] =
-    delete(
+  def remove(id: Id[Group]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/${id.value}", credentials = credentials,
         baseUrl = baseUrl
       )
     )
-}
-
-object GroupApi extends ApiContext[GroupApi] {
-  override def apply(baseUrl: String, credentials: Credentials): GroupApi =
-    new GroupApi(baseUrl, credentials)
 }

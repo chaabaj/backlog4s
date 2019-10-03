@@ -1,17 +1,15 @@
 package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.Response
-import com.github.chaabaj.backlog4s.dsl.HttpQuery
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.Response
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class ActivityApi(override val baseUrl: String,
-                  override val credentials: Credentials) extends Api {
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class ActivityApi[F[_]](baseUrl: String,
+                        credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
-  def user(id: Id[User]): ApiPrg[Response[Seq[Activity]]] =
-    get[Seq[Activity]](
+  def user(id: Id[User]): F[Response[Seq[Activity]]] =
+    BacklogHttpDsl.get[Seq[Activity]](
       HttpQuery(
         path = s"users/${id.value}/activities",
         credentials = credentials,
@@ -19,16 +17,12 @@ class ActivityApi(override val baseUrl: String,
       )
     )
 
-  def space: ApiPrg[Response[Seq[Activity]]] =
-    get[Seq[Activity]](
+  def space: F[Response[Seq[Activity]]] =
+    BacklogHttpDsl.get[Seq[Activity]](
       HttpQuery(
         path = "space/activities",
         credentials = credentials,
         baseUrl = baseUrl
       )
     )
-}
-object ActivityApi extends ApiContext[ActivityApi] {
-  override def apply(baseUrl: String, credentials: Credentials): ActivityApi =
-    new ActivityApi(baseUrl, credentials)
 }

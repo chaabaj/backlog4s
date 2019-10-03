@@ -2,15 +2,12 @@ package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas.Order.Order
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.chaabaj.backlog4s.dsl.{QueryParam, HttpQuery}
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery, QueryParam}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 import cats.data.NonEmptyList
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.{ByteStream, Response}
 
-class IssueApi(override val baseUrl: String,
-               override val credentials: Credentials) extends Api {
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class IssueApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   val resource = "issues"
 
@@ -52,18 +49,18 @@ class IssueApi(override val baseUrl: String,
     queryParams
   }
 
-  def search(issueSearch: IssueSearch = IssueSearch()): ApiPrg[Response[Seq[Issue]]] =
-    get[Seq[Issue]](
+  def search(issueSearch: IssueSearch = IssueSearch()): F[Response[Seq[Issue]]] =
+    BacklogHttpDsl.get[Seq[Issue]](
       HttpQuery(resource, searchParams(issueSearch), credentials, baseUrl)
     )
 
-  def count(issueSearch: IssueSearch = IssueSearch()): ApiPrg[Response[Count]] =
-    get[Count](
+  def count(issueSearch: IssueSearch = IssueSearch()): F[Response[Count]] =
+    BacklogHttpDsl.get[Count](
       HttpQuery(s"$resource/count", searchParams(issueSearch), credentials, baseUrl)
     )
 
-  def byIdOrKey(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Issue]] =
-    get[Issue](
+  def byIdOrKey(issueIdOrKey: IdOrKeyParam[Issue]): F[Response[Issue]] =
+    BacklogHttpDsl.get[Issue](
       HttpQuery(
         path = s"$resource/$issueIdOrKey",
         credentials = credentials,
@@ -73,8 +70,8 @@ class IssueApi(override val baseUrl: String,
 
   def recentlyViewed(order: Order = Order.Desc,
                      offset: Long = 0,
-                     count: Long = 20): ApiPrg[Response[Seq[Issue]]] =
-    get[Seq[Issue]](
+                     count: Long = 20): F[Response[Seq[Issue]]] =
+    BacklogHttpDsl.get[Seq[Issue]](
       HttpQuery(
         path = "users/myself/recentlyViewedIssues",
         credentials = credentials,
@@ -86,14 +83,14 @@ class IssueApi(override val baseUrl: String,
       )
     )
 
-  def add(form: AddIssueForm): ApiPrg[Response[Issue]] =
-    post[AddIssueForm, Issue](
+  def add(form: AddIssueForm): F[Response[Issue]] =
+    BacklogHttpDsl.post[AddIssueForm, Issue](
       HttpQuery(path = resource, credentials = credentials, baseUrl = baseUrl),
       form
     )
 
-  def update(idOrKey: IdOrKeyParam[Issue], form: UpdateIssueForm): ApiPrg[Response[Issue]] =
-    put[UpdateIssueForm, Issue](
+  def update(idOrKey: IdOrKeyParam[Issue], form: UpdateIssueForm): F[Response[Issue]] =
+    BacklogHttpDsl.put[UpdateIssueForm, Issue](
       HttpQuery(
         path = s"$resource/$idOrKey",
         credentials = credentials,
@@ -102,8 +99,8 @@ class IssueApi(override val baseUrl: String,
       form
     )
 
-  def remove(idOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Unit]] =
-    delete(
+  def remove(idOrKey: IdOrKeyParam[Issue]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/$idOrKey",
         credentials = credentials,
@@ -111,8 +108,8 @@ class IssueApi(override val baseUrl: String,
       )
     )
 
-  def linked(issueIdOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Seq[SharedFile]]] =
-    get[Seq[SharedFile]](
+  def linked(issueIdOrKey: IdOrKeyParam[Issue]): F[Response[Seq[SharedFile]]] =
+    BacklogHttpDsl.get[Seq[SharedFile]](
       HttpQuery(
         path = s"$resource/$issueIdOrKey/sharedFiles",
         credentials = credentials,
@@ -121,8 +118,8 @@ class IssueApi(override val baseUrl: String,
     )
 
   def downloadFile(projectIdOrKey: IdOrKeyParam[Project],
-                   id: Id[SharedFile]): ApiPrg[Response[ByteStream]] =
-    download(
+                   id: Id[SharedFile]): F[Response[ByteStream]] =
+    BacklogHttpDsl.download(
       HttpQuery(
         path = s"projects/$projectIdOrKey/files/${id.value}",
         credentials = credentials,
@@ -131,8 +128,8 @@ class IssueApi(override val baseUrl: String,
     )
 
   def link(issueIdOrKey: IdOrKeyParam[Issue],
-           fileIds: NonEmptyList[Id[SharedFile]]): ApiPrg[Response[SharedFile]] =
-    post[LinkFilesForm, SharedFile](
+           fileIds: NonEmptyList[Id[SharedFile]]): F[Response[SharedFile]] =
+    BacklogHttpDsl.post[LinkFilesForm, SharedFile](
       HttpQuery(
         path = s"$resource/$issueIdOrKey/sharedFiles",
         credentials = credentials,
@@ -142,8 +139,8 @@ class IssueApi(override val baseUrl: String,
     )
 
   def unlink(issueIdOrKey: IdOrKeyParam[Issue],
-             id: Id[SharedFile]): ApiPrg[Response[Unit]] =
-    delete(
+             id: Id[SharedFile]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/$issueIdOrKey/sharedFiles/${id.value}",
         credentials = credentials,
@@ -151,8 +148,8 @@ class IssueApi(override val baseUrl: String,
       )
     )
 
-  def attach(idOrKey: IdOrKeyParam[Issue]): ApiPrg[Response[Seq[Attachment]]] =
-    get[Seq[Attachment]](
+  def attach(idOrKey: IdOrKeyParam[Issue]): F[Response[Seq[Attachment]]] =
+    BacklogHttpDsl.get[Seq[Attachment]](
       HttpQuery(
         path = s"$resource/$idOrKey/attachments",
         credentials = credentials,
@@ -161,8 +158,8 @@ class IssueApi(override val baseUrl: String,
     )
 
   def downloadAttachment(idOrKey: IdOrKeyParam[Issue],
-                         attachmentId: Id[Attachment]): ApiPrg[Response[ByteStream]] =
-    download(
+                         attachmentId: Id[Attachment]): F[Response[ByteStream]] =
+    BacklogHttpDsl.download(
       HttpQuery(
         path = s"$resource/$idOrKey/attachments/${attachmentId.value}",
         credentials = credentials,
@@ -171,17 +168,12 @@ class IssueApi(override val baseUrl: String,
     )
 
   def removeAttachment(idOrKey: IdOrKeyParam[Issue],
-                       attachmentId: Id[Attachment]): ApiPrg[Response[Unit]] =
-    delete(
+                       attachmentId: Id[Attachment]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/$idOrKey/attachments/${attachmentId.value}",
         credentials = credentials,
         baseUrl = baseUrl
       )
     )
-}
-
-object IssueApi extends ApiContext[IssueApi] {
-  override def apply(baseUrl: String, credentials: Credentials): IssueApi =
-    new IssueApi(baseUrl, credentials)
 }

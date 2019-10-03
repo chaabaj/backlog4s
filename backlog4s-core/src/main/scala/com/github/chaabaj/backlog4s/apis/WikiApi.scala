@@ -1,20 +1,17 @@
 package com.github.chaabaj.backlog4s.apis
 
 import com.github.chaabaj.backlog4s.datas._
-import com.github.chaabaj.backlog4s.dsl.ApiDsl.ApiPrg
-import com.github.chaabaj.backlog4s.dsl.HttpADT.{ByteStream, Response}
-import com.github.chaabaj.backlog4s.dsl.{HttpQuery, QueryParam}
+import com.github.chaabaj.backlog4s.dsl.{BacklogHttpDsl, HttpQuery, QueryParam}
 import cats.data.NonEmptyList
+import com.github.chaabaj.backlog4s.dsl.BacklogHttpDsl.{ByteStream, Response}
 import com.github.chaabaj.backlog4s.formatters.SprayJsonFormats._
 
-class WikiApi(override val baseUrl: String,
-              override val credentials: Credentials) extends Api {
-  import com.github.chaabaj.backlog4s.dsl.ApiDsl.HttpOp._
+class WikiApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHttpDsl: BacklogHttpDsl[F]) {
 
   val resource = "wikis"
 
-  def allOf(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[WikiSummary]]] =
-    get[Seq[WikiSummary]](
+  def allOf(projectIdOrKey: IdOrKeyParam[Project]): F[Response[Seq[WikiSummary]]] =
+    BacklogHttpDsl.get[Seq[WikiSummary]](
       HttpQuery(
         resource,
         QueryParam.single("projectIdOrKey", projectIdOrKey),
@@ -23,8 +20,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def byId(id: Id[Wiki]): ApiPrg[Response[Wiki]] =
-    get[Wiki](
+  def byId(id: Id[Wiki]): F[Response[Wiki]] =
+    BacklogHttpDsl.get[Wiki](
       HttpQuery(
         path = s"$resource/${id.value}",
         credentials = credentials,
@@ -32,8 +29,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def count(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Count]] =
-    get[Count](
+  def count(projectIdOrKey: IdOrKeyParam[Project]): F[Response[Count]] =
+    BacklogHttpDsl.get[Count](
       HttpQuery(
         s"$resource/count",
         QueryParam.single("projectIdOrKey", projectIdOrKey),
@@ -42,8 +39,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def tags(projectIdOrKey: IdOrKeyParam[Project]): ApiPrg[Response[Seq[WikiTag]]] =
-    get[Seq[WikiTag]](
+  def tags(projectIdOrKey: IdOrKeyParam[Project]): F[Response[Seq[WikiTag]]] =
+    BacklogHttpDsl.get[Seq[WikiTag]](
       HttpQuery(
         s"$resource/tags",
         QueryParam.single("projectIdOrKey", projectIdOrKey),
@@ -52,8 +49,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def attachments(id: Id[Wiki]): ApiPrg[Response[Seq[Attachment]]] =
-    get[Seq[Attachment]](
+  def attachments(id: Id[Wiki]): F[Response[Seq[Attachment]]] =
+    BacklogHttpDsl.get[Seq[Attachment]](
       HttpQuery(
         path = s"$resource/${id.value}/attachments",
         credentials = credentials,
@@ -61,8 +58,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def downloadAttachment(id: Id[Wiki], attachmentId: Id[Attachment]): ApiPrg[Response[ByteStream]] =
-    download(
+  def downloadAttachment(id: Id[Wiki], attachmentId: Id[Attachment]): F[Response[ByteStream]] =
+    BacklogHttpDsl.download(
       HttpQuery(
         path = s"$resource/${id.value}/attachments/${attachmentId.value}",
         credentials = credentials,
@@ -70,8 +67,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def attach(id: Id[Wiki], attachmentIds: NonEmptyList[Id[Attachment]]): ApiPrg[Response[Attachment]] =
-    post[AttachForm, Attachment](
+  def attach(id: Id[Wiki], attachmentIds: NonEmptyList[Id[Attachment]]): F[Response[Attachment]] =
+    BacklogHttpDsl.post[AttachForm, Attachment](
       HttpQuery(
         path = s"$resource/${id.value}/attachments",
         credentials = credentials,
@@ -80,8 +77,8 @@ class WikiApi(override val baseUrl: String,
       AttachForm(attachmentIds.toList)
     )
 
-  def removeAttachment(id: Id[Wiki], attachmentId: Id[Attachment]): ApiPrg[Response[Unit]] =
-    delete(
+  def removeAttachment(id: Id[Wiki], attachmentId: Id[Attachment]): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         path = s"$resource/${id.value}/attachments/${attachmentId.value}",
         credentials = credentials,
@@ -89,8 +86,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def sharedFiles(id: Id[Wiki]): ApiPrg[Response[Seq[SharedFile]]] =
-    get[Seq[SharedFile]](
+  def sharedFiles(id: Id[Wiki]): F[Response[Seq[SharedFile]]] =
+    BacklogHttpDsl.get[Seq[SharedFile]](
       HttpQuery(
         path = s"$resource/${id.value}/sharedFiles",
         credentials = credentials,
@@ -98,8 +95,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def history(id: Id[Wiki]): ApiPrg[Response[Seq[WikiHistory]]] =
-    get[Seq[WikiHistory]](
+  def history(id: Id[Wiki]): F[Response[Seq[WikiHistory]]] =
+    BacklogHttpDsl.get[Seq[WikiHistory]](
       HttpQuery(
         path = s"$resource/${id.value}/history",
         credentials = credentials,
@@ -107,8 +104,8 @@ class WikiApi(override val baseUrl: String,
       )
     )
 
-  def stars(id: Id[Wiki]): ApiPrg[Response[Seq[Star]]] =
-    get[Seq[Star]](
+  def stars(id: Id[Wiki]): F[Response[Seq[Star]]] =
+    BacklogHttpDsl.get[Seq[Star]](
       HttpQuery(
         path = s"$resource/${id.value}/stars",
         credentials = credentials,
@@ -118,8 +115,8 @@ class WikiApi(override val baseUrl: String,
 
   // Don't understand the API yet def shareFile
 
-  def add(form: AddWikiForm): ApiPrg[Response[Wiki]] =
-    post[AddWikiForm, Wiki](
+  def add(form: AddWikiForm): F[Response[Wiki]] =
+    BacklogHttpDsl.post[AddWikiForm, Wiki](
       HttpQuery(
         path = resource,
         credentials = credentials,
@@ -128,8 +125,8 @@ class WikiApi(override val baseUrl: String,
       form
     )
 
-  def update(id: Id[Wiki], form: UpdateWikiForm): ApiPrg[Response[Wiki]] =
-    put[UpdateWikiForm, Wiki](
+  def update(id: Id[Wiki], form: UpdateWikiForm): F[Response[Wiki]] =
+    BacklogHttpDsl.put[UpdateWikiForm, Wiki](
       HttpQuery(
         path = resource,
         credentials = credentials,
@@ -138,8 +135,8 @@ class WikiApi(override val baseUrl: String,
       form
     )
 
-  def remove(id: Id[Wiki], mailNotify: Boolean = false): ApiPrg[Response[Unit]] =
-    delete(
+  def remove(id: Id[Wiki], mailNotify: Boolean = false): F[Response[Unit]] =
+    BacklogHttpDsl.delete(
       HttpQuery(
         s"$resource/${id.value}",
         QueryParam.single("mailNotifiy", mailNotify),
@@ -147,9 +144,4 @@ class WikiApi(override val baseUrl: String,
         baseUrl
       )
     )
-}
-
-object WikiApi extends ApiContext[WikiApi] {
-  override def apply(baseUrl: String, credentials: Credentials): WikiApi =
-    new WikiApi(baseUrl, credentials)
 }
