@@ -68,7 +68,7 @@ lazy val backlog4sHammock = (project in file("backlog4s-hammock"))
   .settings(
     name := "backlog4s-hammock",
     // hammock-core doesn't support Scala 2.13
-    // crossScalaVersions := supportedScalaVersions
+    crossScalaVersions := List(scala212),
     publishPackages
   )
   .dependsOn(backlog4sCore)
@@ -77,7 +77,7 @@ lazy val backlog4sTest = (project in file("backlog4s-test"))
   .settings(
     commonSettings,
     noPublishSettings,
-    crossScalaVersions := supportedScalaVersions
+    crossScalaVersions := List(scala212)
   )
   .dependsOn(backlog4sCore, backlog4sAkka, backlog4sHammock)
 
@@ -88,7 +88,7 @@ lazy val backlog4sGraphQl = (project in file("backlog4s-graphql"))
     crossScalaVersions := supportedScalaVersions,
     publishPackages
   )
-  .dependsOn(backlog4sCore, backlog4sAkka, backlog4sTest)
+  .dependsOn(backlog4sCore, backlog4sAkka)
 
 lazy val backlog4s = (project in file("."))
   .settings(
