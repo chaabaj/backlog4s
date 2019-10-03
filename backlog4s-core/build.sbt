@@ -13,7 +13,6 @@ libraryDependencies ++= Seq(
   "io.monix"      %% "monix-eval"     % monixVersion,
   "io.monix"      %% "monix-reactive" % monixVersion,
   "joda-time"     %  "joda-time"      % "2.9.9",
-  "co.fs2"        %% "fs2-core"       % "2.0.1",
   // Test //
   "org.scalatest" %% "scalatest" % "3.0.8" % "test"
 )
