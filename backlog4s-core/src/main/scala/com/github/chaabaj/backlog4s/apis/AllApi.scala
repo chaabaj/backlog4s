@@ -8,6 +8,7 @@ class AllApi[F[_]](baseUrl: String, credentials: Credentials)(implicit BacklogHt
   lazy val activityApi = new ActivityApi(baseUrl, credentials)
   lazy val attachmentApi = new AttachmentApi(baseUrl, credentials)
   lazy val categoryApi = new CategoryApi(baseUrl, credentials)
+  lazy val customStatusApi = new CustomStatusApi(baseUrl, credentials)
   lazy val gitApi = new GitApi(baseUrl, credentials)
   lazy val groupApi = new GroupApi(baseUrl, credentials)
   lazy val issueApi = new IssueApi(baseUrl, credentials)
