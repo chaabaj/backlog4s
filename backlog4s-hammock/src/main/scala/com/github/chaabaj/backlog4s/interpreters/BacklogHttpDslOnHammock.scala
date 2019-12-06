@@ -136,6 +136,13 @@ class BacklogHttpDslOnHammock()(implicit val hammockInterpreter: Interpreter[IO]
       .map(discardBody)
       .exec[IO]
 
+  override def delete[Payload, A](query: HttpQuery,
+                                  payload: Payload)(implicit payloadFormat: JsonFormat[Payload]): IO[Response[Unit]] =
+    createRequest(Method.DELETE, query, Some(jsonEntity(payload, payloadFormat)))
+      .map(handleResponse)
+      .map(discardBody)
+      .exec[IO]
+
   override def put[Payload, A](query: HttpQuery,
                                   payload: Payload)(implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): IO[Response[A]] =
     createRequest(Method.PUT, query, Some(jsonEntity(payload, payloadFormat)))

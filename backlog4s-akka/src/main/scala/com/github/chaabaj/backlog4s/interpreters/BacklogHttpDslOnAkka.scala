@@ -187,6 +187,14 @@ class BacklogHttpDslOnAkka(optTransport: Option[ClientTransport] = None)
       response = serverResponse.map(_ => ())
     } yield response
 
+  override def delete[Payload, A](query: HttpQuery,
+                                  payload: Payload)(implicit payloadFormat: JsonFormat[Payload]): Task[Response[Unit]] =
+    for {
+      request <- createRequest(HttpMethods.DELETE, query, payload, payloadFormat)
+      serverResponse <- doRequest(request)
+      response = serverResponse.map(_ => ())
+    } yield response
+
   override def put[Payload, A](query: HttpQuery, payload: Payload)(implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): Task[Response[A]] =
     for {
       request <- createRequest(HttpMethods.PUT, query, payload, payloadFormat)
