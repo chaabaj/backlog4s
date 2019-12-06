@@ -20,7 +20,7 @@ class CustomStatusApi[F[_]](baseUrl: String, credentials: Credentials)(implicit 
       )
     )
 
-  def add(projectIdOrKey: IdOrKeyParam[Project], name: String, color: RGBColor): F[Response[CustomStatus]] =
+  def add(projectIdOrKey: IdOrKeyParam[Project], name: String, color: CustomStatusColor): F[Response[CustomStatus]] =
     BacklogHttpDsl.post[CustomForm, CustomStatus](
       HttpQuery(
         path = resource(projectIdOrKey),
@@ -29,7 +29,7 @@ class CustomStatusApi[F[_]](baseUrl: String, credentials: Credentials)(implicit 
       ),
       Map(
         "name" -> name,
-        "color" -> color.toHex
+        "color" -> color.hex
       )
     )
 
