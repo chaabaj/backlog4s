@@ -56,12 +56,13 @@ class CustomStatusApi[F[_]](baseUrl: String, credentials: Credentials)(implicit 
       form
     )
 
-  def remove(projectIdOrKey: IdOrKeyParam[Project], id: Id[CustomStatus]): F[Response[Unit]] =
+  def remove(projectIdOrKey: IdOrKeyParam[Project], id: Id[CustomStatus], form: DeleteCustomStatusForm): F[Response[Unit]] =
     BacklogHttpDsl.delete(
       HttpQuery(
         path = s"${resource(projectIdOrKey)}/${id.value}",
         credentials = credentials,
         baseUrl = baseUrl
-      )
+      ),
+      form
     )
 }

@@ -18,6 +18,7 @@ object StatusColor {
     (DefaultStatusColor.values ++ CustomStatusColor.values)
       .find(_.hex == colorStr)
 }
+
 sealed trait DefaultStatusColor extends StatusColor
 
 object DefaultStatusColor {
