@@ -118,6 +118,30 @@ object SprayJsonFormats extends DefaultJsonProtocol {
     override def write(color: RGBColor): JsValue = JsString(color.toHex)
   }
 
+  implicit object CustomStatusColorFormat extends RootJsonFormat[CustomStatusColor] {
+    override def read(json: JsValue): CustomStatusColor = json match {
+      case JsString(colorStr) =>
+        CustomStatusColor.from(colorStr)
+          .getOrElse(deserializationError(s"not a valid custom status color got $colorStr Please refer the API document."))
+      case other =>
+        deserializationError(s"Custom status color must be a string got ${other.prettyPrint}")
+    }
+
+    override def write(obj: CustomStatusColor): JsValue = JsString(obj.hex)
+  }
+
+  implicit object StatusColorFormat extends RootJsonFormat[StatusColor] {
+    override def read(json: JsValue): StatusColor = json match {
+      case JsString(colorStr) =>
+        StatusColor.from(colorStr)
+          .getOrElse(deserializationError(s"not a valid status color got $colorStr Please refer the API document."))
+      case other =>
+        deserializationError(s"Status color must be a string got ${other.prettyPrint}")
+    }
+
+    override def write(obj: StatusColor): JsValue = JsString(obj.hex)
+  }
+
   implicit val userIdFormat = new IdFormat[User]
   implicit val roleFormat = new EnumFormat(Role, IntEnum)
   implicit val langFormat = new EnumFormat(Lang, StringEnum)
@@ -161,6 +185,13 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val updateIssueTypeFormFormat = jsonFormat2(UpdateIssueTypeForm)
   implicit val idStatusFormat = new IdFormat[Status]
   implicit val statusFormat = jsonFormat2(Status)
+
+  implicit val idCustomStatusFormat = new IdFormat[CustomStatus]
+  implicit val customStatusFormat = jsonFormat5(CustomStatus)
+  implicit val updateCustomStatusFormFormat = jsonFormat2(UpdateCustomStatusForm)
+  implicit val updateCustomStatusDisplayOrderFormFormat = jsonFormat1(UpdateCustomStatusDisplayOrderForm)
+  implicit val deleteCustomStatusForm = jsonFormat1(DeleteCustomStatusForm)
+
   implicit val idResolutionFormat = new IdFormat[Resolution]
   implicit val resolutionFormat = jsonFormat2(Resolution)
   implicit val idPriorityFormat = new IdFormat[Priority]
