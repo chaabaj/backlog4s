@@ -14,9 +14,9 @@ sealed trait StatusColor {
 
 object StatusColor {
 
-  def from(colorStr: String): Option[StatusColor] =
+  def from(hexColor: String): Option[StatusColor] =
     (DefaultStatusColor.values ++ CustomStatusColor.values)
-      .find(_.hex == colorStr)
+      .find(_.hex == hexColor)
 }
 
 sealed trait DefaultStatusColor extends StatusColor
@@ -39,8 +39,8 @@ object DefaultStatusColor {
     Open, InProgress, Resolved, Closed
   )
 
-  def from(colorStr: String): Option[DefaultStatusColor] =
-    values.find(_.hex == colorStr)
+  def from(hexColor: String): Option[DefaultStatusColor] =
+    values.find(_.hex == hexColor)
 }
 
 case class CustomStatusColor private (hex: String) extends StatusColor
