@@ -13,6 +13,7 @@ trait BacklogHttpDsl[F[_]] {
   def post[Payload, A](query: HttpQuery, payload: Payload)(implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): F[Response[A]]
   def put[Payload, A](query: HttpQuery, payload: Payload)(implicit format: JsonFormat[A], payloadFormat: JsonFormat[Payload]): F[Response[A]]
   def delete(query: HttpQuery): F[Response[Unit]]
+  def delete[Payload, A](query: HttpQuery, payload: Payload)(implicit payloadFormat: JsonFormat[Payload]): F[Response[Unit]]
   def download(query: HttpQuery): F[Response[ByteStream]]
   def upload[A](query: HttpQuery, file: File)(implicit format: JsonFormat[A]): F[Response[A]]
 }
