@@ -140,7 +140,7 @@ class BacklogHttpDslOnAkka(optTransport: Option[ClientTransport] = None)
     logger.info(s"Following redirection $req")
     Task.deferFuture(http.singleRequest(req, settings = settings)).flatMap { resp =>
       resp.status match {
-        case StatusCodes.Found | StatusCodes.SeeOther => resp.header[headers.Location].map { loc =>
+        case StatusCodes.MovedPermanently | StatusCodes.Found | StatusCodes.SeeOther => resp.header[headers.Location].map { loc =>
           resp.entity.discardBytes()
           val locUri = loc.uri
           val newUri = locUri
