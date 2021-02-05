@@ -12,3 +12,9 @@ project/plugins/project/
 .cache
 .lib/
 .idea
+
+# metals
+.bsp
+.bloop
+.metals
+metals.sbt
