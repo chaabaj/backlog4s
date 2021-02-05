@@ -1,7 +1,7 @@
 name := "backlog4s"
 
 lazy val scala212 = "2.12.10"
-lazy val scala213 = "2.13.1"
+lazy val scala213 = "2.13.4"
 lazy val supportedScalaVersions = List(scala213, scala212)
 
 ThisBuild / organization := "com.github.chaabaj"
