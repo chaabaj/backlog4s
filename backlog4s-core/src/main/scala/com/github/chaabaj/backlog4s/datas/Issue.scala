@@ -29,7 +29,10 @@ case class Issue(
   //customField not supported yet
   attachments: Seq[Attachment],
   sharedFiles: Seq[SharedFile],
-  stars: Seq[Star]
+  stars: Seq[Star],
+  parentIssueId: Option[Id[Issue]],
+  startDate: Option[DateTime],
+  dueDate: Option[DateTime],
 )
 
 object IssueSearchBy extends Enumeration {
@@ -93,16 +96,16 @@ case class IssueSearch(
 case class AddIssueForm(
   projectId: Id[Project],
   summary: String,
-  parentIssueId: Seq[Id[Issue]] = Seq(),
+  parentIssueId: Option[Id[Issue]] = None,
   description: Option[String] = None,
   startDate: Option[DateTime] = None,
   dueDate: Option[DateTime] = None,
-  estimatedHours: Int,
-  actualHours: Int,
+  estimatedHours: Option[Int],
+  actualHours: Option[Int],
   issueTypeId: Id[IssueType],
-  categoryId: Seq[Category] = Seq(),
+  categoryId: Seq[Id[Category]] = Seq(),
   // versionId
-  milestoneId: Seq[Milestone] = Seq(),
+  milestoneId: Seq[Id[Milestone]] = Seq(),
   priorityId: Id[Priority],
   assigneeId: Option[Id[User]] = None,
   notifiedUserId: Seq[Id[User]] = Seq(),
