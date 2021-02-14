@@ -56,7 +56,7 @@ object ToQueryParam {
   }
   implicit val dateTimeParam = new ToQueryParam[DateTime] {
     override def encode(name: String, dateTime: DateTime): QueryParam =
-      StringParam(name, dateTime.toString(DateTimeFormat.formatter))
+      StringParam(name, dateTime.toString(DateTimeFormat.parser))
   }
   implicit val intParam = new ToQueryParam[Int] {
     override def encode(name: String, a: Int): QueryParam =
