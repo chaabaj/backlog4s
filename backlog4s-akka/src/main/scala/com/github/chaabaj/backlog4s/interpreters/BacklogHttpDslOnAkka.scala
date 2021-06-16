@@ -85,9 +85,10 @@ class BacklogHttpDslOnAkka(optTransport: Option[ClientTransport] = None)
                                      payload: Payload, format: JsonFormat[Payload]): Task[HttpRequest] = {
     logger.info(s"Prepare request with payload $payload")
     val formData = FormData(
-      payload.toJson(format).asJsObject.fields.map {
-        case (key, JsString(value)) => key -> value
-        case (key, value) => key -> value.toString()
+      payload.toJson(format).asJsObject.fields.flatMap {
+        case (key, JsArray(values)) => values.map((key + "[]" -> _.toString()))
+        case (key, JsString(value)) => Seq(key -> value)
+        case (key, value) => Seq(key -> value.toString)
       }
     )
 

@@ -27,7 +27,7 @@ case class User (
   userId: Option[String],
   name: String,
   roleType: Role,
-  mailAddress: String,
+  mailAddress: Option[String],
   lang: Option[Lang] = Some(Lang.English)
 )
 

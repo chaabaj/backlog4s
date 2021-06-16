@@ -22,21 +22,22 @@ object SprayJsonFormats extends DefaultJsonProtocol {
 
   implicit object DateTimeFormat extends RootJsonFormat[DateTime] {
 
-    val formatter = ISODateTimeFormat.dateOptionalTimeParser()
+    val parser = ISODateTimeFormat.dateOptionalTimeParser()
+    val printer = ISODateTimeFormat.date();
 
     def write(obj: DateTime): JsValue =
-      JsString(DateTimeFormat.formatter.print(obj))
+      JsString(printer.print(obj))
 
     def read(json: JsValue): DateTime = json match {
       case JsString(s) =>
-        Try(formatter.parseDateTime(s))
+        Try(parser.parseDateTime(s))
           .getOrElse(error(s))
       case _ =>
         error(json.toString())
     }
 
     def error(v: Any): DateTime = {
-      val example = formatter.print(0)
+      val example = printer.print(0)
       deserializationError(f"'$v' is not a valid date value. Dates must be in compact ISO-8601 format, e.g. '$example'")
     }
   }
@@ -205,7 +206,7 @@ object SprayJsonFormats extends DefaultJsonProtocol {
   implicit val idStarFormat = new IdFormat[Star]
   implicit val starFormat = jsonFormat6(Star)
   implicit val idIssueFormat = new IdFormat[Issue]
-  implicit val issueFormat = jsonFormat19(Issue)
+  implicit val issueFormat = jsonFormat22(Issue)
   implicit val countFormat = jsonFormat1(Count)
   implicit val addIssueFormFormat = jsonFormat15(AddIssueForm)
   implicit val updateIssueFormFormat = jsonFormat17(UpdateIssueForm)
